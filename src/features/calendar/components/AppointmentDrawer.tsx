@@ -130,7 +130,7 @@ export const AppointmentDrawer: React.FC<AppointmentDrawerProps> = ({
             />
 
             {/* Drawer */}
-            <div className="fixed top-0 right-0 h-full w-full md:w-[500px] bg-bg-secondary border-l border-border shadow-2xl z-50 transform transition-transform duration-300 flex flex-col">
+            <div className="fixed top-0 right-0 h-full w-full md:w-[500px] bg-bg-secondary border-l border-border shadow-2xl z-50 transform transition-transform duration-300 flex flex-col overflow-x-hidden">
                 {/* Header */}
                 <div className="flex items-center justify-between p-6 border-b border-border bg-bg-secondary sticky top-0 z-10">
                     <h2 className="text-xl font-bold text-text-primary">
@@ -142,7 +142,7 @@ export const AppointmentDrawer: React.FC<AppointmentDrawerProps> = ({
                 </div>
 
                 {/* Body */}
-                <div className="flex-1 overflow-y-auto p-6 space-y-6">
+                <div className="flex-1 overflow-y-auto overflow-x-hidden p-6 space-y-6">
 
                     {/* Artist Selection */}
                     <div>

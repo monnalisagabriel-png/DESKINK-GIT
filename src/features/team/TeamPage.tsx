@@ -211,14 +211,14 @@ const TeamList: React.FC<{ studioId?: string }> = ({ studioId }) => {
                         </div>
                         <div>
                             <div className="font-bold text-white">{member.full_name}</div>
-                            <div className="text-sm text-text-muted flex items-center gap-2">
+                            <div className="text-sm text-text-muted">
                                 {member.email}
-                                <span className={`text-xs uppercase px-2 py-0.5 rounded bg-white/5 ${roleColors[member.role?.toLowerCase()] || 'text-gray-400'}`}>
-                                    {member.role}
-                                </span>
                             </div>
                         </div>
                     </div>
+                    <span className={`text-xs uppercase px-2 py-1 rounded-md font-medium bg-white/5 ${roleColors[member.role?.toLowerCase()] || 'text-gray-400'}`}>
+                        {member.role}
+                    </span>
                 </div>
             ))}
         </div>
