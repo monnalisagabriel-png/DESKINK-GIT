@@ -1,16 +1,24 @@
 import React, { useState, useEffect } from 'react';
-import { Search, Plus, Mail, Phone, MessageCircle, Megaphone, QrCode, X, Copy, Check } from 'lucide-react';
+import { Search, Plus, Mail, Phone, MessageCircle, Megaphone, QrCode, X, Copy, Check, Star } from 'lucide-react';
 import { api } from '../../services/api';
 import type { Client } from '../../services/types';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../auth/AuthContext';
+
+import { ImportClientsModal } from './components/ImportClientsModal';
+import { ReviewRequestModal } from '../../components/ReviewRequestModal';
 
 export const ClientsList: React.FC = () => {
     const [clients, setClients] = useState<Client[]>([]);
     const [search, setSearch] = useState('');
     const [loading, setLoading] = useState(true);
     const [showQR, setShowQR] = useState(false);
+    const [showImport, setShowImport] = useState(false);
     const [copied, setCopied] = useState(false);
+
+    // Review Modal State
+    const [reviewModalData, setReviewModalData] = useState<{ isOpen: boolean; clientName: string; clientPhone?: string }>({ isOpen: false, clientName: '' });
+
     const navigate = useNavigate();
     const { user } = useAuth();
     const studioId = user?.studio_id || 'studio-1'; // Default or derive from user
@@ -34,6 +42,15 @@ export const ClientsList: React.FC = () => {
         e.stopPropagation(); // Prevent row click navigation
         const cleanPhone = phone.replace(/\D/g, '');
         window.open(`https://wa.me/${cleanPhone}`, '_blank');
+    };
+
+    const handleReviewClick = (e: React.MouseEvent, client: Client) => {
+        e.stopPropagation();
+        setReviewModalData({
+            isOpen: true,
+            clientName: client.full_name,
+            clientPhone: client.phone
+        });
     };
 
     const handleToggleBroadcast = async (e: React.MouseEvent, client: Client) => {
@@ -64,6 +81,13 @@ export const ClientsList: React.FC = () => {
                 <div className="flex flex-col md:flex-row items-center gap-3 w-full md:w-auto">
                     {/* Action Buttons Group */}
                     <div className="flex items-center gap-2 w-full md:w-auto overflow-x-auto pb-2 md:pb-0">
+                        <button
+                            onClick={() => setShowImport(true)}
+                            className="flex items-center gap-2 bg-green-600/10 border border-green-600/20 hover:bg-green-600/20 text-green-500 px-3 py-2 rounded-lg font-medium transition-colors whitespace-nowrap"
+                            title="Importa da Google Sheets"
+                        >
+                            <span className="hidden lg:inline">Importa Google</span>
+                        </button>
                         <button
                             onClick={() => setShowQR(true)}
                             className="flex items-center gap-2 bg-accent/10 border border-accent/20 hover:bg-accent/20 text-accent px-3 py-2 rounded-lg font-medium transition-colors whitespace-nowrap"
@@ -141,6 +165,14 @@ export const ClientsList: React.FC = () => {
                                     <td className="px-6 py-4 text-right">
                                         <div className="flex justify-end items-center gap-2">
                                             <button
+                                                onClick={(e) => handleReviewClick(e, client)}
+                                                className="flex items-center gap-2 px-3 py-1.5 rounded-lg transition-colors text-yellow-500 hover:bg-yellow-500/10 border border-yellow-500/20"
+                                                title="Chiedi Recensione Google"
+                                            >
+                                                <Star size={16} />
+                                                <span className="text-sm font-medium">Richiedi recensione</span>
+                                            </button>
+                                            <button
                                                 onClick={(e) => handleToggleBroadcast(e, client)}
                                                 className={`p-2 rounded-lg transition-colors ${client.whatsapp_broadcast_opt_in
                                                     ? 'text-green-500 hover:bg-green-500/10'
@@ -184,7 +216,15 @@ export const ClientsList: React.FC = () => {
                                     <div className="font-bold text-white text-lg">{client.full_name}</div>
                                     <div className="text-xs text-text-muted">ID: {client.id}</div>
                                 </div>
-                                <div className="flex gap-2">
+                                <div className="flex gap-2 flex-wrap justify-end">
+                                    <button
+                                        onClick={(e) => handleReviewClick(e, client)}
+                                        className="flex items-center gap-2 px-3 py-1.5 rounded-lg transition-colors text-yellow-500 bg-yellow-500/10 border border-yellow-500/20"
+                                        title="Chiedi Recensione"
+                                    >
+                                        <Star size={16} />
+                                        <span className="text-xs font-medium">Richiedi recensione</span>
+                                    </button>
                                     <button
                                         onClick={(e) => handleWhatsAppClick(e, client.phone)}
                                         className="p-2 bg-green-500/10 text-green-500 rounded-lg"
@@ -257,6 +297,19 @@ export const ClientsList: React.FC = () => {
                     </div>
                 )
             }
+
+            <ImportClientsModal
+                isOpen={showImport}
+                onClose={() => setShowImport(false)}
+                onImportSuccess={() => loadClients()}
+            />
+
+            <ReviewRequestModal
+                isOpen={reviewModalData.isOpen}
+                onClose={() => setReviewModalData({ ...reviewModalData, isOpen: false })}
+                clientName={reviewModalData.clientName}
+                clientPhone={reviewModalData.clientPhone}
+            />
         </div >
     );
 };

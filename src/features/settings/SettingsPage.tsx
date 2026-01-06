@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { User, Building, FileText, Palette, Moon, Sun } from 'lucide-react';
+import { User, Building, FileText, Palette, Moon, Sun, Link } from 'lucide-react';
 import clsx from 'clsx';
 import { useAuth } from '../auth/AuthContext';
 import { useLayoutStore } from '../../stores/layoutStore';
@@ -7,6 +7,7 @@ import { ProfileSettings } from './components/ProfileSettings';
 import { TeamSettings } from './components/TeamSettings';
 import { StudioSettings } from './components/StudioSettings';
 import { ArtistContractSettings } from './components/ArtistContractSettings';
+import { IntegrationsTab } from '../artists/components/IntegrationsTab';
 
 import { useLocation } from 'react-router-dom';
 
@@ -39,6 +40,7 @@ export const SettingsPage: React.FC = () => {
         ...(['owner', 'studio_admin'].includes(normalizedRole) ? [{ id: 'studio', label: 'Info Studio', icon: Building }] : []),
         // Show Contract for ARTIST
         ...(['artist'].includes(normalizedRole) ? [{ id: 'contract', label: 'Il Mio Contratto', icon: FileText }] : []),
+        { id: 'integrations', label: 'Integrazioni', icon: Link },
         { id: 'appearance', label: 'Aspetto', icon: Palette },
     ];
 
@@ -83,6 +85,7 @@ export const SettingsPage: React.FC = () => {
                 {activeTab === 'team' && <TeamSettings />}
                 {activeTab === 'studio' && <StudioSettings />}
                 {activeTab === 'contract' && <ArtistContractSettings />}
+                {activeTab === 'integrations' && user && <IntegrationsTab artist={user} onUpdate={() => window.location.reload()} />}
 
                 {activeTab === 'appearance' && (
                     <div className="space-y-6">

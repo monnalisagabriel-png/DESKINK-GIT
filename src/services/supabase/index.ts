@@ -229,7 +229,7 @@ export class SupabaseRepository implements IRepository {
             // 1. Get current status to prevent duplicate transactions
             const { data: current, error: fetchError } = await supabase
                 .from('appointments')
-                .select('status')
+                .select('status, studio_id, artist_id, price, service_name, client_id')
                 .eq('id', id)
                 .single();
 
@@ -252,55 +252,85 @@ export class SupabaseRepository implements IRepository {
 
             console.log('[DEBUG] Appointment updated. Status change:', current.status, '->', updated.status);
 
-            // 3. If transitioning to COMPLETED, create Transaction
+            // 3. Logic for Financial Transactions
+
+            // CASE A: Status changed TO COMPLETED
             if (current.status !== 'COMPLETED' && updated.status === 'COMPLETED') {
                 try {
-                    console.log('[DEBUG] Attempting to auto-generate transaction for appointment:', id);
-                    const amount = Number(updated.price || 0);
+                    console.log('[DEBUG] Appointment completed. Checking for existing transaction...');
 
-                    console.log('[DEBUG] Transaction Amount detected:', amount);
+                    // Check if transaction already exists for this appointment
+                    const { data: existingTx } = await supabase
+                        .from('transactions')
+                        .select('id')
+                        .eq('appointment_id', id)
+                        .maybeSingle();
 
-                    if (amount > 0) {
-                        // Fetch Client Name for description
-                        let clientName = 'Cliente';
-                        if (updated.client_id) {
-                            const { data: clientData } = await supabase
-                                .from('clients')
-                                .select('full_name')
-                                .eq('id', updated.client_id)
-                                .single();
-                            if (clientData?.full_name) {
-                                clientName = clientData.full_name;
+                    if (existingTx) {
+                        console.log('[DEBUG] Transaction already exists for this appointment. Skipping creation.');
+                        // Do not return here, as Google Sync still needs to run.
+                    } else {
+                        console.log('[DEBUG] Creating new transaction for appointment:', id);
+                        const amount = Number(updated.price || 0);
+
+                        if (amount > 0) {
+                            // Fetch Client Name
+                            let clientName = 'Cliente';
+                            if (updated.client_id) {
+                                const { data: clientData } = await supabase
+                                    .from('clients')
+                                    .select('full_name')
+                                    .eq('id', updated.client_id)
+                                    .single();
+                                if (clientData?.full_name) {
+                                    clientName = clientData.full_name;
+                                }
+                            }
+
+                            const txData = {
+                                studio_id: updated.studio_id,
+                                artist_id: updated.artist_id,
+                                appointment_id: id, // Link to appointment
+                                amount: amount,
+                                type: 'INCOME',
+                                category: 'SERVICE',
+                                date: new Date().toISOString(),
+                                description: `${updated.service_name || 'Servizio'} - ${clientName}`
+                            };
+
+                            const { error: txError } = await supabase
+                                .from('transactions')
+                                .insert(txData);
+
+                            if (txError) {
+                                console.error('[DEBUG] Transaction Insert Error:', txError);
+                            } else {
+                                console.log('[DEBUG] Transaction created successfully.');
                             }
                         }
-
-                        const txData = {
-                            studio_id: updated.studio_id,
-                            artist_id: updated.artist_id,
-                            amount: amount,
-                            type: 'INCOME',
-                            category: 'SERVICE',
-                            date: new Date().toISOString(),
-                            description: `${updated.service_name || 'Servizio'} - ${clientName}`
-                        };
-                        console.log('[DEBUG] Inserting transaction data:', JSON.stringify(txData));
-
-                        const { data: tx, error: txError } = await supabase
-                            .from('transactions')
-                            .insert(txData)
-                            .select()
-                            .single();
-
-                        if (txError) {
-                            console.error('[DEBUG] Transaction Insert Error:', JSON.stringify(txError));
-                        } else {
-                            console.log('[DEBUG] Transaction created successfully:', tx);
-                        }
-                    } else {
-                        console.warn('[DEBUG] Amount is 0, skipping transaction creation.');
                     }
                 } catch (txError) {
-                    console.error('[DEBUG] Failed to auto-create transaction (exception):', txError);
+                    console.error('[DEBUG] Failed to handle transaction creation:', txError);
+                }
+            }
+
+            // CASE B: Status changed FROM COMPLETED (Rollback)
+            if (current.status === 'COMPLETED' && updated.status !== 'COMPLETED') {
+                try {
+                    console.log('[DEBUG] Appointment un-completed. Removing associated transaction...');
+
+                    const { error: deleteError } = await supabase
+                        .from('transactions')
+                        .delete()
+                        .eq('appointment_id', id);
+
+                    if (deleteError) {
+                        console.error('[DEBUG] Failed to delete transaction:', deleteError);
+                    } else {
+                        console.log('[DEBUG] Associated transaction passed to history.');
+                    }
+                } catch (err) {
+                    console.error('[DEBUG] Error removing transaction:', err);
                 }
             }
 

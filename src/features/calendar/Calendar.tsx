@@ -4,6 +4,7 @@ import { CalendarHeader } from './components/CalendarHeader';
 import { MonthView } from './components/MonthView';
 import { AppointmentDrawer } from './components/AppointmentDrawer';
 import { GoogleCalendarDrawer } from './components/GoogleCalendarDrawer';
+import { ReviewRequestModal } from '../../components/ReviewRequestModal';
 import type { Appointment, User } from '../../services/types';
 import { api } from '../../services/api';
 import { useAuth } from '../auth/AuthContext';
@@ -35,6 +36,10 @@ export const Calendar: React.FC = () => {
 
     const [isDrawerOpen, setIsDrawerOpen] = useState(false);
     const [isGoogleDrawerOpen, setIsGoogleDrawerOpen] = useState(false);
+
+    // Review Modal State
+    const [reviewModalData, setReviewModalData] = useState<{ isOpen: boolean; clientName: string; clientPhone?: string }>({ isOpen: false, clientName: '' });
+
     const [selectedDate, setSelectedDate] = useState<Date | null>(null);
     const [selectedAppointment, setSelectedAppointment] = useState<Appointment | null>(null);
     const [artists, setArtists] = useState<User[]>([]);
@@ -67,6 +72,13 @@ export const Calendar: React.FC = () => {
                 // Update
                 if (!selectedAppointment.id) return;
                 await api.appointments.update(selectedAppointment.id, data);
+
+                // Check for completion to trigger Review Request
+                if (data.status === 'COMPLETED' && selectedAppointment.status !== 'COMPLETED') {
+                    const clientName = selectedAppointment.client?.full_name || 'Cliente';
+                    const clientPhone = selectedAppointment.client?.phone;
+                    setReviewModalData({ isOpen: true, clientName, clientPhone });
+                }
             } else {
                 // Create
                 await api.appointments.create(data as Appointment);
@@ -350,6 +362,13 @@ export const Calendar: React.FC = () => {
                 isOpen={isGoogleDrawerOpen}
                 onClose={() => setIsGoogleDrawerOpen(false)}
                 artists={artists}
+            />
+
+            <ReviewRequestModal
+                isOpen={reviewModalData.isOpen}
+                onClose={() => setReviewModalData({ ...reviewModalData, isOpen: false })}
+                clientName={reviewModalData.clientName}
+                clientPhone={reviewModalData.clientPhone}
             />
         </div>
     );

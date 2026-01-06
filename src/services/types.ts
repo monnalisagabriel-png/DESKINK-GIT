@@ -84,6 +84,7 @@ export interface Transaction {
   date: string; // ISO
   description?: string;
   artist_id?: string; // If commission related
+  appointment_id?: string; // Linked appointment
 }
 
 export interface FinancialStats {
