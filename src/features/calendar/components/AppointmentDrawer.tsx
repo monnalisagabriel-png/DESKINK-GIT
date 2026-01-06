@@ -119,6 +119,13 @@ export const AppointmentDrawer: React.FC<AppointmentDrawerProps> = ({
         }));
     };
 
+    const STATUS_LABELS: Record<string, string> = {
+        PENDING: 'IN ATTESA',
+        CONFIRMED: 'CONFERMATO',
+        COMPLETED: 'COMPLETATO',
+        NO_SHOW: 'ASSENTE'
+    };
+
     if (!isOpen) return null;
 
     return (
@@ -130,7 +137,7 @@ export const AppointmentDrawer: React.FC<AppointmentDrawerProps> = ({
             />
 
             {/* Drawer */}
-            <div className="fixed top-0 right-0 h-full w-full md:w-[500px] bg-bg-secondary border-l border-border shadow-2xl z-50 transform transition-transform duration-300 flex flex-col overflow-x-hidden">
+            <div className="fixed top-0 right-0 h-[100dvh] w-full md:w-[500px] bg-bg-secondary border-l border-border shadow-2xl z-50 transform transition-transform duration-300 flex flex-col overflow-x-hidden">
                 {/* Header */}
                 <div className="flex items-center justify-between p-6 border-b border-border bg-bg-secondary sticky top-0 z-10">
                     <h2 className="text-xl font-bold text-text-primary">
@@ -319,7 +326,7 @@ export const AppointmentDrawer: React.FC<AppointmentDrawerProps> = ({
                                             : "text-text-muted hover:text-text-primary"
                                     )}
                                 >
-                                    {status === 'NO_SHOW' ? 'ASSENTE' : status}
+                                    {STATUS_LABELS[status]}
                                 </button>
                             ))}
                         </div>
@@ -365,7 +372,7 @@ export const AppointmentDrawer: React.FC<AppointmentDrawerProps> = ({
                 </div>
 
                 {/* Footer */}
-                <div className="p-6 border-t border-border flex items-center justify-between bg-bg-secondary sticky bottom-0 z-10 transition-colors">
+                <div className="p-6 pb-24 md:pb-6 border-t border-border flex items-center justify-between bg-bg-secondary sticky bottom-0 z-10 transition-colors">
                     {selectedAppointment && onDelete ? (
                         <div className="flex items-center gap-2">
                             {isDeleting ? (

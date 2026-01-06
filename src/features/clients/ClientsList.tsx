@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { Search, Plus, Mail, Phone, MessageCircle, Megaphone, QrCode, X, Copy, Check, Star } from 'lucide-react';
+import React, { useState, useEffect, useMemo } from 'react';
+import { Search, Plus, Mail, Phone, MessageCircle, Megaphone, QrCode, X, Copy, Check, Star, Filter } from 'lucide-react';
 import { api } from '../../services/api';
 import type { Client } from '../../services/types';
 import { useNavigate } from 'react-router-dom';
@@ -16,6 +16,13 @@ export const ClientsList: React.FC = () => {
     const [showImport, setShowImport] = useState(false);
     const [copied, setCopied] = useState(false);
 
+    // Filters State
+    const [showFilters, setShowFilters] = useState(false);
+    const [filters, setFilters] = useState({
+        broadcast: 'all' as 'all' | 'opt-in' | 'opt-out',
+        style: ''
+    });
+
     // Review Modal State
     const [reviewModalData, setReviewModalData] = useState<{ isOpen: boolean; clientName: string; clientPhone?: string }>({ isOpen: false, clientName: '' });
 
@@ -26,17 +33,50 @@ export const ClientsList: React.FC = () => {
 
     useEffect(() => {
         loadClients();
-    }, [search]);
+    }, []);
 
     const loadClients = async () => {
         setLoading(true);
         try {
-            const data = await api.clients.list(search);
+            const data = await api.clients.list(); // Load all, filter locally 
             setClients(data);
         } finally {
             setLoading(false);
         }
     };
+
+    // Derived State: Unique Styles
+    const uniqueStyles = useMemo(() => {
+        const styles = new Set<string>();
+        clients.forEach(c => {
+            c.preferred_styles?.forEach(s => styles.add(s));
+        });
+        return Array.from(styles).sort();
+    }, [clients]);
+
+    // Derived State: Filtered Clients
+    const filteredClients = useMemo(() => {
+        return clients.filter(client => {
+            // Search Text
+            const matchesSearch = search === '' ||
+                client.full_name.toLowerCase().includes(search.toLowerCase()) ||
+                client.email.toLowerCase().includes(search.toLowerCase()) ||
+                client.phone.includes(search);
+
+            // Broadcast Filter
+            const matchesBroadcast =
+                filters.broadcast === 'all' ? true :
+                    filters.broadcast === 'opt-in' ? client.whatsapp_broadcast_opt_in :
+                        !client.whatsapp_broadcast_opt_in; // opt-out
+
+            // Style Filter
+            const matchesStyle =
+                filters.style === '' ? true :
+                    client.preferred_styles?.includes(filters.style);
+
+            return matchesSearch && matchesBroadcast && matchesStyle;
+        });
+    }, [clients, search, filters]);
 
     const handleWhatsAppClick = (e: React.MouseEvent, phone: string) => {
         e.stopPropagation(); // Prevent row click navigation
@@ -55,14 +95,23 @@ export const ClientsList: React.FC = () => {
 
     const handleToggleBroadcast = async (e: React.MouseEvent, client: Client) => {
         e.stopPropagation();
+
+        // Optimistic update
+        const newStatus = !client.whatsapp_broadcast_opt_in;
+        setClients(prev => prev.map(c =>
+            c.id === client.id ? { ...c, whatsapp_broadcast_opt_in: newStatus } : c
+        ));
+
         try {
             await api.clients.update(client.id, {
-                whatsapp_broadcast_opt_in: !client.whatsapp_broadcast_opt_in
+                whatsapp_broadcast_opt_in: newStatus
             });
-            // Reload to reflect changes
-            loadClients();
         } catch (error) {
             console.error('Error toggling broadcast status:', error);
+            // Revert on error
+            setClients(prev => prev.map(c =>
+                c.id === client.id ? { ...c, whatsapp_broadcast_opt_in: !newStatus } : c
+            ));
         }
     };
 
@@ -73,32 +122,46 @@ export const ClientsList: React.FC = () => {
 
 
             {/* Header */}
-            <div className="flex flex-col md:flex-row items-center justify-between gap-4 mb-6">
-                <div>
-                    <h1 className="text-2xl font-bold text-white">Clienti</h1>
-                    <p className="text-text-muted">Gestisci il database e lo storico clienti.</p>
-                </div>
-                <div className="flex flex-col md:flex-row items-center gap-3 w-full md:w-auto">
-                    {/* Action Buttons Group */}
-                    <div className="flex items-center gap-2 w-full md:w-auto overflow-x-auto pb-2 md:pb-0">
-                        <button
-                            onClick={() => setShowImport(true)}
-                            className="flex items-center gap-2 bg-green-600/10 border border-green-600/20 hover:bg-green-600/20 text-green-500 px-3 py-2 rounded-lg font-medium transition-colors whitespace-nowrap"
-                            title="Importa da Google Sheets"
-                        >
-                            <span className="hidden lg:inline">Importa Google</span>
-                        </button>
-                        <button
-                            onClick={() => setShowQR(true)}
-                            className="flex items-center gap-2 bg-accent/10 border border-accent/20 hover:bg-accent/20 text-accent px-3 py-2 rounded-lg font-medium transition-colors whitespace-nowrap"
-                            title="QR Code Registrazione"
-                        >
-                            <QrCode size={18} />
-                            <span className="hidden lg:inline">QR Registrazione</span>
-                        </button>
+            <div className="flex flex-col gap-4 mb-6">
+                <div className="flex flex-col md:flex-row items-center justify-between gap-4">
+                    <div>
+                        <h1 className="text-2xl font-bold text-white">Clienti</h1>
+                        <p className="text-text-muted">Gestisci il database e lo storico clienti.</p>
                     </div>
 
-                    <div className="relative flex-1 md:w-64 w-full">
+                    <div className="flex flex-col md:flex-row items-center gap-3 w-full md:w-auto">
+                        {/* Action Buttons Group */}
+                        <div className="flex items-center gap-2 w-full md:w-auto overflow-x-auto pb-2 md:pb-0">
+                            <button
+                                onClick={() => setShowImport(true)}
+                                className="flex items-center gap-2 bg-green-600/10 border border-green-600/20 hover:bg-green-600/20 text-green-500 px-3 py-2 rounded-lg font-medium transition-colors whitespace-nowrap"
+                                title="Importa da Google Sheets"
+                            >
+                                <span className="hidden lg:inline">Importa Google</span>
+                            </button>
+                            <button
+                                onClick={() => setShowQR(true)}
+                                className="flex items-center gap-2 bg-accent/10 border border-accent/20 hover:bg-accent/20 text-accent px-3 py-2 rounded-lg font-medium transition-colors whitespace-nowrap"
+                                title="QR Code Registrazione"
+                            >
+                                <QrCode size={18} />
+                                <span className="hidden lg:inline">QR Registrazione</span>
+                            </button>
+                        </div>
+
+                        <button
+                            onClick={() => navigate('/clients/new')}
+                            className="flex items-center gap-2 bg-accent hover:bg-accent-hover text-white px-4 py-2 rounded-lg font-medium transition-colors whitespace-nowrap w-full md:w-auto justify-center"
+                        >
+                            <Plus size={18} />
+                            <span className="hidden md:inline">Nuovo Cliente</span>
+                        </button>
+                    </div>
+                </div>
+
+                {/* Search & Filters Bar */}
+                <div className="flex gap-2">
+                    <div className="relative flex-1">
                         <input
                             type="text"
                             placeholder="Cerca cliente..."
@@ -109,13 +172,53 @@ export const ClientsList: React.FC = () => {
                         <Search className="absolute left-3 top-2.5 text-text-muted" size={18} />
                     </div>
                     <button
-                        onClick={() => navigate('/clients/new')}
-                        className="flex items-center gap-2 bg-accent hover:bg-accent-hover text-white px-4 py-2 rounded-lg font-medium transition-colors whitespace-nowrap w-full md:w-auto justify-center"
+                        onClick={() => setShowFilters(!showFilters)}
+                        className={`p-2 rounded-lg border transition-colors ${showFilters ? 'bg-accent/10 border-accent text-accent' : 'bg-bg-secondary border-border text-text-muted hover:text-white'}`}
+                        title="Filtri"
                     >
-                        <Plus size={18} />
-                        <span className="hidden md:inline">Nuovo Cliente</span>
+                        <Filter size={20} />
                     </button>
                 </div>
+
+                {/* Filter Panel */}
+                {showFilters && (
+                    <div className="bg-bg-secondary border border-border rounded-lg p-4 grid grid-cols-1 md:grid-cols-2 gap-4 animate-in slide-in-from-top-2">
+                        {/* Broadcast Filter */}
+                        <div>
+                            <label className="block text-xs font-medium text-text-muted mb-2 uppercase tracking-wider">Broadcast WhatsApp</label>
+                            <div className="flex bg-bg-tertiary rounded-lg p-1">
+                                {[
+                                    { value: 'all', label: 'Tutti' },
+                                    { value: 'opt-in', label: 'Iscritti' },
+                                    { value: 'opt-out', label: 'Non Iscritti' }
+                                ].map(opt => (
+                                    <button
+                                        key={opt.value}
+                                        onClick={() => setFilters(prev => ({ ...prev, broadcast: opt.value as any }))}
+                                        className={`flex-1 py-1.5 text-sm font-medium rounded-md transition-all ${filters.broadcast === opt.value ? 'bg-bg-primary text-white shadow-sm' : 'text-text-muted hover:text-white'}`}
+                                    >
+                                        {opt.label}
+                                    </button>
+                                ))}
+                            </div>
+                        </div>
+
+                        {/* Style Filter */}
+                        <div>
+                            <label className="block text-xs font-medium text-text-muted mb-2 uppercase tracking-wider">Stile Tatuaggio</label>
+                            <select
+                                className="w-full bg-bg-tertiary border border-bg-primary rounded-lg px-3 py-2 text-white focus:ring-2 focus:ring-accent outline-none"
+                                value={filters.style}
+                                onChange={(e) => setFilters(prev => ({ ...prev, style: e.target.value }))}
+                            >
+                                <option value="">Tutti gli stili</option>
+                                {uniqueStyles.map(style => (
+                                    <option key={style} value={style}>{style}</option>
+                                ))}
+                            </select>
+                        </div>
+                    </div>
+                )}
             </div>
 
             {/* Desktop Table */}
@@ -132,10 +235,10 @@ export const ClientsList: React.FC = () => {
                     <tbody className="divide-y divide-border">
                         {loading ? (
                             <tr><td colSpan={4} className="p-8 text-center text-text-muted">Caricamento...</td></tr>
-                        ) : clients.length === 0 ? (
-                            <tr><td colSpan={4} className="p-8 text-center text-text-muted">Nessun cliente trovato per "{search}"</td></tr>
+                        ) : filteredClients.length === 0 ? (
+                            <tr><td colSpan={4} className="p-8 text-center text-text-muted">Nessun cliente trovato.</td></tr>
                         ) : (
-                            clients.map(client => (
+                            filteredClients.map(client => (
                                 <tr
                                     key={client.id}
                                     onClick={() => navigate(`/clients/${client.id}`)}
@@ -202,10 +305,10 @@ export const ClientsList: React.FC = () => {
             <div className="md:hidden space-y-4">
                 {loading ? (
                     <div className="p-8 text-center text-text-muted">Caricamento...</div>
-                ) : clients.length === 0 ? (
+                ) : filteredClients.length === 0 ? (
                     <div className="p-8 text-center text-text-muted">Nessun cliente trovato.</div>
                 ) : (
-                    clients.map(client => (
+                    filteredClients.map(client => (
                         <div
                             key={client.id}
                             onClick={() => navigate(`/clients/${client.id}`)}
@@ -224,6 +327,16 @@ export const ClientsList: React.FC = () => {
                                     >
                                         <Star size={16} />
                                         <span className="text-xs font-medium">Richiedi recensione</span>
+                                    </button>
+                                    <button
+                                        onClick={(e) => handleToggleBroadcast(e, client)}
+                                        className={`p-2 rounded-lg transition-colors ${client.whatsapp_broadcast_opt_in
+                                            ? 'bg-green-500/10 text-green-500'
+                                            : 'bg-bg-tertiary text-text-muted'
+                                            }`}
+                                        title={client.whatsapp_broadcast_opt_in ? "Rimuovi da Broadcast" : "Aggiungi a Broadcast"}
+                                    >
+                                        <Megaphone size={18} />
                                     </button>
                                     <button
                                         onClick={(e) => handleWhatsAppClick(e, client.phone)}

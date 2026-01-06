@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { X, MessageCircle, Star } from 'lucide-react';
+import { MessageCircle, Star } from 'lucide-react';
 
 interface ReviewRequestModalProps {
     isOpen: boolean;
@@ -14,15 +14,13 @@ export function ReviewRequestModal({ isOpen, onClose, clientName, clientPhone }:
 
     const message = `Gentile ${clientName},
 
-è stato un piacere averti con noi in studio. Speriamo che l'esperienza presso Trimarchi Tattoo Studio sia stata all'altezza delle tue aspettative e che tu sia soddisfatto/a del lavoro realizzato.
+è stato un piacere averti con noi in studio. Speriamo che tu sia entusiasta del tuo nuovo tatuaggio!
 
-La nostra missione è offrire non solo un tatuaggio, ma un servizio d’eccellenza basato su igiene, professionalità e cura del dettaglio. Per questo motivo, il tuo parere è per noi fondamentale.
+La nostra crescita dipende dalla soddisfazione dei nostri clienti. Per questo, abbiamo deciso di premiarti: lascia una recensione sul tuo feedback al link qui sotto e riceverai un coupon del 10% di sconto sul tuo prossimo tatuaggio e una crema specifica per la cura in omaggio.
 
-Ti saremmo grati se volessi dedicare un minuto per lasciare una recensione sulla nostra scheda Google cliccando qui: 👉 Recensisci su Google
+Ti basterà mostrarci la recensione pubblicata al link: https://g.page/r/CYbYCm2HKRR8EBM/review
 
-Grazie per la fiducia che ci hai accordato.
-
-Cordiali saluti, Il Team di Trimarchi Tattoo Studio`;
+Grazie per aver scelto il Trimarchi Tattoo Studio e per il tuo supporto!`;
 
     const handleSendWhatsapp = () => {
         const encodedMessage = encodeURIComponent(message);
