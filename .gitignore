@@ -35,3 +35,7 @@ supabase/.env
 
 # ignore backups
 backups/
+
+# ignore local backups
+backup_3.zip
+*.zip
