@@ -10,6 +10,8 @@ interface AuthContextType {
     signIn: (email: string, password?: string) => Promise<void>;
     signUp: (email: string, password: string) => Promise<boolean>;
     signOut: () => Promise<void>;
+    resetPassword: (email: string) => Promise<void>;
+    updatePassword: (password: string) => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -121,8 +123,28 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         }
     }
 
+    async function resetPassword(email: string) {
+        setIsLoading(true);
+        try {
+            // Redirect to the update password page
+            const redirectTo = `${window.location.origin}/update-password`;
+            await api.auth.resetPasswordForEmail(email, redirectTo);
+        } finally {
+            setIsLoading(false);
+        }
+    }
+
+    async function updatePassword(password: string) {
+        setIsLoading(true);
+        try {
+            await api.auth.updatePassword(password);
+        } finally {
+            setIsLoading(false);
+        }
+    }
+
     return (
-        <AuthContext.Provider value={{ user, isAuthenticated: !!user, isLoading, hasStudio, signIn, signUp, signOut }}>
+        <AuthContext.Provider value={{ user, isAuthenticated: !!user, isLoading, hasStudio, signIn, signUp, signOut, resetPassword, updatePassword }}>
             {children}
         </AuthContext.Provider>
     );

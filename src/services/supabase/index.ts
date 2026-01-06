@@ -118,6 +118,16 @@ export class SupabaseRepository implements IRepository {
                 role: (membership?.role as UserRole) || 'STUDENT',
                 studio_id: membership?.studio_id || 'default'
             };
+        },
+        resetPasswordForEmail: async (email: string, redirectTo: string): Promise<void> => {
+            const { error } = await supabase.auth.resetPasswordForEmail(email, {
+                redirectTo: redirectTo
+            });
+            if (error) throw error;
+        },
+        updatePassword: async (password: string): Promise<void> => {
+            const { error } = await supabase.auth.updateUser({ password });
+            if (error) throw error;
         }
     };
 

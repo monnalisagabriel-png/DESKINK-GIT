@@ -4,6 +4,8 @@ import { AuthProvider } from './features/auth/AuthContext';
 import { RoleGuard } from './features/auth/RoleGuard';
 import { AppLayout } from './components/AppLayout';
 import { LoginPage } from './features/auth/LoginPage';
+import { ForgotPasswordPage } from './features/auth/ForgotPasswordPage';
+import { UpdatePasswordPage } from './features/auth/UpdatePasswordPage';
 import {
     DashboardPage,
     CalendarPage,
@@ -58,6 +60,10 @@ function App() {
 
                     {/* Invitation Acceptance */}
                     <Route path="/accept-invite" element={<AcceptInvitePage />} />
+
+                    {/* Password Recovery */}
+                    <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+                    <Route path="/update-password" element={<UpdatePasswordPage />} />
 
                     <Route element={<RoleGuard />}>
                         {/* Routes that require Login but NOT Studio yet */}

@@ -1,7 +1,7 @@
 
 import React, { useState } from 'react';
 import { useAuth } from './AuthContext';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useNavigate, useLocation, Link } from 'react-router-dom';
 
 export const LoginPage: React.FC = () => {
     const { signIn, signUp } = useAuth();
@@ -91,6 +91,11 @@ export const LoginPage: React.FC = () => {
                             required
                             minLength={6}
                         />
+                        <div className="flex justify-end mt-1">
+                            <Link to="/forgot-password" className="text-xs text-accent hover:text-accent-hover transition-colors">
+                                Password dimenticata?
+                            </Link>
+                        </div>
                     </div>
                     <button
                         type="submit"

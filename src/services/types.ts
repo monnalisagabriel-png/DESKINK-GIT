@@ -202,6 +202,8 @@ export interface IRepository {
     signUp(email: string, password: string, redirectUrl?: string): Promise<AuthSession | null>; // null if confirmation required
     signOut(): Promise<void>;
     getCurrentUser(): Promise<User | null>;
+    resetPasswordForEmail(email: string, redirectTo: string): Promise<void>;
+    updatePassword(password: string): Promise<void>;
   };
   appointments: {
     list(start: Date, end: Date, artistId?: string): Promise<Appointment[]>;
