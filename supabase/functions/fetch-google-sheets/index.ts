@@ -61,7 +61,8 @@ serve(async (req) => {
             console.log('Token expired for user', user.id);
         }
 
-        const { action, spreadsheetId, sheetName } = await req.json();
+        const reqBody = await req.json();
+        const { action, spreadsheetId, sheetName } = reqBody;
 
         if (action === 'list_spreadsheets') {
             const response = await fetch(
@@ -137,7 +138,7 @@ serve(async (req) => {
             return new Response(JSON.stringify({ success: true, updatedCells: data.updatedCells }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
 
         } else if (action === 'append_data') {
-            const { values } = await req.json(); // Expecting values to be [][] (a list of rows, usually just one row)
+            const { values } = reqBody; // Expecting values to be [][] (a list of rows, usually just one row)
             if (!spreadsheetId || !sheetName || !values) return new Response(JSON.stringify({ error: 'Missing spreadsheetId, sheetName or values' }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
 
             const url = `https://sheets.googleapis.com/v4/spreadsheets/${spreadsheetId}/values/${encodeURIComponent(sheetName)}!A1:append?valueInputOption=USER_ENTERED&insertDataOption=INSERT_ROWS`;
