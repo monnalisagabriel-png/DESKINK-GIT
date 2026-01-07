@@ -160,30 +160,13 @@ export const ClientProfile: React.FC = () => {
             alert('Il nome completo è obbligatorio.');
             return;
         }
-        if (!formData.email?.trim()) {
-            alert('L\'email è obbligatoria.');
+        if (!formData.full_name?.trim()) {
+            alert('Il nome completo è obbligatorio.');
             return;
         }
-        if (!formData.phone?.trim()) {
-            alert('Il telefono è obbligatorio.');
-            return;
-        }
-        if (!formData.fiscal_code?.trim()) {
-            alert('Il codice fiscale è obbligatorio.');
-            return;
-        }
-        if (!formData.address?.trim()) {
-            alert('L\'indirizzo è obbligatorio.');
-            return;
-        }
-        if (!formData.city?.trim()) {
-            alert('La città è obbligatoria.');
-            return;
-        }
-        if (!formData.zip_code?.trim()) {
-            alert('Il CAP è obbligatorio.');
-            return;
-        }
+        // Relaxed validation: Email/Phone/Address are optional for quick entry
+        // but likely we want at least one contact. For now, let's unblock the user.
+
 
         try {
             if (isNewClient) {
