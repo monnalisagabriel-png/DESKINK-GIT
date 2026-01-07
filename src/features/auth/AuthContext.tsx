@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import type { User } from '../../services/types';
 import { api } from '../../services/api';
+import { supabase } from '../../lib/supabase';
 
 interface AuthContextType {
     user: User | null;
@@ -23,6 +24,27 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     useEffect(() => {
         checkUser();
+
+        // Listen for Auth Changes (e.g. Password Recovery link clicked)
+        const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, _session) => {
+            console.log('[AuthContext] Auth State Change:', event);
+
+            if (event === 'PASSWORD_RECOVERY') {
+                console.log('[AuthContext] Password Recovery event detected. Refreshing session...');
+                // Supabase has set the session from the URL hash.
+                // We reload the user profile to ensure App knows we are logged in.
+                await checkUser();
+            } else if (event === 'SIGNED_IN') {
+                await checkUser();
+            } else if (event === 'SIGNED_OUT') {
+                setUser(null);
+                setHasStudio(false);
+            }
+        });
+
+        return () => {
+            subscription.unsubscribe();
+        };
     }, []);
 
     function normalizeRole(role: string): any {
