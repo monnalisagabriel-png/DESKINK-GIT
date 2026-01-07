@@ -3,6 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { Search, FileSignature, CheckCircle, XCircle } from 'lucide-react';
 import { api } from '../../../services/api';
 import type { Client, ClientConsent } from '../../../services/types';
+import { useAuth } from '../../../features/auth/AuthContext';
 
 import { generateConsentPDF } from '../../../utils/pdfGenerator';
 
@@ -11,6 +12,7 @@ interface ClientsTabProps {
 }
 
 export const ClientsTab: React.FC<ClientsTabProps> = ({ onStartSignature }) => {
+    const { user } = useAuth();
     const [searchTerm, setSearchTerm] = useState('');
     const [clients, setClients] = useState<Client[]>([]);
     const [loading, setLoading] = useState(false);
@@ -18,13 +20,15 @@ export const ClientsTab: React.FC<ClientsTabProps> = ({ onStartSignature }) => {
     const [clientConsents, setClientConsents] = useState<Record<string, ClientConsent | null>>({});
 
     useEffect(() => {
-        loadClients();
-    }, [searchTerm]);
+        if (user?.studio_id) {
+            loadClients();
+        }
+    }, [searchTerm, user?.studio_id]);
 
     const loadClients = async () => {
         setLoading(true);
         try {
-            const data = await api.clients.list(searchTerm);
+            const data = await api.clients.list(searchTerm, user?.studio_id);
             setClients(data);
             // In a real app, we would optimize this to not N+1
             // For now, we only load status for the first few or on demand
