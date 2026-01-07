@@ -393,7 +393,7 @@ export const FinancialsPage: React.FC = () => {
             )}
 
             {/* Stats Cards */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                 {/* Revenue Card */}
                 <div className="bg-bg-secondary p-6 rounded-lg border border-border">
                     <p className="text-text-muted text-sm font-medium mb-1">
@@ -418,8 +418,10 @@ export const FinancialsPage: React.FC = () => {
 
                 {/* Net Card */}
                 <div className="bg-bg-secondary p-6 rounded-lg border border-border relative overflow-hidden">
-                    <div className="absolute top-0 right-0 p-4 opacity-10"><DollarSign size={100} /></div>
-                    <p className="text-text-muted text-sm font-medium mb-1">
+                    <div className="absolute top-0 right-0 p-4 opacity-10 pointer-events-none">
+                        <DollarSign size={80} className="w-20 h-20 lg:w-32 lg:h-32" />
+                    </div>
+                    <p className="text-text-muted text-sm font-medium mb-1 relative z-10">
                         {isOwner ? 'Utile Netto (Post Commissioni)' : 'Netto Stimato'}
                     </p>
                     <div className="flex items-end justify-between relative z-10">
