@@ -976,13 +976,16 @@ export class MockRepository implements IRepository {
         },
         updateSettings: async () => { },
         listCalendars: async () => [],
-        syncEvents: async (userId: string): Promise<{ synced: number }> => {
+        syncEvents: async (userId: string): Promise<{ synced_events_count: number; logs?: string[] }> => {
             await new Promise(resolve => setTimeout(resolve, 2000)); // Simulate syncing
             const user = MOCK_USERS.find(u => u.id === userId);
             if (user?.integrations?.google_calendar) {
                 user.integrations.google_calendar.last_sync = new Date().toISOString();
             }
-            return { synced: Math.floor(Math.random() * 5) + 1 }; // Random mock count
+            return {
+                synced_events_count: Math.floor(Math.random() * 5) + 1,
+                logs: ['[Mock] Synced some events']
+            };
         }
     };
 
