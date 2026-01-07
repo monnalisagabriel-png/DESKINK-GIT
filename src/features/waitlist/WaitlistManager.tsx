@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { api } from '../../services/api';
 import type { WaitlistEntry } from '../../services/types';
-import { Search, Filter, QrCode, CheckCircle, Clock, UserPlus, ArrowUpRight, ChevronDown, ArrowDownWideNarrow, ArrowUpNarrowWide, PenTool } from 'lucide-react';
+import { Search, Filter, QrCode, CheckCircle, Clock, UserPlus, ArrowUpRight, ChevronDown, ArrowDownWideNarrow, ArrowUpNarrowWide, PenTool, Copy, Check, Link } from 'lucide-react';
 import clsx from 'clsx';
 import { useAuth } from '../auth/AuthContext';
 
@@ -12,6 +12,7 @@ export const WaitlistManager: React.FC = () => {
     const [entries, setEntries] = useState<WaitlistEntry[]>([]);
     const [loading, setLoading] = useState(true);
     const [showQr, setShowQr] = useState(false);
+    const [copied, setCopied] = useState(false);
     const [activeTab, setActiveTab] = useState<'PENDING' | 'IN_PROGRESS' | 'COMPLETED'>('PENDING');
 
     // Filters State
@@ -92,6 +93,17 @@ export const WaitlistManager: React.FC = () => {
                         <p className="text-sm text-text-muted">Gestisci le richieste di appuntamento in arrivo.</p>
                     </div>
                     <div className="flex gap-3">
+                        <button
+                            onClick={() => {
+                                navigator.clipboard.writeText(publicLink);
+                                setCopied(true);
+                                setTimeout(() => setCopied(false), 2000);
+                            }}
+                            className="flex items-center gap-2 bg-bg-tertiary hover:bg-white/10 text-white px-4 py-2 rounded-lg border border-border transition-colors text-sm"
+                        >
+                            {copied ? <Check size={18} className="text-green-500" /> : <Link size={18} />}
+                            <span className="hidden sm:inline">{copied ? 'Copiato!' : 'Copia Link'}</span>
+                        </button>
                         <button
                             onClick={() => setShowQr(!showQr)}
                             className="flex items-center gap-2 bg-bg-tertiary hover:bg-white/10 text-white px-4 py-2 rounded-lg border border-border transition-colors text-sm"
