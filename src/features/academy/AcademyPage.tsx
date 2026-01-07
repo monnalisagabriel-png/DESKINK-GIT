@@ -67,7 +67,10 @@ export const AcademyPage: React.FC = () => {
     const handleCreateCourse = async (e: React.FormEvent) => {
         e.preventDefault();
         try {
-            if (!newCourse.title || !newCourse.duration) return;
+            if (!newCourse.title || !newCourse.duration) {
+                alert("Titolo e Durata sono obbligatori.");
+                return;
+            }
 
             await api.academy.createCourse({
                 title: newCourse.title,
@@ -81,8 +84,10 @@ export const AcademyPage: React.FC = () => {
             await loadData();
             setView('LIST');
             setNewCourse({ title: '', description: '', duration: '', materials: [], student_ids: [] });
+            alert("Corso creato con successo!");
         } catch (error) {
             console.error(error);
+            alert("Errore durante la creazione del corso. Verifica i dati o riprova.");
         }
     };
 
