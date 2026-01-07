@@ -8,11 +8,12 @@ interface GoogleSheetsSyncModalProps {
     isOpen: boolean;
     onClose: () => void;
     onSyncSuccess: () => void;
+    initialTab?: 'import' | 'export';
 }
 
-export function GoogleSheetsSyncModal({ isOpen, onClose, onSyncSuccess }: GoogleSheetsSyncModalProps) {
+export function GoogleSheetsSyncModal({ isOpen, onClose, onSyncSuccess, initialTab = 'import' }: GoogleSheetsSyncModalProps) {
     const { user } = useAuth();
-    const [activeTab, setActiveTab] = useState<'import' | 'export'>('import');
+    const [activeTab, setActiveTab] = useState<'import' | 'export'>(initialTab);
 
     // Joint State
     const [step, setStep] = useState<1 | 2 | 3 | 4>(1); // 1: Select File, 2: Select Sheet, 3: Map/Confirm, 4: Processing
@@ -49,8 +50,9 @@ export function GoogleSheetsSyncModal({ isOpen, onClose, onSyncSuccess }: Google
                 fiscal_code: '', address: '', city: '', zip_code: ''
             });
             fetchSpreadsheets();
+            setActiveTab(initialTab);
         }
-    }, [isOpen, activeTab]);
+    }, [isOpen, initialTab]);
 
     const fetchSpreadsheets = async () => {
         setIsLoading(true);

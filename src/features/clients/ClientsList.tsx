@@ -14,6 +14,7 @@ export const ClientsList: React.FC = () => {
     const [loading, setLoading] = useState(true);
     const [showQR, setShowQR] = useState(false);
     const [showImport, setShowImport] = useState(false);
+    const [modalTab, setModalTab] = useState<'import' | 'export'>('import');
     const [copied, setCopied] = useState(false);
 
     // Filters State
@@ -135,13 +136,22 @@ export const ClientsList: React.FC = () => {
                         {/* Action Buttons Group */}
                         <div className="flex items-center gap-2 w-full md:w-auto overflow-x-auto pb-2 md:pb-0">
                             {user?.role === 'owner' && (
-                                <button
-                                    onClick={() => setShowImport(true)}
-                                    className="flex items-center gap-2 bg-green-600/10 border border-green-600/20 hover:bg-green-600/20 text-green-500 px-3 py-2 rounded-lg font-medium transition-colors whitespace-nowrap"
-                                    title="Importa da Google Sheets"
-                                >
-                                    <span className="hidden lg:inline">Sync Google Sheets</span>
-                                </button>
+                                <>
+                                    <button
+                                        onClick={() => { setModalTab('import'); setShowImport(true); }}
+                                        className="flex items-center gap-2 bg-green-600/10 border border-green-600/20 hover:bg-green-600/20 text-green-500 px-3 py-2 rounded-lg font-medium transition-colors whitespace-nowrap"
+                                        title="Importa da Google Sheets"
+                                    >
+                                        <span className="hidden lg:inline">Importa Google</span>
+                                    </button>
+                                    <button
+                                        onClick={() => { setModalTab('export'); setShowImport(true); }}
+                                        className="flex items-center gap-2 bg-blue-600/10 border border-blue-600/20 hover:bg-blue-600/20 text-blue-500 px-3 py-2 rounded-lg font-medium transition-colors whitespace-nowrap"
+                                        title="Sincronizza con Google Sheets"
+                                    >
+                                        <span className="hidden lg:inline">Sync Sheets 🔄</span>
+                                    </button>
+                                </>
                             )}
                             <button
                                 onClick={() => setShowQR(true)}
@@ -426,6 +436,7 @@ export const ClientsList: React.FC = () => {
                 isOpen={showImport}
                 onClose={() => setShowImport(false)}
                 onSyncSuccess={() => loadClients()}
+                initialTab={modalTab}
             />
 
             <ReviewRequestModal
