@@ -64,7 +64,7 @@ export const IntegrationsTab: React.FC<IntegrationsTabProps> = ({ artist, onUpda
         setSyncing(true);
         try {
             const res = await api.googleCalendar.syncEvents(artist.id);
-            alert(`Sincronizzazione completata! ${res.synced} eventi aggiornati.`);
+            alert(`Sincronizzazione completata! ${res.synced_events_count} eventi aggiornati.`);
             onUpdate(); // Update last_sync timestamp
         } catch (error) {
             console.error(error);
