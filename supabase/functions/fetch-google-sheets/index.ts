@@ -103,6 +103,61 @@ serve(async (req) => {
 
             const sheets = data.sheets?.map((s: any) => s.properties.title) || [];
             return new Response(JSON.stringify(sheets), { headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
+        } else if (action === 'export_data') {
+            const { values } = await req.json();
+            if (!spreadsheetId || !sheetName || !values) return new Response(JSON.stringify({ error: 'Missing spreadsheetId, sheetName or values' }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
+
+            // 1. Clear Sheet First (Optional but strict sync) or just overwrite. Overwrite A1 is easiest but might leave leftover rows if new data is shorter.
+            // Better to Clear first: POST /values/{param}:clear
+            const clearUrl = `https://sheets.googleapis.com/v4/spreadsheets/${spreadsheetId}/values/${encodeURIComponent(sheetName)}!A:Z:clear`;
+            await fetch(clearUrl, {
+                method: 'POST',
+                headers: { Authorization: `Bearer ${accessToken}` }
+            });
+
+            // 2. Write Data
+            const url = `https://sheets.googleapis.com/v4/spreadsheets/${spreadsheetId}/values/${encodeURIComponent(sheetName)}!A1?valueInputOption=USER_ENTERED`;
+            const response = await fetch(url, {
+                method: 'PUT',
+                headers: { Authorization: `Bearer ${accessToken}`, 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    range: `${sheetName}!A1`,
+                    majorDimension: 'ROWS',
+                    values: values
+                })
+            });
+
+            const data = await response.json();
+
+            if (!response.ok) {
+                console.error('Google Sheets API Error (Export):', data);
+                return new Response(JSON.stringify({ error: data.error?.message || 'Failed to export data' }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
+            }
+
+            return new Response(JSON.stringify({ success: true, updatedCells: data.updatedCells }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
+
+        } else if (action === 'append_data') {
+            const { values } = await req.json(); // Expecting values to be [][] (a list of rows, usually just one row)
+            if (!spreadsheetId || !sheetName || !values) return new Response(JSON.stringify({ error: 'Missing spreadsheetId, sheetName or values' }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
+
+            const url = `https://sheets.googleapis.com/v4/spreadsheets/${spreadsheetId}/values/${encodeURIComponent(sheetName)}!A1:append?valueInputOption=USER_ENTERED&insertDataOption=INSERT_ROWS`;
+            const response = await fetch(url, {
+                method: 'POST',
+                headers: { Authorization: `Bearer ${accessToken}`, 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    majorDimension: 'ROWS',
+                    values: values
+                })
+            });
+
+            const data = await response.json();
+
+            if (!response.ok) {
+                console.error('Google Sheets API Error (Append):', data);
+                return new Response(JSON.stringify({ error: data.error?.message || 'Failed to append data' }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
+            }
+
+            return new Response(JSON.stringify({ success: true, updates: data.updates }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
         }
 
         return new Response(JSON.stringify({ error: 'Invalid action' }), { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });

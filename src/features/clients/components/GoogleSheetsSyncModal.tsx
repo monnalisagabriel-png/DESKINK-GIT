@@ -181,6 +181,8 @@ export function GoogleSheetsSyncModal({ isOpen, onClose, onSyncSuccess }: Google
         }
     };
 
+    const [isDefault, setIsDefault] = useState(false);
+
     const handleExport = async () => {
         setIsLoading(true);
         setStep(4);
@@ -221,6 +223,22 @@ export function GoogleSheetsSyncModal({ isOpen, onClose, onSyncSuccess }: Google
 
             if (error) throw error;
             if (data?.error) throw new Error(data.error);
+
+            // 4. Save as default if requested
+            if (isDefault && user?.studio_id) {
+                const config = {
+                    spreadsheet_id: selectedFile,
+                    sheet_name: selectedSheet,
+                    auto_sync_enabled: true
+                };
+
+                const { error: studioError } = await supabase
+                    .from('studios')
+                    .update({ google_sheets_config: config })
+                    .eq('id', user.studio_id);
+
+                if (studioError) console.error('Failed to save default config:', studioError);
+            }
 
             setExportStats({ total: rows.length });
 
@@ -368,6 +386,18 @@ export function GoogleSheetsSyncModal({ isOpen, onClose, onSyncSuccess }: Google
                                 <button onClick={() => handleExport()} className="px-8 py-3 bg-accent text-white font-bold rounded-xl hover:bg-accent-hover transition-transform active:scale-95 shadow-lg shadow-accent/20">
                                     Conferma e Sovrascrivi
                                 </button>
+                            </div>
+
+                            <div className="mt-6 flex justify-center">
+                                <label className="flex items-center gap-2 cursor-pointer text-sm text-gray-700 dark:text-gray-300 select-none bg-gray-100 dark:bg-gray-800 px-4 py-2 rounded-lg border border-gray-200 dark:border-gray-700">
+                                    <input
+                                        type="checkbox"
+                                        checked={isDefault}
+                                        onChange={(e) => setIsDefault(e.target.checked)}
+                                        className="rounded border-gray-300 text-green-600 focus:ring-green-500"
+                                    />
+                                    <span>Usa come foglio predefinito per il salvataggio automatico</span>
+                                </label>
                             </div>
                         </div>
                     )}

@@ -22,7 +22,7 @@ serve(async (req) => {
     if (pathname.endsWith('/login')) {
         const client_id = Deno.env.get('GOOGLE_CLIENT_ID');
         const redirect_uri = `${Deno.env.get('SUPABASE_URL')}/functions/v1/google-auth/callback`;
-        const scope = 'https://www.googleapis.com/auth/calendar.events https://www.googleapis.com/auth/calendar.readonly https://www.googleapis.com/auth/userinfo.email https://www.googleapis.com/auth/spreadsheets.readonly https://www.googleapis.com/auth/drive.readonly';
+        const scope = 'https://www.googleapis.com/auth/calendar.events https://www.googleapis.com/auth/calendar.readonly https://www.googleapis.com/auth/userinfo.email https://www.googleapis.com/auth/spreadsheets https://www.googleapis.com/auth/drive.readonly';
 
         // Pass user_id and redirect_url (app url) in state
         // SECURITY NOTE: In production, sign this state or use a session cookie to prevent CSRF.

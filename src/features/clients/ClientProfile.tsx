@@ -187,6 +187,49 @@ export const ClientProfile: React.FC = () => {
                     zip_code: formData.zip_code || '',
                     studio_id: user.studio_id
                 });
+
+                // --- AUTO SYNC TO GOOGLE SHEETS ---
+                try {
+                    // Fetch Studio Config
+                    const { data: studioData } = await api.supabase
+                        .from('studios')
+                        .select('google_sheets_config')
+                        .eq('id', user.studio_id)
+                        .single();
+
+                    const config = studioData?.google_sheets_config;
+
+                    if (config && config.auto_sync_enabled && config.spreadsheet_id && config.sheet_name) {
+                        // Prepare row data
+                        const rowData = [
+                            newClient.full_name || '',
+                            newClient.email || '',
+                            newClient.phone || '',
+                            newClient.fiscal_code || '',
+                            newClient.address || '',
+                            newClient.city || '',
+                            newClient.zip_code || '',
+                            newClient.notes || '',
+                            new Date().toLocaleDateString() // Registrato Il
+                        ];
+
+                        // Call Edge Function
+                        await api.supabase.functions.invoke('fetch-google-sheets', {
+                            body: {
+                                action: 'append_data',
+                                spreadsheetId: config.spreadsheet_id,
+                                sheetName: config.sheet_name,
+                                values: [rowData]
+                            }
+                        });
+                        console.log('✅ Auto-synced to Google Sheets');
+                    }
+                } catch (syncError) {
+                    console.error('⚠️ Auto-sync failed (non-blocking):', syncError);
+                    // Do not block UI/User flow
+                }
+                // ----------------------------------
+
                 navigate(`/clients/${newClient.id}`, { replace: true });
             } else {
                 const updatedClient = await api.clients.update(client.id, formData);
