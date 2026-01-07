@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { api } from '../../services/api';
 import type { WaitlistEntry } from '../../services/types';
-import { Search, Filter, QrCode, CheckCircle, Clock, UserPlus, ArrowUpRight, ChevronDown, ArrowDownWideNarrow, ArrowUpNarrowWide, PenTool, Copy, Check, Link } from 'lucide-react';
+import { Search, Filter, QrCode, CheckCircle, Clock, UserPlus, ArrowUpRight, ChevronDown, ArrowDownWideNarrow, ArrowUpNarrowWide, PenTool, Check, Link } from 'lucide-react';
 import clsx from 'clsx';
 import { useAuth } from '../auth/AuthContext';
 
