@@ -38,7 +38,7 @@ export const Calendar: React.FC = () => {
     const [isGoogleDrawerOpen, setIsGoogleDrawerOpen] = useState(false);
 
     // Review Modal State
-    const [reviewModalData, setReviewModalData] = useState<{ isOpen: boolean; clientName: string; clientPhone?: string }>({ isOpen: false, clientName: '' });
+    const [reviewModalData, setReviewModalData] = useState<{ isOpen: boolean; clientName: string; clientPhone?: string; studioId?: string }>({ isOpen: false, clientName: '' });
 
     const [selectedDate, setSelectedDate] = useState<Date | null>(null);
     const [selectedAppointment, setSelectedAppointment] = useState<Appointment | null>(null);
@@ -76,7 +76,7 @@ export const Calendar: React.FC = () => {
                 if (data.status === 'COMPLETED' && selectedAppointment.status !== 'COMPLETED') {
                     const clientName = selectedAppointment.client?.full_name || 'Cliente';
                     const clientPhone = selectedAppointment.client?.phone;
-                    setReviewModalData({ isOpen: true, clientName, clientPhone });
+                    setReviewModalData({ isOpen: true, clientName, clientPhone, studioId: selectedAppointment.studio_id || user?.studio_id });
                 }
             } else {
                 // Create
@@ -368,6 +368,7 @@ export const Calendar: React.FC = () => {
                 onClose={() => setReviewModalData({ ...reviewModalData, isOpen: false })}
                 clientName={reviewModalData.clientName}
                 clientPhone={reviewModalData.clientPhone}
+                studioId={reviewModalData.studioId}
             />
         </div>
     );

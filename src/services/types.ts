@@ -401,4 +401,5 @@ export interface Studio {
   vat_number?: string;
   fiscal_code?: string;
   company_name?: string;
+  google_review_url?: string;
 }

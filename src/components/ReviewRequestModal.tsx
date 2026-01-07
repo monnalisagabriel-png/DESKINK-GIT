@@ -1,14 +1,46 @@
 
-import { MessageCircle, Star } from 'lucide-react';
+import React, { useEffect, useState } from 'react';
+import { MessageCircle, Star, AlertTriangle } from 'lucide-react';
+import { api } from '../services/api';
 
 interface ReviewRequestModalProps {
     isOpen: boolean;
     onClose: () => void;
     clientName: string;
     clientPhone?: string;
+    studioId?: string;
 }
 
-export function ReviewRequestModal({ isOpen, onClose, clientName, clientPhone }: ReviewRequestModalProps) {
+export function ReviewRequestModal({ isOpen, onClose, clientName, clientPhone, studioId }: ReviewRequestModalProps) {
+    const [reviewUrl, setReviewUrl] = useState<string | null>(null);
+    const [studioName, setStudioName] = useState<string>('InkFlow Studio');
+    const [loading, setLoading] = useState(false);
+    const [error, setError] = useState<string | null>(null);
+
+    useEffect(() => {
+        if (isOpen && studioId) {
+            setLoading(true);
+            setError(null);
+            api.settings.getStudio(studioId)
+                .then(studio => {
+                    if (studio) {
+                        setStudioName(studio.name || 'InkFlow Studio');
+                        if (studio.google_review_url) {
+                            setReviewUrl(studio.google_review_url);
+                        } else {
+                            setReviewUrl(null);
+                            setError('Link recensione Google non configurato nelle Impostazioni Studio');
+                        }
+                    }
+                })
+                .catch(err => {
+                    console.error('Failed to fetch studio settings', err);
+                    setError('Errore nel recupero delle impostazioni dello studio');
+                })
+                .finally(() => setLoading(false));
+        }
+    }, [isOpen, studioId]);
+
     if (!isOpen) return null;
 
     const message = `Gentile ${clientName},
@@ -17,11 +49,13 @@ export function ReviewRequestModal({ isOpen, onClose, clientName, clientPhone }:
 
 La nostra crescita dipende dalla soddisfazione dei nostri clienti. Per questo, abbiamo deciso di premiarti: lascia una recensione sul tuo feedback al link qui sotto e riceverai un coupon del 10% di sconto sul tuo prossimo tatuaggio e una crema specifica per la cura in omaggio.
 
-Ti basterà mostrarci la recensione pubblicata al link: https://g.page/r/CYbYCm2HKRR8EBM/review
+Ti basterà mostrarci la recensione pubblicata al link: ${reviewUrl || '[LINK RECENSIONE]'}
 
-Grazie per aver scelto il Trimarchi Tattoo Studio e per il tuo supporto!`;
+Grazie per aver scelto il ${studioName} e per il tuo supporto!`;
 
     const handleSendWhatsapp = () => {
+        if (!reviewUrl) return;
+
         const encodedMessage = encodeURIComponent(message);
         // If phone is provided, target it, otherwise generic link (user picks contact)
         // Ideally we should use the client's phone number if available. 
@@ -58,9 +92,18 @@ Grazie per aver scelto il Trimarchi Tattoo Studio e per il tuo supporto!`;
                         Vuoi inviare un messaggio WhatsApp a <b>{clientName}</b> per chiedere una recensione su Google?
                     </p>
 
-                    <div className="bg-gray-50 dark:bg-gray-800 p-4 rounded-lg text-xs text-gray-500 dark:text-gray-400 italic border border-gray-100 dark:border-gray-700 max-h-40 overflow-y-auto">
-                        {message}
-                    </div>
+                    {loading ? (
+                        <div className="text-center text-sm text-gray-500">Caricamento link...</div>
+                    ) : error ? (
+                        <div className="bg-red-50 text-red-600 p-3 rounded-lg text-sm flex items-center gap-2">
+                            <AlertTriangle size={16} />
+                            {error}
+                        </div>
+                    ) : (
+                        <div className="bg-gray-50 dark:bg-gray-800 p-4 rounded-lg text-xs text-gray-500 dark:text-gray-400 italic border border-gray-100 dark:border-gray-700 max-h-40 overflow-y-auto whitespace-pre-line">
+                            {message}
+                        </div>
+                    )}
 
                     <div className="flex gap-3">
                         <button
@@ -71,7 +114,8 @@ Grazie per aver scelto il Trimarchi Tattoo Studio e per il tuo supporto!`;
                         </button>
                         <button
                             onClick={handleSendWhatsapp}
-                            className="flex-1 py-3 px-4 bg-[#25D366] hover:bg-[#20bd5a] text-white rounded-xl font-bold transition-transform active:scale-95 flex items-center justify-center gap-2 shadow-lg shadow-green-500/20"
+                            disabled={!reviewUrl || loading}
+                            className={`flex-1 py-3 px-4 text-white rounded-xl font-bold transition-transform active:scale-95 flex items-center justify-center gap-2 shadow-lg ${!reviewUrl || loading ? 'bg-gray-400 cursor-not-allowed' : 'bg-[#25D366] hover:bg-[#20bd5a] shadow-green-500/20'}`}
                         >
                             <MessageCircle className="w-5 h-5" />
                             Invia su WhatsApp

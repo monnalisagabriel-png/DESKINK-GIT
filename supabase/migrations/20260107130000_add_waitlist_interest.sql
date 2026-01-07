@@ -2,6 +2,6 @@
 -- Using text with check constraint for flexibility but safety
 
 ALTER TABLE waitlist_entries 
-ADD COLUMN interest_type text DEFAULT 'TATTOO' CHECK (interest_type IN ('TATTOO', 'ACADEMY'));
+ADD COLUMN IF NOT EXISTS interest_type text DEFAULT 'TATTOO' CHECK (interest_type IN ('TATTOO', 'ACADEMY'));
 
 COMMENT ON COLUMN waitlist_entries.interest_type IS 'Indicates if the user is interested in a Tattoo service or Academy course';

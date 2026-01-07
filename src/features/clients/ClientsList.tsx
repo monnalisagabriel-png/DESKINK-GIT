@@ -24,11 +24,11 @@ export const ClientsList: React.FC = () => {
     });
 
     // Review Modal State
-    const [reviewModalData, setReviewModalData] = useState<{ isOpen: boolean; clientName: string; clientPhone?: string }>({ isOpen: false, clientName: '' });
+    const [reviewModalData, setReviewModalData] = useState<{ isOpen: boolean; clientName: string; clientPhone?: string; studioId?: string }>({ isOpen: false, clientName: '' });
 
     const navigate = useNavigate();
     const { user } = useAuth();
-    const studioId = user?.studio_id || 'studio-1'; // Default or derive from user
+    const studioId = user?.studio_id;
     const registrationLink = `${window.location.origin}/public/register/${studioId}`;
 
     useEffect(() => {
@@ -90,7 +90,8 @@ export const ClientsList: React.FC = () => {
         setReviewModalData({
             isOpen: true,
             clientName: client.full_name,
-            clientPhone: client.phone
+            clientPhone: client.phone,
+            studioId: client.studio_id || user?.studio_id
         });
     };
 
@@ -432,6 +433,7 @@ export const ClientsList: React.FC = () => {
                 onClose={() => setReviewModalData({ ...reviewModalData, isOpen: false })}
                 clientName={reviewModalData.clientName}
                 clientPhone={reviewModalData.clientPhone}
+                studioId={reviewModalData.studioId}
             />
         </div >
     );
