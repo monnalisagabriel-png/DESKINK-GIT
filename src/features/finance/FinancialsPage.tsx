@@ -345,7 +345,7 @@ export const FinancialsPage: React.FC = () => {
                             className="flex items-center gap-2 bg-red-500/10 hover:bg-red-500/20 text-red-500 px-4 py-2 rounded-lg font-medium transition-colors border border-red-500/20"
                         >
                             <DollarSign size={18} />
-                            <span className="hidden md:inline">Nuova Spesa</span>
+                            <span className="hidden lg:inline">Nuova Spesa</span>
                         </button>
                     )}
                     <button
@@ -353,7 +353,7 @@ export const FinancialsPage: React.FC = () => {
                         className="flex items-center gap-2 bg-white/10 hover:bg-white/20 text-white px-4 py-2 rounded-lg font-medium transition-colors border border-white/10"
                     >
                         <Download size={18} />
-                        <span className="hidden md:inline">Esporta Report</span>
+                        <span className="hidden lg:inline">Esporta Report</span>
                     </button>
                 </div>
             </div>

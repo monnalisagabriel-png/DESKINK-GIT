@@ -279,9 +279,9 @@ export const ClientProfile: React.FC = () => {
 
             <div className="flex-1 overflow-y-auto p-4 md:p-8">
                 {/* Profile Header Card */}
-                <div className="bg-bg-secondary rounded-2xl border border-border p-6 md:p-8 flex flex-col md:flex-row gap-8 mb-8">
+                <div className="bg-bg-secondary rounded-2xl border border-border p-6 md:p-8 flex flex-col lg:flex-row gap-8 mb-8">
                     {/* Avatar / Initials */}
-                    <div className="shrink-0 flex justify-center md:justify-start">
+                    <div className="shrink-0 flex justify-center lg:justify-start">
                         <div className="w-24 h-24 md:w-32 md:h-32 rounded-full bg-gradient-to-br from-accent to-purple-600 p-1 shadow-xl shadow-accent/20">
                             <div className="w-full h-full rounded-full bg-bg-tertiary flex items-center justify-center border-4 border-bg-primary overflow-hidden relative group cursor-pointer">
                                 {client.full_name ? (
