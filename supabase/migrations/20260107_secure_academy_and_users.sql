@@ -11,7 +11,7 @@ CREATE POLICY "View own studio courses" ON public.academy_courses
 
 CREATE POLICY "Manage own studio courses" ON public.academy_courses
   FOR ALL USING (
-    auth.uid() IN (SELECT user_id FROM public.studio_memberships WHERE studio_id = academy_courses.studio_id AND role IN ('owner', 'manager', 'admin'))
+    auth.uid() IN (SELECT user_id FROM public.studio_memberships WHERE studio_id = academy_courses.studio_id AND role IN ('owner', 'manager'))
   );
 
 
