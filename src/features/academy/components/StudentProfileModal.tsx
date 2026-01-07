@@ -2,6 +2,7 @@ import React from 'react';
 import { X, BookOpen, Clock, DollarSign, RefreshCw as RefreshingCw } from 'lucide-react';
 import clsx from 'clsx';
 import type { User, Course, CourseEnrollment } from '../../../services/types';
+import { api } from '../../../services/api';
 
 interface StudentProfileModalProps {
     student: User;
@@ -12,6 +13,9 @@ interface StudentProfileModalProps {
 }
 
 export const StudentProfileModal: React.FC<StudentProfileModalProps> = ({ student, enrollments, courses, loading, onClose }) => {
+    // Filter courses where student is enrolled
+    const enrolledCourses = courses.filter(c => c.student_ids?.includes(student.id));
+
     // State for Profile Tab
     const [activeTab, setActiveTab] = React.useState<'COURSES' | 'PROFILE'>('COURSES');
     const [editForm, setEditForm] = React.useState<Partial<User>>({});
