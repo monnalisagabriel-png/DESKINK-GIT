@@ -59,7 +59,7 @@ export const FinancialsPage: React.FC = () => {
             // 1. Fetch Transactions for the WHOLE YEAR (for Chart)
             const yearStart = startOfYear(new Date());
             const yearEnd = endOfYear(new Date());
-            const allTxs = await api.financials.listTransactions(yearStart, yearEnd);
+            const allTxs = await api.financials.listTransactions(yearStart, yearEnd, user.studio_id);
 
             // 2. Fetch Team & Contracts (if Owner/Manager)
             const userRole = user.role?.toLowerCase();
@@ -82,7 +82,6 @@ export const FinancialsPage: React.FC = () => {
                 setContracts(contractsMap);
             } else if (userRole === 'artist') {
                 // Fetch own contract
-                const contract = await api.artists.getContract(user.id);
                 if (contract) contractsMap[user.id] = contract;
                 setContracts(contractsMap);
             }

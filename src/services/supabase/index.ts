@@ -416,13 +416,20 @@ export class SupabaseRepository implements IRepository {
     };
 
     financials = {
-        listTransactions: async (startDate: Date, endDate: Date): Promise<Transaction[]> => {
-            const { data, error } = await supabase
+        listTransactions: async (startDate: Date, endDate: Date, studioId?: string): Promise<Transaction[]> => {
+            let query = supabase
                 .from('transactions')
                 .select('*')
                 .gte('date', startDate.toISOString())
-                .lte('date', endDate.toISOString())
-                .order('date', { ascending: false });
+                .lte('date', endDate.toISOString());
+
+            if (studioId) {
+                query = query.eq('studio_id', studioId);
+            }
+
+            query = query.order('date', { ascending: false });
+
+            const { data, error } = await query;
             if (error) throw error;
             return data;
         },
@@ -442,16 +449,22 @@ export class SupabaseRepository implements IRepository {
                 .eq('id', id);
             if (error) throw error;
         },
-        getStats: async (month: Date): Promise<FinancialStats> => {
+        getStats: async (month: Date, studioId?: string): Promise<FinancialStats> => {
             const startOfMonth = new Date(month.getFullYear(), month.getMonth(), 1).toISOString();
             const endOfMonth = new Date(month.getFullYear(), month.getMonth() + 1, 0).toISOString();
             const todayStart = new Date().toISOString().split('T')[0];
 
-            const { data: transactions, error } = await supabase
+            let query = supabase
                 .from('transactions')
                 .select('*')
                 .gte('date', startOfMonth)
                 .lte('date', endOfMonth);
+
+            if (studioId) {
+                query = query.eq('studio_id', studioId);
+            }
+
+            const { data: transactions, error } = await query;
 
             if (error) throw error;
 

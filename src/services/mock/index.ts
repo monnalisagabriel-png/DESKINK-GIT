@@ -438,11 +438,13 @@ export class MockRepository implements IRepository {
     };
 
     financials = {
-        listTransactions: async (startDate: Date, endDate: Date): Promise<Transaction[]> => {
+        listTransactions: async (startDate: Date, endDate: Date, studioId?: string): Promise<Transaction[]> => {
             await new Promise(resolve => setTimeout(resolve, 400));
             return MOCK_TRANSACTIONS.filter(t => {
                 const d = new Date(t.date).getTime();
-                return d >= startDate.getTime() && d <= endDate.getTime();
+                const dateMatch = d >= startDate.getTime() && d <= endDate.getTime();
+                if (studioId) return dateMatch && t.studio_id === studioId;
+                return dateMatch;
             });
         },
         createTransaction: async (data: Omit<Transaction, 'id'>): Promise<Transaction> => {
@@ -455,7 +457,7 @@ export class MockRepository implements IRepository {
             const idx = MOCK_TRANSACTIONS.findIndex(t => t.id === id);
             if (idx !== -1) MOCK_TRANSACTIONS.splice(idx, 1);
         },
-        getStats: async (_month: Date): Promise<FinancialStats> => {
+        getStats: async (_month: Date, _studioId?: string): Promise<FinancialStats> => {
             await new Promise(resolve => setTimeout(resolve, 300));
             return {
                 revenue_today: 150,

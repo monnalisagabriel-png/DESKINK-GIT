@@ -231,10 +231,10 @@ export interface IRepository {
     delete(id: string): Promise<void>;
   };
   financials: {
-    listTransactions(startDate: Date, endDate: Date): Promise<Transaction[]>;
+    listTransactions(startDate: Date, endDate: Date, studioId?: string): Promise<Transaction[]>;
     createTransaction(data: Omit<Transaction, 'id'>): Promise<Transaction>;
     deleteTransaction(id: string): Promise<void>;
-    getStats(month: Date): Promise<FinancialStats>;
+    getStats(month: Date, studioId?: string): Promise<FinancialStats>;
     // Recurring
     listRecurringExpenses(studioId: string): Promise<RecurringExpense[]>;
     createRecurringExpense(data: Omit<RecurringExpense, 'id'>): Promise<RecurringExpense>;
