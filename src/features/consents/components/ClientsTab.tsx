@@ -82,7 +82,7 @@ export const ClientsTab: React.FC<ClientsTabProps> = ({ onStartSignature }) => {
             </div>
 
             {/* Desktop Table */}
-            <div className="hidden md:block bg-bg-secondary border border-border rounded-lg overflow-hidden">
+            <div className="hidden lg:block bg-bg-secondary border border-border rounded-lg overflow-hidden">
                 <table className="w-full text-left">
                     <thead className="bg-bg-tertiary text-text-muted uppercase text-xs font-semibold">
                         <tr>
@@ -151,7 +151,7 @@ export const ClientsTab: React.FC<ClientsTabProps> = ({ onStartSignature }) => {
             </div>
 
             {/* Mobile Card View */}
-            <div className="md:hidden space-y-4">
+            <div className="lg:hidden space-y-4">
                 {loading ? (
                     <div className="p-8 text-center text-text-muted">Caricamento...</div>
                 ) : clients.length === 0 ? (
