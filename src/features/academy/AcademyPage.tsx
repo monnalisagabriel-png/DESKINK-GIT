@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { BookOpen, FileText, Plus, Users, Minus, Clock, DollarSign, X, ChevronRight, RefreshCw, Trash2, PlayCircle, Edit2 } from 'lucide-react';
+import { BookOpen, FileText, Plus, Users, Minus, Clock, DollarSign, X, ChevronRight, RefreshCw, Trash2, PlayCircle, Edit2, Check } from 'lucide-react';
 import { api } from '../../services/api';
 import type { Course, CourseMaterial, CourseEnrollment, AttendanceLog, User } from '../../services/types';
 import clsx from 'clsx';
