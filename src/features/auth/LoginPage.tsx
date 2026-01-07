@@ -48,9 +48,18 @@ export const LoginPage: React.FC = () => {
         <div className="min-h-screen flex items-center justify-center bg-bg-primary p-4">
             <div className="w-full max-w-md p-8 bg-bg-secondary rounded-lg border border-border shadow-2xl">
                 <div className="text-center mb-8">
+                    <div className="flex justify-center mb-6">
+                        <img
+                            src="/logo.jpg"
+                            alt="InkFlow CRM"
+                            className="w-32 h-32 rounded-full object-cover border-4 border-accent/20 shadow-xl"
+                        />
+                    </div>
+                    {/* 
                     <h1 className="text-3xl font-bold bg-gradient-to-r from-accent to-red-500 bg-clip-text text-transparent mb-2">
                         InkFlow
-                    </h1>
+                    </h1> 
+                    */}
                     <p className="text-text-muted">
                         {isSignUp ? 'Create a new account' : 'Sign in to your account'}
                     </p>
