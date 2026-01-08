@@ -75,8 +75,8 @@ export const WaitlistForm: React.FC = () => {
                 // Client exists, skip consent
                 await submitWaitlistRequest(null, existingClientId);
             } else {
-                // New client, require consent
-                setStep('CONSENT');
+                // New client, proceed directly (Skip consent signature)
+                await submitWaitlistRequest(null, 'new');
             }
         } catch (err) {
             console.error(err);
@@ -108,7 +108,7 @@ export const WaitlistForm: React.FC = () => {
         // If the client is new and consent is given, create the client first.
         let clientIdToUse = knownClientId || 'new';
 
-        if (clientIdToUse === 'new' && step === 'CONSENT') {
+        if (clientIdToUse === 'new') {
             try {
                 const newClient = await api.clients.create({
                     full_name: formData.full_name || 'Nuovo Cliente',
