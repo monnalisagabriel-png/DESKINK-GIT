@@ -172,18 +172,28 @@ export const WaitlistForm: React.FC = () => {
         }));
     };
 
+    // Success Popup
     if (submitted) {
         return (
             <div className="min-h-screen bg-bg-primary flex items-center justify-center p-4">
-                <div className="max-w-md w-full bg-bg-secondary p-8 rounded-2xl border border-accent/20 text-center">
-                    <div className="w-16 h-16 bg-green-500/10 rounded-full flex items-center justify-center mx-auto mb-6 text-green-500">
-                        <CheckCircle size={32} />
+                <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+                    <div className="bg-bg-secondary p-8 rounded-2xl border border-accent/20 text-center max-w-md w-full shadow-2xl animate-fade-in">
+                        <div className="w-16 h-16 bg-green-500/10 rounded-full flex items-center justify-center mx-auto mb-6 text-green-500">
+                            <CheckCircle size={32} />
+                        </div>
+                        <h2 className="text-2xl font-bold text-text-primary mb-2">Richiesta inoltrata con successo!</h2>
+                        <p className="text-text-muted mb-6">
+                            Grazie per esserti iscritto alla nostra lista d'attesa. Ti contatteremo non appena si libererà un posto.
+                        </p>
+                        <button
+                            onClick={() => window.location.reload()}
+                            className="bg-accent text-white px-6 py-2 rounded-lg hover:bg-accent-hover transition-colors"
+                        >
+                            Chiudi
+                        </button>
                     </div>
-                    <h2 className="text-2xl font-bold text-text-primary mb-2">Richiesta Inviata!</h2>
-                    <p className="text-text-muted">
-                        Grazie per esserti iscritto alla nostra lista d'attesa. Ti contatteremo non appena si libererà un posto.
-                    </p>
                 </div>
+                {/* Background info (blurred out implicitly by overlay above usually, but here we just show the popup on a clean bg) */}
             </div>
         );
     }
