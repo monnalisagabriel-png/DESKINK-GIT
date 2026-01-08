@@ -62,7 +62,11 @@ export const WaitlistForm: React.FC = () => {
         }
 
         setError(null);
+        setError(null);
         setLoading(true);
+        console.log("WaitlistForm: Starting submission...");
+        console.log("WaitlistForm: Data:", { ...formData, images: `[${formData.images.length} images]` });
+        console.log("WaitlistForm: StudioID:", studioId);
 
         try {
             if (!api.clients?.getByContact) {
@@ -72,17 +76,21 @@ export const WaitlistForm: React.FC = () => {
 
 
             // Check if client exists using secure RPC
+            console.log("WaitlistForm: Checking existing client via RPC...");
             const existingClientId = await api.clients.getByContact(
                 formData.email,
                 formData.phone,
                 studioId || 'studio-1'
             );
+            console.log("WaitlistForm: Client check result:", existingClientId);
 
             if (existingClientId) {
                 // Client exists, skip consent
+                console.log("WaitlistForm: Client exists. Submitting request...");
                 await submitWaitlistRequest(null, existingClientId);
             } else {
                 // New client, proceed directly (Skip consent signature)
+                console.log("WaitlistForm: New client. Proceeding to creation...");
                 await submitWaitlistRequest(null, 'new');
             }
         } catch (err: any) {
@@ -115,10 +123,13 @@ export const WaitlistForm: React.FC = () => {
         // If the client is new and consent is given, create the client first.
         let clientIdToUse = knownClientId || 'new';
 
+        console.log("WaitlistForm: submitWaitlistRequest called. ClientIdToUse:", clientIdToUse);
+
         if (clientIdToUse === 'new') {
             try {
                 // Use public RPC to bypass RLS select restrictions
                 if (api.clients.createPublic) {
+                    console.log("WaitlistForm: calling api.clients.createPublic...");
                     const newClient = await api.clients.createPublic({
                         full_name: formData.full_name || 'Nuovo Cliente',
                         email: formData.email,
@@ -132,8 +143,11 @@ export const WaitlistForm: React.FC = () => {
                         preferred_styles: formData.styles || [],
                         images: []
                     });
+                    console.log("WaitlistForm: createPublic success. ID:", newClient?.id);
+                    if (!newClient?.id) throw new Error("Created client has no ID");
                     clientIdToUse = newClient.id;
                 } else {
+                    console.warn("WaitlistForm: createPublic NOT available. Using standard create...");
                     // Fallback to standard create (deprecated for public)
                     const newClient = await api.clients.create({
                         full_name: formData.full_name || 'Nuovo Cliente',
@@ -158,8 +172,10 @@ export const WaitlistForm: React.FC = () => {
         }
 
         try {
+            console.log("WaitlistForm: Adding to waitlist table. ClientID:", clientIdToUse);
             if (api.waitlist.addToWaitlistPublic) {
-                await api.waitlist.addToWaitlistPublic({
+                console.log("WaitlistForm: calling addToWaitlistPublic...");
+                const entry = await api.waitlist.addToWaitlistPublic({
                     studio_id: studioId || 'studio-1',
                     client_id: clientIdToUse,
                     client_name: formData.full_name,
@@ -171,7 +187,9 @@ export const WaitlistForm: React.FC = () => {
                     artist_pref_id: formData.artist_pref_id,
                     images: formData.images
                 }, signatureData || undefined, template?.version);
+                console.log("WaitlistForm: addToWaitlistPublic success.", entry);
             } else {
+                console.warn("WaitlistForm: addToWaitlistPublic NOT available. Using standard addToWaitlist...");
                 await api.waitlist.addToWaitlist({
                     studio_id: studioId || 'studio-1',
                     client_id: clientIdToUse,
@@ -186,6 +204,7 @@ export const WaitlistForm: React.FC = () => {
                 }, signatureData || undefined, template?.version);
             }
 
+            console.log("WaitlistForm: Submission complete. Setting submitted=true");
             setSubmitted(true);
         } catch (err: any) {
             console.error("Error adding to waitlist:", err);
