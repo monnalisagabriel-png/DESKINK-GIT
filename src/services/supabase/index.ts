@@ -403,16 +403,36 @@ export class SupabaseRepository implements IRepository {
             return data;
         },
         getByContact: async (email: string, phone: string, studioId: string): Promise<string | null> => {
-            const { data, error } = await supabase.rpc('get_client_by_contact', {
-                p_email: email,
-                p_phone: phone,
-                p_studio_id: studioId
-            });
-            if (error) {
-                console.error('Error in getByContact RPC:', error);
+            try {
+                // Timeout promise
+                const timeout = new Promise<null>((resolve) => {
+                    setTimeout(() => {
+                        console.warn("SupabaseRepository: getByContact RPC timed out after 5000ms. Returning null (proceed as new).");
+                        resolve(null);
+                    }, 5000);
+                });
+
+                // RPC promise
+                const rpcCall = (async () => {
+                    const { data, error } = await supabase.rpc('get_client_by_contact_v2', {
+                        p_email: email,
+                        p_phone: phone,
+                        p_studio_id: studioId
+                    });
+
+                    if (error) {
+                        console.error('Error in getByContact RPC:', error);
+                        return null;
+                    }
+                    return data;
+                })();
+
+                // Race them
+                return await Promise.race([rpcCall, timeout]);
+            } catch (e) {
+                console.error("Unexpected error in getByContact:", e);
                 return null;
             }
-            return data;
         },
         create: async (data: Omit<Client, 'id'>): Promise<Client> => {
             const { data: newClient, error } = await supabase.from('clients').insert(data).select().single();
