@@ -68,14 +68,14 @@ export const PublicClientForm: React.FC = () => {
         setLoading(true);
 
         try {
-            // Check if client exists
-            const clients = await api.clients.list(studioId || 'studio-1');
-            const existingClient = clients.find(c =>
-                c.email.toLowerCase() === formData.email.toLowerCase() ||
-                c.phone === formData.phone
+            // Check if client exists using secure RPC
+            const existingClientId = await api.clients.getByContact(
+                formData.email,
+                formData.phone,
+                studioId || 'studio-1'
             );
 
-            if (existingClient) {
+            if (existingClientId) {
                 // Client exists
                 setError('Sei già registrato come cliente!');
             } else {

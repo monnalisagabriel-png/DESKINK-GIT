@@ -226,6 +226,7 @@ export interface IRepository {
   clients: {
     list(search?: string, studioId?: string): Promise<Client[]>;
     getById(id: string): Promise<Client | null>;
+    getByContact(email: string, phone: string, studioId: string): Promise<string | null>;
     create(data: Omit<Client, 'id'>): Promise<Client>;
     update(id: string, data: Partial<Client>): Promise<Client>;
     delete(id: string): Promise<void>;

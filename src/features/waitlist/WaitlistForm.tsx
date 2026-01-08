@@ -64,16 +64,16 @@ export const WaitlistForm: React.FC = () => {
         setLoading(true);
 
         try {
-            // Check if client exists
-            const clients = await api.clients.list(studioId || 'studio-1');
-            const existingClient = clients.find(c =>
-                c.email.toLowerCase() === formData.email.toLowerCase() ||
-                c.phone === formData.phone
+            // Check if client exists using secure RPC
+            const existingClientId = await api.clients.getByContact(
+                formData.email,
+                formData.phone,
+                studioId || 'studio-1'
             );
 
-            if (existingClient) {
+            if (existingClientId) {
                 // Client exists, skip consent
-                await submitWaitlistRequest(null);
+                await submitWaitlistRequest(null, existingClientId);
             } else {
                 // New client, require consent
                 setStep('CONSENT');
@@ -85,8 +85,6 @@ export const WaitlistForm: React.FC = () => {
             setLoading(false);
         }
     };
-
-
 
     const handleImageUpload = (file: File) => {
         const reader = new FileReader();
@@ -106,12 +104,11 @@ export const WaitlistForm: React.FC = () => {
         }));
     };
 
-    const submitWaitlistRequest = async (signatureData: string | null) => {
+    const submitWaitlistRequest = async (signatureData: string | null, knownClientId?: string) => {
         // If the client is new and consent is given, create the client first.
-        // This logic is moved here from handleContinue to ensure client creation happens
-        // only after consent is potentially given.
-        let clientIdToUse = 'new'; // Default to 'new' for backend to handle
-        if (step === 'CONSENT') { // This implies a new client is being processed
+        let clientIdToUse = knownClientId || 'new';
+
+        if (clientIdToUse === 'new' && step === 'CONSENT') {
             try {
                 const newClient = await api.clients.create({
                     full_name: formData.full_name || 'Nuovo Cliente',
@@ -126,18 +123,23 @@ export const WaitlistForm: React.FC = () => {
                     preferred_styles: formData.styles || [],
                     images: []
                 });
-                clientIdToUse = newClient.id; // Use the newly created client's ID
+                clientIdToUse = newClient.id;
             } catch (err) {
                 console.error("Error creating new client:", err);
                 throw new Error("Failed to create new client before waitlist submission.");
             }
         }
 
+        if (clientIdToUse === 'new') {
+            // Should not happen if logic is correct, but fail safe check
+            throw new Error("Client logic failed");
+        }
+
         await api.waitlist.addToWaitlist({
             studio_id: studioId || 'studio-1',
-            client_id: clientIdToUse, // Use the created client ID or 'new'
+            client_id: clientIdToUse,
             client_name: formData.full_name,
-            email: formData.email, // Ensure email is passed
+            email: formData.email,
             phone: formData.phone,
             styles: formData.styles,
             interest_type: formData.interest_type,

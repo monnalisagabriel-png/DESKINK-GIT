@@ -402,6 +402,18 @@ export class SupabaseRepository implements IRepository {
             if (error) return null;
             return data;
         },
+        getByContact: async (email: string, phone: string, studioId: string): Promise<string | null> => {
+            const { data, error } = await supabase.rpc('get_client_by_contact', {
+                p_email: email,
+                p_phone: phone,
+                p_studio_id: studioId
+            });
+            if (error) {
+                console.error('Error in getByContact RPC:', error);
+                return null;
+            }
+            return data;
+        },
         create: async (data: Omit<Client, 'id'>): Promise<Client> => {
             const { data: newClient, error } = await supabase.from('clients').insert(data).select().single();
             if (error) throw error;

@@ -415,6 +415,14 @@ export class MockRepository implements IRepository {
             await new Promise(resolve => setTimeout(resolve, 200));
             return MOCK_CLIENTS.find(c => c.id === id) || null;
         },
+        getByContact: async (email: string, phone: string, studioId: string): Promise<string | null> => {
+            await new Promise(resolve => setTimeout(resolve, 200));
+            const found = MOCK_CLIENTS.find(c =>
+                (c.email.toLowerCase() === email.toLowerCase() || c.phone === phone) &&
+                c.studio_id === studioId
+            );
+            return found ? found.id : null;
+        },
         create: async (data: Omit<Client, 'id'>): Promise<Client> => {
             const newClient = { ...data, id: `client-${Date.now()}` };
             MOCK_CLIENTS.push(newClient);
