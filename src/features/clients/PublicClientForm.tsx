@@ -112,25 +112,45 @@ export const PublicClientForm: React.FC = () => {
     const submitRegistration = async (signatureData: string) => {
         try {
             // 1. Create client first
-            const newClient = await api.clients.create({
-                full_name: formData.full_name || 'Nuovo Cliente',
-                email: formData.email,
-                phone: formData.phone || '',
-                studio_id: studioId || 'studio-1',
-                address: formData.address || '',
-                city: formData.city || '',
-                zip_code: formData.zip_code || '',
-                fiscal_code: formData.fiscal_code || '',
-                whatsapp_broadcast_opt_in: false,
-                preferred_styles: formData.styles || [],
-                images: []
-            });
+            let clientIdToUse = '';
+
+            if (api.clients.createPublic) {
+                const newClient = await api.clients.createPublic({
+                    full_name: formData.full_name || 'Nuovo Cliente',
+                    email: formData.email,
+                    phone: formData.phone || '',
+                    studio_id: studioId || 'studio-1',
+                    address: formData.address || '',
+                    city: formData.city || '',
+                    zip_code: formData.zip_code || '',
+                    fiscal_code: formData.fiscal_code || '',
+                    whatsapp_broadcast_opt_in: false,
+                    preferred_styles: formData.styles || [],
+                    images: []
+                });
+                clientIdToUse = newClient.id;
+            } else {
+                const newClient = await api.clients.create({
+                    full_name: formData.full_name || 'Nuovo Cliente',
+                    email: formData.email,
+                    phone: formData.phone || '',
+                    studio_id: studioId || 'studio-1',
+                    address: formData.address || '',
+                    city: formData.city || '',
+                    zip_code: formData.zip_code || '',
+                    fiscal_code: formData.fiscal_code || '',
+                    whatsapp_broadcast_opt_in: false,
+                    preferred_styles: formData.styles || [],
+                    images: []
+                });
+                clientIdToUse = newClient.id;
+            }
 
             // 2. If consent step active, save signature and generate PDF
-            if (step === 'CONSENT' && template && signatureData) {
+            if (step === 'CONSENT' && template && signatureData && clientIdToUse) {
                 try {
                     const consent = await api.consents.signConsent(
-                        newClient.id,
+                        clientIdToUse,
                         template.id,
                         signatureData,
                         template.version,
@@ -140,8 +160,31 @@ export const PublicClientForm: React.FC = () => {
                     // Fetch studio for real data in PDF
                     const studio = await api.settings.getStudio(studioId || 'studio-1');
 
+                    // Need full client object for PDF
+                    const fullClient = {
+                        id: clientIdToUse,
+                        full_name: formData.full_name,
+                        email: formData.email,
+                        phone: formData.phone,
+                        studio_id: studioId || 'studio-1',
+                        fiscal_code: formData.fiscal_code,
+                        address: formData.address,
+                        city: formData.city,
+                        zip_code: formData.zip_code,
+                        preferred_styles: formData.styles,
+                        whatsapp_broadcast_opt_in: false,
+                        images: [],
+                        created_at: new Date().toISOString(),
+                        // Add other mock fields
+                        last_appointment: null,
+                        total_spent: 0,
+                        notes: '',
+                        tags: [],
+                        consent_status: 'SIGNED' as any
+                    };
+
                     // 3. Generate and download PDF
-                    await generateConsentPDF(newClient, template, consent, studio);
+                    await generateConsentPDF(fullClient as any, template, consent, studio);
 
                 } catch (consentError) {
                     console.error("Error saving consent:", consentError);

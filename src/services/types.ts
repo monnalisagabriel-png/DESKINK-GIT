@@ -228,6 +228,7 @@ export interface IRepository {
     getById(id: string): Promise<Client | null>;
     getByContact(email: string, phone: string, studioId: string): Promise<string | null>;
     create(data: Omit<Client, 'id'>): Promise<Client>;
+    createPublic(data: Omit<Client, 'id'>): Promise<Pick<Client, 'id' | 'full_name' | 'email'>>;
     update(id: string, data: Partial<Client>): Promise<Client>;
     delete(id: string): Promise<void>;
   };
@@ -306,6 +307,7 @@ export interface IRepository {
   waitlist: {
     list(studioId: string): Promise<WaitlistEntry[]>;
     addToWaitlist(data: Omit<WaitlistEntry, 'id' | 'created_at' | 'status'>, signatureData?: string, templateVersion?: number): Promise<WaitlistEntry>;
+    addToWaitlistPublic(data: Omit<WaitlistEntry, 'id' | 'created_at' | 'status'>, signatureData?: string, templateVersion?: number): Promise<Pick<WaitlistEntry, 'id'>>;
     updateStatus(id: string, status: WaitlistEntry['status']): Promise<WaitlistEntry>;
   };
   storage: {

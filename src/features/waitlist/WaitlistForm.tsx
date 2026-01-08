@@ -117,20 +117,40 @@ export const WaitlistForm: React.FC = () => {
 
         if (clientIdToUse === 'new') {
             try {
-                const newClient = await api.clients.create({
-                    full_name: formData.full_name || 'Nuovo Cliente',
-                    email: formData.email,
-                    phone: formData.phone || '',
-                    studio_id: studioId || 'studio-1',
-                    address: formData.address || '',
-                    city: formData.city || '',
-                    zip_code: formData.zip_code || '',
-                    fiscal_code: formData.fiscal_code || '',
-                    whatsapp_broadcast_opt_in: false,
-                    preferred_styles: formData.styles || [],
-                    images: []
-                });
-                clientIdToUse = newClient.id;
+                // Use public RPC to bypass RLS select restrictions
+                if (api.clients.createPublic) {
+                    const newClient = await api.clients.createPublic({
+                        full_name: formData.full_name || 'Nuovo Cliente',
+                        email: formData.email,
+                        phone: formData.phone || '',
+                        studio_id: studioId || 'studio-1',
+                        address: formData.address || '',
+                        city: formData.city || '',
+                        zip_code: formData.zip_code || '',
+                        fiscal_code: formData.fiscal_code || '',
+                        whatsapp_broadcast_opt_in: false,
+                        preferred_styles: formData.styles || [],
+                        images: []
+                    });
+                    clientIdToUse = newClient.id;
+                } else {
+                    // Fallback to standard create (deprecated for public)
+                    const newClient = await api.clients.create({
+                        full_name: formData.full_name || 'Nuovo Cliente',
+                        email: formData.email,
+                        phone: formData.phone || '',
+                        studio_id: studioId || 'studio-1',
+                        address: formData.address || '',
+                        city: formData.city || '',
+                        zip_code: formData.zip_code || '',
+                        fiscal_code: formData.fiscal_code || '',
+                        whatsapp_broadcast_opt_in: false,
+                        preferred_styles: formData.styles || [],
+                        images: []
+                    });
+                    clientIdToUse = newClient.id;
+                }
+
             } catch (err: any) {
                 console.error("Error creating new client:", err);
                 throw new Error(`Failed to create new client: ${err.message}`);
@@ -138,18 +158,34 @@ export const WaitlistForm: React.FC = () => {
         }
 
         try {
-            await api.waitlist.addToWaitlist({
-                studio_id: studioId || 'studio-1',
-                client_id: clientIdToUse,
-                client_name: formData.full_name,
-                email: formData.email,
-                phone: formData.phone,
-                styles: formData.styles,
-                interest_type: formData.interest_type,
-                description: formData.description,
-                artist_pref_id: formData.artist_pref_id,
-                images: formData.images
-            }, signatureData || undefined, template?.version);
+            if (api.waitlist.addToWaitlistPublic) {
+                await api.waitlist.addToWaitlistPublic({
+                    studio_id: studioId || 'studio-1',
+                    client_id: clientIdToUse,
+                    client_name: formData.full_name,
+                    email: formData.email,
+                    phone: formData.phone,
+                    styles: formData.styles,
+                    interest_type: formData.interest_type,
+                    description: formData.description,
+                    artist_pref_id: formData.artist_pref_id,
+                    images: formData.images
+                }, signatureData || undefined, template?.version);
+            } else {
+                await api.waitlist.addToWaitlist({
+                    studio_id: studioId || 'studio-1',
+                    client_id: clientIdToUse,
+                    client_name: formData.full_name,
+                    email: formData.email,
+                    phone: formData.phone,
+                    styles: formData.styles,
+                    interest_type: formData.interest_type,
+                    description: formData.description,
+                    artist_pref_id: formData.artist_pref_id,
+                    images: formData.images
+                }, signatureData || undefined, template?.version);
+            }
+
             setSubmitted(true);
         } catch (err: any) {
             console.error("Error adding to waitlist:", err);

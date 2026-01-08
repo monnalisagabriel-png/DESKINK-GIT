@@ -429,6 +429,12 @@ export class MockRepository implements IRepository {
             localStorage.setItem('inkflow_mock_clients', JSON.stringify(MOCK_CLIENTS));
             return newClient;
         },
+        createPublic: async (data: Omit<Client, 'id'>): Promise<Pick<Client, 'id' | 'full_name' | 'email'>> => {
+            const newClient = { ...data, id: `client-${Date.now()}` };
+            MOCK_CLIENTS.push(newClient);
+            localStorage.setItem('inkflow_mock_clients', JSON.stringify(MOCK_CLIENTS));
+            return { id: newClient.id, full_name: newClient.full_name, email: newClient.email };
+        },
         update: async (id: string, data: Partial<Client>): Promise<Client> => {
             const idx = MOCK_CLIENTS.findIndex(c => c.id === id);
             if (idx === -1) throw new Error('Not found');
@@ -1058,6 +1064,11 @@ export class MockRepository implements IRepository {
             };
             MOCK_WAITLIST.push(newEntry);
             return newEntry;
+        },
+        addToWaitlistPublic: async (data: Omit<WaitlistEntry, 'id' | 'created_at' | 'status'>, signatureData?: string, templateVersion?: number): Promise<Pick<WaitlistEntry, 'id'>> => {
+            // Re-use logic for simplicity, just return ID
+            const entry = await this.waitlist.addToWaitlist(data, signatureData, templateVersion);
+            return { id: entry.id };
         },
         updateStatus: async (id: string, status: WaitlistEntry['status']): Promise<WaitlistEntry> => {
             await new Promise(resolve => setTimeout(resolve, 400));

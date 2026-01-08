@@ -419,6 +419,23 @@ export class SupabaseRepository implements IRepository {
             if (error) throw error;
             return newClient;
         },
+        createPublic: async (data: Omit<Client, 'id'>): Promise<Pick<Client, 'id' | 'full_name' | 'email'>> => {
+            const { data: newClient, error } = await supabase.rpc('create_client_public', {
+                p_studio_id: data.studio_id,
+                p_full_name: data.full_name,
+                p_email: data.email,
+                p_phone: data.phone,
+                p_fiscal_code: data.fiscal_code,
+                p_address: data.address,
+                p_city: data.city,
+                p_zip_code: data.zip_code,
+                p_preferred_styles: data.preferred_styles,
+                p_whatsapp_broadcast_opt_in: data.whatsapp_broadcast_opt_in
+            });
+            if (error) throw error;
+            // The RPC returns { id: ..., full_name: ..., email: ... }
+            return newClient as Pick<Client, 'id' | 'full_name' | 'email'>;
+        },
         update: async (id: string, data: Partial<Client>): Promise<Client> => {
             const { data: updated, error } = await supabase.from('clients').update(data).eq('id', id).select().single();
             if (error) throw error;
@@ -968,6 +985,22 @@ export class SupabaseRepository implements IRepository {
                 .single();
             if (error) throw error;
             return entry;
+        },
+        addToWaitlistPublic: async (data: Omit<WaitlistEntry, 'id' | 'created_at' | 'status'>, _signatureData?: string, _templateVersion?: number): Promise<Pick<WaitlistEntry, 'id'>> => {
+            const { data: entry, error } = await supabase.rpc('create_waitlist_entry_public', {
+                p_studio_id: data.studio_id,
+                p_client_id: data.client_id,
+                p_client_name: data.client_name,
+                p_email: data.email,
+                p_phone: data.phone,
+                p_styles: data.styles,
+                p_interest_type: data.interest_type,
+                p_description: data.description,
+                p_artist_pref_id: data.artist_pref_id,
+                p_images: data.images
+            });
+            if (error) throw error;
+            return entry as Pick<WaitlistEntry, 'id'>;
         },
         updateStatus: async (id: string, status: WaitlistEntry['status']): Promise<WaitlistEntry> => {
             const { data, error } = await supabase
