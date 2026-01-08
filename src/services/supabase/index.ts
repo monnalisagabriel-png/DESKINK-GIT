@@ -996,7 +996,7 @@ export class SupabaseRepository implements IRepository {
                 p_styles: data.styles,
                 p_interest_type: data.interest_type,
                 p_description: data.description,
-                p_artist_pref_id: data.artist_pref_id,
+                p_artist_pref_id: data.artist_pref_id || null, // FIX: Ensure empty string becomes null for UUID type
                 p_images: data.images
             });
             if (error) throw error;
