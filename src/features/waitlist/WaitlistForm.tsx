@@ -62,25 +62,34 @@ export const WaitlistForm: React.FC = () => {
 
         setError(null);
         setLoading(true);
+        console.log("Starting submission for studio:", studioId);
+        alert(`Debug: Starting submission. StudioID: ${studioId}`);
 
         try {
             // Check if client exists using secure RPC
+            console.log("Checking contact:", formData.email, formData.phone);
+            alert(`Debug: Checking contact: ${formData.email}`);
             const existingClientId = await api.clients.getByContact(
                 formData.email,
                 formData.phone,
                 studioId || 'studio-1'
             );
+            console.log("Existing Client ID:", existingClientId);
+            alert(`Debug: Result of Client Check: ${existingClientId || 'Not Found'}`);
 
             if (existingClientId) {
                 // Client exists, skip consent
+                alert("Debug: Client exists, adding to waitlist...");
                 await submitWaitlistRequest(null, existingClientId);
             } else {
                 // New client, proceed directly (Skip consent signature)
+                alert("Debug: New client, creating record...");
                 await submitWaitlistRequest(null, 'new');
             }
-        } catch (err) {
-            console.error(err);
-            setError('Si è verificato un errore. Riprova.');
+        } catch (err: any) {
+            console.error("Submission Error:", err);
+            alert(`Errore Step 1: ${err.message || JSON.stringify(err)}`);
+            setError(`Si è verificato un errore: ${err.message}`);
         } finally {
             setLoading(false);
         }
@@ -110,6 +119,7 @@ export const WaitlistForm: React.FC = () => {
 
         if (clientIdToUse === 'new') {
             try {
+                alert("Debug: Creating new client in DB...");
                 const newClient = await api.clients.create({
                     full_name: formData.full_name || 'Nuovo Cliente',
                     email: formData.email,
@@ -124,30 +134,34 @@ export const WaitlistForm: React.FC = () => {
                     images: []
                 });
                 clientIdToUse = newClient.id;
-            } catch (err) {
+                alert(`Debug: Client Created Successfully: ${newClient.id}`);
+            } catch (err: any) {
                 console.error("Error creating new client:", err);
-                throw new Error("Failed to create new client before waitlist submission.");
+                alert(`Errore Creazione Cliente: ${err.message || JSON.stringify(err)}`);
+                throw new Error(`Failed to create new client: ${err.message}`);
             }
         }
 
-        if (clientIdToUse === 'new') {
-            // Should not happen if logic is correct, but fail safe check
-            throw new Error("Client logic failed");
+        try {
+            alert("Debug: Final Step - Adding to waitlist table...");
+            await api.waitlist.addToWaitlist({
+                studio_id: studioId || 'studio-1',
+                client_id: clientIdToUse,
+                client_name: formData.full_name,
+                email: formData.email,
+                phone: formData.phone,
+                styles: formData.styles,
+                interest_type: formData.interest_type,
+                description: formData.description,
+                artist_pref_id: formData.artist_pref_id,
+                images: formData.images
+            }, signatureData || undefined, template?.version);
+            setSubmitted(true);
+        } catch (err: any) {
+            console.error("Error adding to waitlist:", err);
+            alert(`Errore Waitlist Insert: ${err.message || JSON.stringify(err)}`);
+            throw err;
         }
-
-        await api.waitlist.addToWaitlist({
-            studio_id: studioId || 'studio-1',
-            client_id: clientIdToUse,
-            client_name: formData.full_name,
-            email: formData.email,
-            phone: formData.phone,
-            styles: formData.styles,
-            interest_type: formData.interest_type,
-            description: formData.description,
-            artist_pref_id: formData.artist_pref_id,
-            images: formData.images
-        }, signatureData || undefined, template?.version);
-        setSubmitted(true);
     };
 
     const handleSignatureSave = async (signatureData: string) => {
