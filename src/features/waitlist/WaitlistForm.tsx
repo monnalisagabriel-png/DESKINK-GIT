@@ -32,7 +32,6 @@ export const WaitlistForm: React.FC = () => {
         city: '',
         zip_code: '',
         styles: [] as string[],
-        artist_pref_id: '',
         description: '',
         images: [] as string[] // Base64 strings for simplicity
     });
@@ -201,7 +200,7 @@ export const WaitlistForm: React.FC = () => {
                     styles: formData.styles,
                     interest_type: formData.interest_type,
                     description: formData.description,
-                    artist_pref_id: formData.artist_pref_id,
+                    artist_pref_id: undefined,
                     images: formData.images
                 }, signatureData || undefined, template?.version);
                 addLog(`addToWaitlistPublic success. ID: ${entry?.id}`);
@@ -216,7 +215,7 @@ export const WaitlistForm: React.FC = () => {
                     styles: formData.styles,
                     interest_type: formData.interest_type,
                     description: formData.description,
-                    artist_pref_id: formData.artist_pref_id,
+                    artist_pref_id: undefined,
                     images: formData.images
                 }, signatureData || undefined, template?.version);
             }
