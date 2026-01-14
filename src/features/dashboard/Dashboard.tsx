@@ -39,6 +39,10 @@ export const Dashboard: React.FC = () => {
     const [studentCourse, setStudentCourse] = React.useState<Course | null>(null);
     const [studentEnrollment, setStudentEnrollment] = React.useState<CourseEnrollment | null>(null);
 
+    // Terms Modal
+    const [isTermsViewOpen, setIsTermsViewOpen] = useState(false);
+    const [viewTermsContent, setViewTermsContent] = useState('');
+
     const [loading, setLoading] = React.useState(true);
 
     if (!user) return <div className="p-8 text-center text-white">Caricamento utente...</div>;
@@ -63,6 +67,10 @@ export const Dashboard: React.FC = () => {
                 if (user.studio_id) {
                     const s = await api.settings.getStudio(user.studio_id);
                     setStudio(s);
+                    // Pre-load terms if student for the view modal
+                    if (s && (user.role === 'STUDENT' || user.role === 'student') && s.academy_terms) {
+                        setViewTermsContent(s.academy_terms);
+                    }
                 }
 
                 const today = startOfDay(new Date());
@@ -307,6 +315,18 @@ export const Dashboard: React.FC = () => {
                     ) : (
                         <p className="text-text-muted italic">Dati presenze non disponibili.</p>
                     )}
+
+
+                    {/* View Terms Button */}
+                    <div className="mt-4 pt-4 border-t border-border flex justify-center">
+                        <button
+                            onClick={() => setIsTermsViewOpen(true)}
+                            className="text-xs text-text-muted hover:text-white underline flex items-center gap-1 transition-colors"
+                        >
+                            <FileText size={12} />
+                            Vedi Termini e Condizioni Accettati
+                        </button>
+                    </div>
                 </div>
 
                 <div className="bg-bg-secondary p-6 rounded-xl border border-border flex flex-col justify-between">
@@ -535,6 +555,40 @@ export const Dashboard: React.FC = () => {
                             <button
                                 onClick={() => setIsShareOpen(false)}
                                 className="w-full py-3 bg-gray-900 hover:bg-black text-white rounded-xl font-medium transition-colors"
+                            >
+                                Chiudi
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+            {/* Read-Only Terms Modal */}
+            {isTermsViewOpen && (
+                <div className="fixed inset-0 z-[60] bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
+                    <div className="bg-bg-primary border border-border rounded-xl w-full max-w-2xl flex flex-col max-h-[90vh]">
+                        <div className="p-6 border-b border-border flex items-center justify-between">
+                            <h2 className="text-xl font-bold text-white flex items-center gap-2">
+                                <FileText className="text-accent" />
+                                Termini e Condizioni
+                            </h2>
+                            <button
+                                onClick={() => setIsTermsViewOpen(false)}
+                                className="text-text-muted hover:text-white transition-colors"
+                            >
+                                <X size={24} />
+                            </button>
+                        </div>
+
+                        <div className="p-6 flex-1 overflow-y-auto bg-bg-tertiary/30">
+                            <div className="prose prose-invert max-w-none text-text-secondary text-sm whitespace-pre-wrap font-mono bg-bg-primary p-4 rounded-lg border border-border">
+                                {viewTermsContent || "Nessun termine disponibile."}
+                            </div>
+                        </div>
+
+                        <div className="p-6 border-t border-border flex justify-end">
+                            <button
+                                onClick={() => setIsTermsViewOpen(false)}
+                                className="px-4 py-2 rounded-lg font-bold bg-bg-tertiary text-white hover:bg-white/10 border border-border transition-colors"
                             >
                                 Chiudi
                             </button>
