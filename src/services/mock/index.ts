@@ -592,6 +592,12 @@ export class MockRepository implements IRepository {
         getAttendanceLogs: async (courseId: any, studentId: any) => {
             await new Promise(resolve => setTimeout(resolve, 300));
             return MOCK_ATTENDANCE_LOGS.filter(l => l.course_id === courseId && l.student_id === studentId);
+        },
+        updateTerms: async (_studioId: string, _terms: string): Promise<void> => {
+            await new Promise(resolve => setTimeout(resolve, 300));
+        },
+        acceptTerms: async (_userId: string, _version: number): Promise<void> => {
+            await new Promise(resolve => setTimeout(resolve, 300));
         }
     };
 

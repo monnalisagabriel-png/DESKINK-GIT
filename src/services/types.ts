@@ -30,6 +30,8 @@ export interface User {
   billing_name?: string;
   sdi_code?: string;
   pec?: string;
+  academy_terms_accepted_at?: string;
+  academy_terms_accepted_version?: number;
 }
 
 export interface AuthSession {
@@ -256,6 +258,8 @@ export interface IRepository {
     updateEnrollment(courseId: string, studentId: string, data: Partial<CourseEnrollment>): Promise<CourseEnrollment>;
     logAttendance(log: Omit<AttendanceLog, 'id' | 'created_at'>): Promise<void>;
     getAttendanceLogs(courseId: string, studentId: string): Promise<AttendanceLog[]>;
+    updateTerms(studioId: string, terms: string): Promise<void>;
+    acceptTerms(userId: string, version: number): Promise<void>;
   };
   communications: {
     list(studioId: string): Promise<Communication[]>;
@@ -413,4 +417,6 @@ export interface Studio {
     auto_sync_enabled?: boolean;
     mapping?: Record<string, string>;
   };
+  academy_terms?: string;
+  academy_terms_version?: number;
 }

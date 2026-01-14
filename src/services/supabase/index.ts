@@ -1386,13 +1386,34 @@ export class SupabaseRepository implements IRepository {
             if (error) throw error;
         },
         getAttendanceLogs: async (courseId: string, studentId: string): Promise<AttendanceLog[]> => {
-            const { data, error } = await supabase.from('academy_attendance_logs')
-                .select('*')
-                .eq('course_id', courseId)
-                .eq('student_id', studentId)
-                .order('created_at', { ascending: false });
+            const { data, error } = await supabase.from('academy_attendance_logs').select('*').eq('course_id', courseId).eq('student_id', studentId).order('created_at', { ascending: false });
             if (error) throw error;
-            return data || [];
+            return data as AttendanceLog[];
+        },
+        updateTerms: async (studioId: string, terms: string): Promise<void> => {
+            // Fallback if RPC doesn't exist (using 2-step for safety if migration fail, but better use direct update if simple)
+            try {
+                // Try to get current version first
+                const { data: studio } = await supabase.from('studios').select('academy_terms_version').eq('id', studioId).single();
+                const nextVersion = (studio?.academy_terms_version || 0) + 1;
+
+                const { error: updateError } = await supabase.from('studios').update({
+                    academy_terms: terms,
+                    academy_terms_version: nextVersion
+                }).eq('id', studioId);
+
+                if (updateError) throw updateError;
+            } catch (e) {
+                console.error("Update terms failed", e);
+                throw e;
+            }
+        },
+        acceptTerms: async (userId: string, version: number): Promise<void> => {
+            const { error } = await supabase.from('users').update({
+                academy_terms_accepted_at: new Date().toISOString(),
+                academy_terms_accepted_version: version
+            }).eq('id', userId);
+            if (error) throw error;
         }
     };
 

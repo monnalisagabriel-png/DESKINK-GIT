@@ -54,6 +54,11 @@ export const AcademyPage: React.FC = () => {
     });
     const [uploadingMaterial, setUploadingMaterial] = useState(false);
 
+    // Terms Modal State
+    const [isTermsModalOpen, setIsTermsModalOpen] = useState(false);
+    const [termsText, setTermsText] = useState('');
+    const [savingTerms, setSavingTerms] = useState(false);
+
     useEffect(() => {
         loadData();
     }, [user?.studio_id]);
@@ -95,6 +100,15 @@ export const AcademyPage: React.FC = () => {
             // Filter only students from team members
             const studentUsers = teamData.filter(u => (u.role || '').toLowerCase() === 'student');
             setStudents(studentUsers);
+            setStudents(studentUsers);
+
+            // Load terms if owner
+            if (user?.role === 'owner' || user?.role === 'manager') {
+                const studio = await api.settings.getStudio(user.studio_id);
+                if (studio && studio.academy_terms) {
+                    setTermsText(studio.academy_terms);
+                }
+            }
         } catch (err) {
             console.error(err);
         } finally {
@@ -455,6 +469,21 @@ export const AcademyPage: React.FC = () => {
         }
     };
 
+    const handleSaveTerms = async () => {
+        if (!user?.studio_id) return;
+        setSavingTerms(true);
+        try {
+            await api.academy.updateTerms(user.studio_id, termsText);
+            setIsTermsModalOpen(false);
+            alert("Termini e Condizioni aggiornati con successo!");
+        } catch (error) {
+            console.error("Failed to save terms", error);
+            alert("Errore durante il salvataggio dei termini.");
+        } finally {
+            setSavingTerms(false);
+        }
+    };
+
     return (
         <div className="w-full p-4 md:p-8 space-y-8 flex flex-col">
             {/* Header */}
@@ -478,6 +507,14 @@ export const AcademyPage: React.FC = () => {
                                 className={clsx("px-4 py-2 rounded-lg font-bold transition-colors", view === 'STUDENTS_LIST' ? "bg-accent text-white" : "bg-bg-tertiary text-text-muted hover:text-white")}
                             >
                                 Studenti Connessi
+                            </button>
+
+                            <button
+                                onClick={() => setIsTermsModalOpen(true)}
+                                className="px-4 py-2 rounded-lg font-bold transition-colors bg-bg-tertiary text-text-muted hover:text-white flex items-center gap-2"
+                            >
+                                <FileText size={18} />
+                                <span className="hidden lg:inline">Termini</span>
                             </button>
 
                             {view === 'LIST' && (
@@ -1490,6 +1527,64 @@ export const AcademyPage: React.FC = () => {
                     </div>
                 )
             }
+            {/* Terms Modal */}
+            {isTermsModalOpen && (
+                <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-[60] flex items-center justify-center p-4">
+                    <div className="bg-bg-primary border border-border rounded-xl w-full max-w-2xl flex flex-col max-h-[90vh]">
+                        <div className="p-6 border-b border-border flex items-center justify-between">
+                            <h2 className="text-xl font-bold text-white flex items-center gap-2">
+                                <FileText className="text-accent" />
+                                Modifica Termini e Condizioni
+                            </h2>
+                            <button
+                                onClick={() => setIsTermsModalOpen(false)}
+                                className="text-text-muted hover:text-white transition-colors"
+                            >
+                                <X size={24} />
+                            </button>
+                        </div>
+
+                        <div className="p-6 flex-1 overflow-y-auto">
+                            <p className="text-text-muted mb-4 text-sm">
+                                Definisci i termini e le condizioni che gli studenti devono accettare per accedere alla piattaforma.
+                                Ogni modifica chiederà nuovamente l'accettazione agli studenti.
+                            </p>
+                            <textarea
+                                value={termsText}
+                                onChange={(e) => setTermsText(e.target.value)}
+                                className="w-full h-96 bg-bg-secondary border border-border rounded-lg p-4 text-white placeholder-text-muted focus:outline-none focus:border-accent resize-none font-mono text-sm"
+                                placeholder="Inserisci qui i termini e condizioni..."
+                            />
+                        </div>
+
+                        <div className="p-6 border-t border-border flex justify-end gap-3">
+                            <button
+                                onClick={() => setIsTermsModalOpen(false)}
+                                className="px-4 py-2 rounded-lg font-bold text-text-muted hover:text-white transition-colors"
+                            >
+                                Annulla
+                            </button>
+                            <button
+                                onClick={handleSaveTerms}
+                                disabled={savingTerms}
+                                className="px-4 py-2 rounded-lg font-bold bg-accent text-white hover:bg-accent/80 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                            >
+                                {savingTerms ? (
+                                    <>
+                                        <div className="w-4 h-4 rounded-full border-2 border-white/20 border-t-white animate-spin" />
+                                        Salvataggio...
+                                    </>
+                                ) : (
+                                    <>
+                                        <Check size={18} />
+                                        Salva e Pubblica
+                                    </>
+                                )}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div >
     );
 };
