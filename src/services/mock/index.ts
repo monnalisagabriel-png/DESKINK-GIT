@@ -397,6 +397,12 @@ export class MockRepository implements IRepository {
             const idx = MOCK_APPOINTMENTS.findIndex(a => a.id === id);
             if (idx === -1) throw new Error('Not found');
             MOCK_APPOINTMENTS.splice(idx, 1);
+        },
+        listByClient: async (clientId: string): Promise<Appointment[]> => {
+            await new Promise(resolve => setTimeout(resolve, 300));
+            return MOCK_APPOINTMENTS
+                .filter(a => a.client_id === clientId)
+                .sort((a, b) => new Date(b.start_time).getTime() - new Date(a.start_time).getTime());
         }
     };
 
