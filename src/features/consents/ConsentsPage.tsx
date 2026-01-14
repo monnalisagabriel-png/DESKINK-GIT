@@ -17,7 +17,7 @@ export const ConsentsPage: React.FC = () => {
     const [signingClient, setSigningClient] = useState<Client | null>(null);
     const [currentTemplate, setCurrentTemplate] = useState<ConsentTemplate | null>(null);
 
-    const canManageTemplates = ['OWNER'].includes(user?.role || '');
+    const canManageTemplates = ['owner'].includes((user?.role || '').toLowerCase());
 
     const handleStartSignature = async (client: Client) => {
         try {
