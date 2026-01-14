@@ -7,6 +7,7 @@ import type { Client, WaitlistEntry, ClientConsent } from '../../services/types'
 import clsx from 'clsx';
 
 import { Trash2, Eye } from 'lucide-react';
+import { generateConsentPDF } from '../../utils/pdfGenerator';
 
 // Custom Drag & Drop Component removed, imported from components
 import { DragDropUpload } from '../../components/DragDropUpload';
@@ -23,6 +24,7 @@ export const ClientProfile: React.FC = () => {
     const [waitlistEntry, setWaitlistEntry] = useState<WaitlistEntry | null>(null);
     const [appointments, setAppointments] = useState<Appointment[]>([]);
     const [consents, setConsents] = useState<ClientConsent[]>([]);
+    const [selectedAppointments, setSelectedAppointments] = useState<string[]>([]);
     const [activeTab, setActiveTab] = useState('gallery'); // Default to Gallery
     const [loading, setLoading] = useState(true);
 
@@ -294,6 +296,68 @@ export const ClientProfile: React.FC = () => {
         } catch (error) {
             console.error('Error creating appointment:', error);
             alert('Errore durante la creazione dell\'appuntamento');
+        }
+    };
+
+    const handleDeleteAppointment = async (aptId: string) => {
+        if (!confirm('Eliminare questo appuntamento?')) return;
+        try {
+            await api.appointments.delete(aptId);
+            setAppointments(prev => prev.filter(a => a.id !== aptId));
+            setSelectedAppointments(prev => prev.filter(id => id !== aptId));
+        } catch (error) {
+            console.error('Error deleting appointment:', error);
+            alert('Errore durante l\'eliminazione');
+        }
+    };
+
+    const handleBulkDelete = async () => {
+        if (!confirm(`Eliminare ${selectedAppointments.length} appuntamenti selezionati?`)) return;
+        try {
+            // Delete sequentially to avoid race conditions or use a bulk API if available
+            for (const id of selectedAppointments) {
+                await api.appointments.delete(id);
+            }
+            setAppointments(prev => prev.filter(a => !selectedAppointments.includes(a.id)));
+            setSelectedAppointments([]);
+        } catch (error) {
+            console.error('Error bulk deleting:', error);
+            alert('Errore durante l\'eliminazione multipla');
+        }
+    };
+
+    const toggleSelection = (aptId: string) => {
+        setSelectedAppointments(prev =>
+            prev.includes(aptId) ? prev.filter(id => id !== aptId) : [...prev, aptId]
+        );
+    };
+
+    const toggleSelectAll = () => {
+        if (selectedAppointments.length === appointments.length) {
+            setSelectedAppointments([]);
+        } else {
+            setSelectedAppointments(appointments.map(a => a.id));
+        }
+    };
+
+    const totalSpent = appointments.reduce((sum, apt) => sum + (apt.price || 0), 0);
+
+    const [downloadingConsent, setDownloadingConsent] = useState<string | null>(null);
+
+    const handleDownloadPDF = async (consent: ClientConsent) => {
+        if (!client) return;
+        setDownloadingConsent(consent.id);
+        try {
+            const template = await api.consents.getTemplate(client.studio_id);
+            if (!template) throw new Error("Template not found");
+
+            const studio = await api.settings.getStudio(client.studio_id);
+            await generateConsentPDF(client, template, consent, studio);
+        } catch (err) {
+            console.error('Error generating PDF:', err);
+            alert('Errore nella generazione del PDF');
+        } finally {
+            setDownloadingConsent(null);
         }
     };
 
@@ -613,28 +677,74 @@ export const ClientProfile: React.FC = () => {
 
                     {activeTab === 'history' && (
                         <div className="space-y-4">
+                            <div className="flex justify-between items-center bg-bg-secondary p-4 rounded-lg border border-border">
+                                <div>
+                                    <h4 className="text-text-muted text-sm uppercase font-bold">Totale Speso</h4>
+                                    <p className="text-2xl font-bold text-green-500">€ {totalSpent.toFixed(2)}</p>
+                                </div>
+                                {selectedAppointments.length > 0 && (
+                                    <button
+                                        onClick={handleBulkDelete}
+                                        className="px-4 py-2 bg-red-500/10 hover:bg-red-500/20 text-red-500 border border-red-500/20 rounded-lg flex items-center gap-2 transition-colors"
+                                    >
+                                        <Trash2 size={16} /> Elimina ({selectedAppointments.length})
+                                    </button>
+                                )}
+                            </div>
+
                             {appointments.length > 0 ? (
-                                appointments.map((apt) => (
-                                    <div key={apt.id} className="bg-bg-secondary rounded-lg border border-border p-4 flex justify-between items-center">
-                                        <div>
-                                            <h4 className="font-bold text-white">{apt.service_name}</h4>
-                                            <p className="text-sm text-text-muted">
-                                                {new Date(apt.start_time).toLocaleDateString()} - {new Date(apt.start_time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                                            </p>
-                                        </div>
-                                        <div className="text-right">
-                                            <span className={clsx(
-                                                "px-2 py-1 rounded text-xs font-medium",
-                                                apt.status === 'COMPLETED' ? "bg-green-500/10 text-green-500" :
-                                                    apt.status === 'CONFIRMED' ? "bg-blue-500/10 text-blue-500" :
-                                                        "bg-gray-500/10 text-gray-400"
-                                            )}>
-                                                {apt.status}
-                                            </span>
-                                            {apt.price && <p className="text-sm font-bold text-white mt-1">€ {apt.price}</p>}
-                                        </div>
+                                <>
+                                    <div className="flex items-center gap-2 mb-2 px-2">
+                                        <input
+                                            type="checkbox"
+                                            checked={selectedAppointments.length === appointments.length && appointments.length > 0}
+                                            onChange={toggleSelectAll}
+                                            className="rounded border-border bg-bg-tertiary text-accent focus:ring-accent w-4 h-4"
+                                        />
+                                        <span className="text-sm text-text-muted">Seleziona tutti</span>
                                     </div>
-                                ))
+                                    {appointments.map((apt) => (
+                                        <div key={apt.id} className={clsx(
+                                            "bg-bg-secondary rounded-lg border p-4 flex justify-between items-center transition-colors",
+                                            selectedAppointments.includes(apt.id) ? "border-accent bg-accent/5" : "border-border"
+                                        )}>
+                                            <div className="flex items-center gap-4">
+                                                <input
+                                                    type="checkbox"
+                                                    checked={selectedAppointments.includes(apt.id)}
+                                                    onChange={() => toggleSelection(apt.id)}
+                                                    className="rounded border-border bg-bg-tertiary text-accent focus:ring-accent w-5 h-5"
+                                                />
+                                                <div>
+                                                    <h4 className="font-bold text-white">{apt.service_name}</h4>
+                                                    <p className="text-sm text-text-muted">
+                                                        {new Date(apt.start_time).toLocaleDateString()} - {new Date(apt.start_time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                                    </p>
+                                                </div>
+                                            </div>
+                                            <div className="flex items-center gap-4">
+                                                <div className="text-right">
+                                                    <span className={clsx(
+                                                        "px-2 py-1 rounded text-xs font-medium",
+                                                        apt.status === 'COMPLETED' ? "bg-green-500/10 text-green-500" :
+                                                            apt.status === 'CONFIRMED' ? "bg-blue-500/10 text-blue-500" :
+                                                                "bg-gray-500/10 text-gray-400"
+                                                    )}>
+                                                        {apt.status}
+                                                    </span>
+                                                    {apt.price && <p className="text-sm font-bold text-white mt-1">€ {apt.price}</p>}
+                                                </div>
+                                                <button
+                                                    onClick={() => handleDeleteAppointment(apt.id)}
+                                                    className="p-2 text-gray-500 hover:text-red-500 hover:bg-red-500/10 rounded-lg transition-colors"
+                                                    title="Elimina appuntamento"
+                                                >
+                                                    <Trash2 size={18} />
+                                                </button>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </>
                             ) : (
                                 <div className="bg-bg-secondary rounded-lg border border-border p-8 text-center text-text-muted">
                                     <Calendar size={48} className="mx-auto mb-4 opacity-20" />
@@ -699,30 +809,25 @@ export const ClientProfile: React.FC = () => {
                                                     <FileText size={24} />
                                                 </div>
                                                 <div>
-                                                    <h4 className="font-bold text-white">Consenso Firmato v{c.template_version}</h4>
+                                                    <h4 className="font-bold text-white">Consenso Firmato v{c.template_version || '1'}</h4>
                                                     <p className="text-sm text-text-muted">Firmato il {new Date(c.signed_at).toLocaleDateString()} alle {new Date(c.signed_at).toLocaleTimeString()}</p>
                                                 </div>
                                             </div>
                                             <div className="flex gap-2">
-                                                {c.pdf_url && (
-                                                    <button
-                                                        onClick={() => window.open(c.pdf_url, '_blank')}
-                                                        className="p-2 bg-bg-tertiary hover:bg-white/10 rounded-lg text-white transition-colors"
-                                                        title="Scarica PDF"
-                                                    >
-                                                        <FileText size={18} /> PDF
-                                                    </button>
-                                                )}
-                                                {/* Fallback to signature view if no PDF */}
-                                                {!c.pdf_url && c.signature_url && (
-                                                    <button
-                                                        onClick={() => window.open(c.signature_url, '_blank')}
-                                                        className="p-2 bg-bg-tertiary hover:bg-white/10 rounded-lg text-white transition-colors"
-                                                        title="Vedi Firma"
-                                                    >
-                                                        <Image size={18} /> Firma
-                                                    </button>
-                                                )}
+                                                <button
+                                                    onClick={() => handleDownloadPDF(c)}
+                                                    disabled={downloadingConsent === c.id}
+                                                    className="bg-accent hover:bg-accent-hover text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-2"
+                                                >
+                                                    {downloadingConsent === c.id ? (
+                                                        <span className="animate-pulse">Generazione PDF...</span>
+                                                    ) : (
+                                                        <>
+                                                            <FileText size={16} />
+                                                            Visualizza Consenso
+                                                        </>
+                                                    )}
+                                                </button>
                                             </div>
                                         </div>
                                     ))

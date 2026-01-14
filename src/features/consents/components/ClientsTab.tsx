@@ -129,13 +129,23 @@ export const ClientsTab: React.FC<ClientsTabProps> = ({ onStartSignature }) => {
                                         </td>
                                         <td className="p-4 text-right">
                                             {consent ? (
-                                                <button
-                                                    className="text-sm text-accent hover:text-accent-hover font-medium underline px-3 disabled:opacity-50"
-                                                    onClick={() => handleDownloadPDF(client, consent)}
-                                                    disabled={downloading === client.id}
-                                                >
-                                                    {downloading === client.id ? 'Generazione...' : 'Scarica PDF'}
-                                                </button>
+                                                <div className="flex gap-2 justify-end">
+                                                    <button
+                                                        className="text-sm text-accent hover:text-accent-hover font-medium underline px-3 disabled:opacity-50"
+                                                        onClick={() => handleDownloadPDF(client, consent)}
+                                                        disabled={downloading === client.id}
+                                                    >
+                                                        {downloading === client.id ? 'Generazione...' : 'Scarica PDF'}
+                                                    </button>
+                                                    <button
+                                                        onClick={() => onStartSignature(client)}
+                                                        className="bg-bg-tertiary hover:bg-white/10 text-white px-3 py-1 rounded-lg text-xs font-medium transition-colors border border-border flex items-center gap-1"
+                                                        title="Firma nuovamente"
+                                                    >
+                                                        <FileSignature size={14} />
+                                                        Rifirma
+                                                    </button>
+                                                </div>
                                             ) : (
                                                 <button
                                                     onClick={() => onStartSignature(client)}
@@ -198,13 +208,22 @@ export const ClientsTab: React.FC<ClientsTabProps> = ({ onStartSignature }) => {
                                     </div>
 
                                     {consent ? (
-                                        <button
-                                            className="text-xs bg-bg-tertiary hover:bg-white/10 text-white px-3 py-2 rounded-lg font-medium transition-colors border border-border"
-                                            onClick={() => handleDownloadPDF(client, consent)}
-                                            disabled={downloading === client.id}
-                                        >
-                                            {downloading === client.id ? '...' : 'PDF'}
-                                        </button>
+                                        <div className="flex gap-2">
+                                            <button
+                                                className="text-xs bg-bg-tertiary hover:bg-white/10 text-white px-3 py-2 rounded-lg font-medium transition-colors border border-border"
+                                                onClick={() => handleDownloadPDF(client, consent)}
+                                                disabled={downloading === client.id}
+                                            >
+                                                {downloading === client.id ? '...' : 'PDF'}
+                                            </button>
+                                            <button
+                                                onClick={() => onStartSignature(client)}
+                                                className="text-xs bg-accent/10 hover:bg-accent/20 text-accent px-3 py-2 rounded-lg font-medium transition-colors border border-accent/20 flex items-center gap-1"
+                                            >
+                                                <FileSignature size={14} />
+                                                Rifirma
+                                            </button>
+                                        </div>
                                     ) : (
                                         <button
                                             onClick={() => onStartSignature(client)}
