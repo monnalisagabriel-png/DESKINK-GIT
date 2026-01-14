@@ -262,29 +262,31 @@ export const GoogleCalendarDrawer: React.FC<GoogleCalendarDrawerProps> = ({ isOp
                                 <p className="text-xs text-text-muted">Associa un calendario Google a ciascun artista.</p>
 
                                 <div className="space-y-3">
-                                    {artists.map(artist => (
-                                        <div key={artist.id} className="bg-bg-tertiary p-3 rounded-lg border border-border">
-                                            <div className="flex items-center gap-2 mb-2">
-                                                <div className="w-6 h-6 rounded-full bg-gradient-to-br from-gray-700 to-gray-800 flex items-center justify-center text-xs font-bold text-white">
-                                                    {(artist.full_name || '?').charAt(0)}
+                                    {artists
+                                        .filter(a => ['owner', 'artist', 'ARTIST'].includes(a.role))
+                                        .map(artist => (
+                                            <div key={artist.id} className="bg-bg-tertiary p-3 rounded-lg border border-border">
+                                                <div className="flex items-center gap-2 mb-2">
+                                                    <div className="w-6 h-6 rounded-full bg-gradient-to-br from-gray-700 to-gray-800 flex items-center justify-center text-xs font-bold text-white">
+                                                        {(artist.full_name || '?').charAt(0)}
+                                                    </div>
+                                                    <span className="text-sm font-medium text-white">{artist.full_name || 'Artista senza nome'}</span>
                                                 </div>
-                                                <span className="text-sm font-medium text-white">{artist.full_name || 'Artista senza nome'}</span>
-                                            </div>
 
-                                            <select
-                                                className="w-full bg-bg-primary text-white text-sm rounded border border-border p-2"
-                                                value={calendarMapping[artist.id] || ''}
-                                                onChange={(e) => setCalendarMapping({ ...calendarMapping, [artist.id]: e.target.value })}
-                                            >
-                                                <option value="">Nessun Calendario</option>
-                                                {availableCalendars.map((cal: any) => (
-                                                    <option key={cal.id} value={cal.id}>
-                                                        {cal.summary} {cal.primary ? '(Principale)' : ''}
-                                                    </option>
-                                                ))}
-                                            </select>
-                                        </div>
-                                    ))}
+                                                <select
+                                                    className="w-full bg-bg-primary text-white text-sm rounded border border-border p-2"
+                                                    value={calendarMapping[artist.id] || ''}
+                                                    onChange={(e) => setCalendarMapping({ ...calendarMapping, [artist.id]: e.target.value })}
+                                                >
+                                                    <option value="">Nessun Calendario</option>
+                                                    {availableCalendars.map((cal: any) => (
+                                                        <option key={cal.id} value={cal.id}>
+                                                            {cal.summary} {cal.primary ? '(Principale)' : ''}
+                                                        </option>
+                                                    ))}
+                                                </select>
+                                            </div>
+                                        ))}
                                 </div>
                             </div>
                         </div>
