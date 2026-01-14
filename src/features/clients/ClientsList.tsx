@@ -199,13 +199,7 @@ export const ClientsList: React.FC = () => {
                                     >
                                         <span className="hidden lg:inline">Importa Google</span>
                                     </button>
-                                    <button
-                                        onClick={() => { setModalTab('export'); setShowImport(true); }}
-                                        className="flex items-center gap-2 bg-blue-600/10 border border-blue-600/20 hover:bg-blue-600/20 text-blue-500 px-3 py-2 rounded-lg font-medium transition-colors whitespace-nowrap"
-                                        title="Sincronizza con Google Sheets"
-                                    >
-                                        <span className="hidden lg:inline">Sync Sheets 🔄</span>
-                                    </button>
+
                                     <button
                                         onClick={() => { setModalTab('config'); setShowImport(true); }}
                                         className="flex items-center gap-2 bg-gray-500/10 border border-gray-500/20 hover:bg-gray-500/20 text-gray-400 hover:text-white px-3 py-2 rounded-lg font-medium transition-colors whitespace-nowrap"

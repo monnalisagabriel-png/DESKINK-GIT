@@ -265,7 +265,7 @@ export function GoogleSheetsSyncModal({ isOpen, onClose, onSyncSuccess, initialT
     const saveMapping = async () => {
         try {
             setIsLoading(true);
-            await api.settings.updateStudio(user!.studio_id!, {
+            const newConfig = {
                 google_sheets_config: {
                     ...studioConfig?.google_sheets_config,
                     mapping: columnMapping,
@@ -273,7 +273,14 @@ export function GoogleSheetsSyncModal({ isOpen, onClose, onSyncSuccess, initialT
                     sheet_name: selectedSheet!,
                     auto_sync_enabled: true
                 }
-            });
+            };
+
+            await api.settings.updateStudio(user!.studio_id!, newConfig);
+
+            setStudioConfig((prev: any) => ({
+                ...prev,
+                ...newConfig
+            }));
             setIsConfiguring(false);
             alert("Mappatura salvata! La sincronizzazione automatica userà questa configurazione.");
         } catch (error) {
@@ -341,14 +348,22 @@ export function GoogleSheetsSyncModal({ isOpen, onClose, onSyncSuccess, initialT
 
             // 4. Save as default if requested or if we are using the mapping
             if (isDefault || hasMapping) {
-                await api.settings.updateStudio(user!.studio_id!, {
+                const newConfig = {
                     google_sheets_config: {
                         spreadsheet_id: selectedFile!,
                         sheet_name: selectedSheet!,
                         auto_sync_enabled: true,
                         mapping: columnMapping
                     }
-                });
+                };
+
+                await api.settings.updateStudio(user!.studio_id!, newConfig);
+
+                // Immediate update of local state
+                setStudioConfig((prev: any) => ({
+                    ...prev,
+                    ...newConfig
+                }));
             }
 
             setExportStats({ total: rows.length });
