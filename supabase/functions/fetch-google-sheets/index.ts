@@ -54,11 +54,53 @@ serve(async (req) => {
             throw new Error('Google account not connected');
         }
 
-        // Check if token needs refresh (simple check)
+        // Check if token needs refresh
         let accessToken = integration.access_token;
         if (new Date(integration.expires_at) < new Date()) {
-            // TODO: Implement refresh flow if needed, for now assume re-auth
-            console.log('Token expired for user', user.id);
+            console.log('Token expired for user', user.id, 'Refreshing...');
+
+            const client_id = Deno.env.get('GOOGLE_CLIENT_ID');
+            const client_secret = Deno.env.get('GOOGLE_CLIENT_SECRET');
+            const refresh_token = integration.refresh_token;
+
+            if (!refresh_token) {
+                console.error('No refresh token available');
+                throw new Error('Google connection expired. Please reconnect in Settings.');
+            }
+
+            const tokenResponse = await fetch('https://oauth2.googleapis.com/token', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                body: new URLSearchParams({
+                    client_id: client_id!,
+                    client_secret: client_secret!,
+                    refresh_token: refresh_token,
+                    grant_type: 'refresh_token',
+                }),
+            });
+
+            const tokens = await tokenResponse.json();
+
+            if (tokens.error) {
+                console.error('Error refreshing token:', tokens);
+                throw new Error('Failed to refresh Google token. Please reconnect.');
+            }
+
+            accessToken = tokens.access_token;
+            const newExpiresAt = new Date(Date.now() + (tokens.expires_in * 1000)).toISOString();
+
+            // Update DB
+            await supabaseAdmin
+                .from('user_integrations')
+                .update({
+                    access_token: accessToken,
+                    expires_at: newExpiresAt,
+                    updated_at: new Date().toISOString()
+                })
+                .eq('user_id', user.id)
+                .eq('provider', 'google');
+
+            console.log('Token refreshed successfully');
         }
 
         const reqBody = await req.json();

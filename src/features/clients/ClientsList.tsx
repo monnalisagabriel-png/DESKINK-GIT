@@ -26,7 +26,7 @@ export const ClientsList: React.FC = () => {
     // Removed local clients state and loading state as they are handled by React Query
     const [showQR, setShowQR] = useState(false);
     const [showImport, setShowImport] = useState(false);
-    const [modalTab, setModalTab] = useState<'import' | 'export'>('import');
+    const [modalTab, setModalTab] = useState<'import' | 'export' | 'config'>('import');
     const [copied, setCopied] = useState(false);
 
     // Filters State
@@ -205,6 +205,13 @@ export const ClientsList: React.FC = () => {
                                         title="Sincronizza con Google Sheets"
                                     >
                                         <span className="hidden lg:inline">Sync Sheets 🔄</span>
+                                    </button>
+                                    <button
+                                        onClick={() => { setModalTab('config'); setShowImport(true); }}
+                                        className="flex items-center gap-2 bg-gray-500/10 border border-gray-500/20 hover:bg-gray-500/20 text-gray-400 hover:text-white px-3 py-2 rounded-lg font-medium transition-colors whitespace-nowrap"
+                                        title="Impostazioni Google Sheets"
+                                    >
+                                        <span className="hidden lg:inline">⚙️</span>
                                     </button>
                                 </>
                             )}

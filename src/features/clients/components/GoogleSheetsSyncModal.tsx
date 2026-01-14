@@ -9,12 +9,12 @@ interface GoogleSheetsSyncModalProps {
     isOpen: boolean;
     onClose: () => void;
     onSyncSuccess: () => void;
-    initialTab?: 'import' | 'export';
+    initialTab?: 'import' | 'export' | 'config';
 }
 
 export function GoogleSheetsSyncModal({ isOpen, onClose, onSyncSuccess, initialTab = 'import' }: GoogleSheetsSyncModalProps) {
     const { user } = useAuth();
-    const [activeTab, setActiveTab] = useState<'import' | 'export'>(initialTab);
+    const [activeTab, setActiveTab] = useState<'import' | 'export' | 'config'>(initialTab);
 
     // Joint State
     const [step, setStep] = useState<1 | 2 | 3 | 4>(1); // 1: Select File, 2: Select Sheet, 3: Map/Confirm, 4: Processing
@@ -381,266 +381,330 @@ export function GoogleSheetsSyncModal({ isOpen, onClose, onSyncSuccess, initialT
                     </div>
 
                     {/* Tabs */}
-                    <div className="flex gap-2 bg-gray-200 dark:bg-gray-700 p-1 rounded-lg w-fit">
-                        <button
-                            onClick={() => setActiveTab('import')}
-                            className={`px-4 py-1.5 rounded-md text-sm font-medium transition-all ${activeTab === 'import' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white'}`}
-                        >
-                            Importa (da Sheets)
-                        </button>
-                        <button
-                            onClick={() => setActiveTab('export')}
-                            className={`px-4 py-1.5 rounded-md text-sm font-medium transition-all ${activeTab === 'export' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white'}`}
-                        >
-                            Esporta (verso Sheets)
-                        </button>
-                    </div>
+                    <button
+                        onClick={() => setActiveTab('import')}
+                        className={`px-4 py-1.5 rounded-md text-sm font-medium transition-all ${activeTab === 'import' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white'}`}
+                    >
+                        Importa
+                    </button>
+                    <button
+                        onClick={() => setActiveTab('export')}
+                        className={`px-4 py-1.5 rounded-md text-sm font-medium transition-all ${activeTab === 'export' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white'}`}
+                    >
+                        Esporta
+                    </button>
+                    <button
+                        onClick={() => setActiveTab('config')}
+                        className={`px-4 py-1.5 rounded-md text-sm font-medium transition-all ${activeTab === 'config' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white'}`}
+                    >
+                        Impostazioni
+                    </button>
                 </div>
+            </div>
 
-                {/* Content */}
-                <div className="flex-1 overflow-y-auto p-6">
-                    {isLoading && (
-                        <div className="flex flex-col items-center justify-center py-12 space-y-4">
-                            <Loader2 className="w-8 h-8 text-primary animate-spin" />
-                            <p className="text-sm text-gray-500">Elaborazione in corso...</p>
-                        </div>
-                    )}
+            {/* Content */}
+            <div className="flex-1 overflow-y-auto p-6">
+                {isLoading && (
+                    <div className="flex flex-col items-center justify-center py-12 space-y-4">
+                        <Loader2 className="w-8 h-8 text-primary animate-spin" />
+                        <p className="text-sm text-gray-500">Elaborazione in corso...</p>
+                    </div>
+                )}
 
-                    {!isLoading && step === 1 && (
-                        <div className="space-y-4">
-                            <p className="text-sm text-gray-600 dark:text-gray-400">
-                                {activeTab === 'import'
-                                    ? "Seleziona il file da importare:"
-                                    : "Seleziona il file di destinazione (verrà sovrascritto):"}
-                            </p>
-                            <div className="grid gap-2">
-                                {spreadsheets.map((file) => (
-                                    <button
-                                        key={file.id}
-                                        onClick={() => handleFileSelect(file.id)}
-                                        className="flex items-center p-4 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg hover:border-green-500 hover:ring-1 hover:ring-green-500 transition-all group text-left"
-                                    >
-                                        <FileSpreadsheet className="w-8 h-8 text-green-600 mr-4 opacity-70 group-hover:opacity-100" />
-                                        <span className="font-medium text-gray-900 dark:text-white">{file.name}</span>
-                                    </button>
-                                ))}
-                                {spreadsheets.length === 0 && (
-                                    <div className="text-center py-8 text-gray-500">Nessun foglio trovato. Assicurati di aver collegato l'account nelle Impostazioni.</div>
-                                )}
-                            </div>
-                        </div>
-                    )}
-
-                    {!isLoading && step === 2 && (
-                        <div className="space-y-4">
-                            <button onClick={() => setStep(1)} className="text-sm text-gray-500 hover:text-gray-900 mb-2">← Indietro</button>
-                            <p className="text-sm text-gray-600 dark:text-gray-400">Seleziona il foglio (tab) specifico:</p>
-                            <div className="grid gap-2">
-                                {sheets.map((sheet, idx) => (
-                                    <button
-                                        key={idx}
-                                        onClick={() => handleSheetSelect(sheet)}
-                                        className="flex items-center p-3 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition"
-                                    >
-                                        <span className="font-medium text-gray-900 dark:text-white">{sheet}</span>
-                                    </button>
-                                ))}
-                            </div>
-                        </div>
-                    )}
-
-                    {/* Step 3: Different for Import/Export */}
-
-                    {!isLoading && step === 3 && activeTab === 'import' && (
-                        <div className="space-y-6">
-                            <button onClick={() => setStep(2)} className="text-sm text-gray-500 hover:text-gray-900">← Indietro</button>
-                            <div className="bg-yellow-50 dark:bg-yellow-900/20 p-4 rounded-lg flex items-start gap-3">
-                                <AlertCircle className="w-5 h-5 text-yellow-600 mt-0.5" />
-                                <div className="text-sm text-yellow-800 dark:text-yellow-200">
-                                    Mappa le colonne del file Excel/Sheets con i campi di InkFlow.
-                                </div>
-                            </div>
-
-                            <div className="space-y-4 grid grid-cols-2 gap-4">
-                                {[
-                                    { key: 'full_name', label: 'Nome (o Nome Completo)' },
-                                    { key: 'surname', label: 'Cognome' },
-                                    { key: 'email', label: 'Email' },
-                                    { key: 'phone', label: 'Telefono' },
-                                    { key: 'fiscal_code', label: 'Codice Fiscale' },
-                                    { key: 'address', label: 'Indirizzo' },
-                                    { key: 'city', label: 'Città' },
-                                    { key: 'zip_code', label: 'CAP' },
-                                    { key: 'zip_code', label: 'CAP' },
-                                    { key: 'preferred_styles', label: 'Stili Preferiti (separati da virgola)' },
-                                    { key: 'notes', label: 'Note' }
-                                ].map((field) => (
-                                    <div key={field.key}>
-                                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                                            {field.label}
-                                        </label>
-                                        <select
-                                            className="w-full p-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
-                                            value={(mapping as any)[field.key]}
-                                            onChange={(e) => setMapping({ ...mapping, [field.key]: e.target.value })}
-                                        >
-                                            <option value="">Seleziona...</option>
-                                            {headers.map(h => <option key={h} value={h}>{h}</option>)}
-                                        </select>
-                                    </div>
-                                ))}
-                            </div>
-                        </div>
-                    )}
-
-                    {!isLoading && step === 3 && activeTab === 'export' && (
-                        <div className="space-y-6 text-center py-8 relative">
-                            <button onClick={() => setStep(2)} className="absolute top-0 left-0 text-sm text-gray-500 hover:text-gray-900">← Indietro</button>
-
-                            <div className="w-16 h-16 bg-yellow-100 rounded-full flex items-center justify-center mx-auto mb-4 text-yellow-600">
-                                <AlertCircle size={32} />
-                            </div>
-
-                            <h3 className="text-xl font-bold text-gray-900 dark:text-white">Conferma Esportazione</h3>
-                            <p className="text-gray-600 dark:text-gray-400 max-w-sm mx-auto mt-2">
-                                Stai per esportare tutti i clienti nel foglio <b>{selectedSheet}</b>. <br />
-                                <span className="text-red-500 font-bold text-xs mt-2 block">ATTENZIONE: Il contenuto verrà sovrascritto.</span>
-                            </p>
-
-                            {/* Mapping Configuration UI */}
-                            <div className="mt-6 text-left max-w-md mx-auto">
+                {!isLoading && step === 1 && activeTab !== 'config' && (
+                    <div className="space-y-4">
+                        <p className="text-sm text-gray-600 dark:text-gray-400">
+                            {activeTab === 'import'
+                                ? "Seleziona il file da importare:"
+                                : "Seleziona il file di destinazione (verrà sovrascritto):"}
+                        </p>
+                        <div className="grid gap-2">
+                            {spreadsheets.map((file) => (
                                 <button
-                                    onClick={() => { setIsConfiguring(!isConfiguring); if (!isConfiguring && sheetHeaders.length === 0) fetchSheetHeaders(); }}
-                                    className="text-sm text-blue-600 hover:text-blue-500 font-medium flex items-center gap-2 mx-auto mb-2"
+                                    key={file.id}
+                                    onClick={() => handleFileSelect(file.id)}
+                                    className="flex items-center p-4 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg hover:border-green-500 hover:ring-1 hover:ring-green-500 transition-all group text-left"
                                 >
-                                    {isConfiguring ? 'Chiudi Configurazione' : 'Opzioni Avanzate: Configura Colonne'}
+                                    <FileSpreadsheet className="w-8 h-8 text-green-600 mr-4 opacity-70 group-hover:opacity-100" />
+                                    <span className="font-medium text-gray-900 dark:text-white">{file.name}</span>
                                 </button>
+                            ))}
+                            {spreadsheets.length === 0 && (
+                                <div className="text-center py-8 text-gray-500">Nessun foglio trovato. Assicurati di aver collegato l'account nelle Impostazioni.</div>
+                            )}
+                        </div>
+                    </div>
+                )}
 
-                                {isConfiguring && (
-                                    <div className="bg-gray-50 dark:bg-gray-900/50 p-4 rounded-lg border border-gray-200 dark:border-gray-700 animate-in fade-in zoom-in-95 duration-200">
-                                        <div className="flex justify-between items-center mb-4">
-                                            <h4 className="font-bold text-sm">Mappatura Colonne</h4>
-                                            {sheetHeaders.length === 0 && (
-                                                <button onClick={fetchSheetHeaders} disabled={isLoading} className="text-xs bg-gray-200 dark:bg-gray-700 px-2 py-1 rounded">
-                                                    Leggi Intestazioni
-                                                </button>
-                                            )}
-                                        </div>
+                {!isLoading && step === 2 && (
+                    <div className="space-y-4">
+                        <button onClick={() => setStep(1)} className="text-sm text-gray-500 hover:text-gray-900 mb-2">← Indietro</button>
+                        <p className="text-sm text-gray-600 dark:text-gray-400">Seleziona il foglio (tab) specifico:</p>
+                        <div className="grid gap-2">
+                            {sheets.map((sheet, idx) => (
+                                <button
+                                    key={idx}
+                                    onClick={() => handleSheetSelect(sheet)}
+                                    className="flex items-center p-3 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition"
+                                >
+                                    <span className="font-medium text-gray-900 dark:text-white">{sheet}</span>
+                                </button>
+                            ))}
+                        </div>
+                    </div>
+                )}
 
-                                        {sheetHeaders.length > 0 ? (
-                                            <div className="space-y-2 max-h-60 overflow-y-auto pr-2 custom-scrollbar">
-                                                {sheetHeaders.map(header => (
-                                                    <div key={header} className="flex items-center justify-between gap-2 text-sm">
-                                                        <span className="truncate w-1/3 text-gray-600 dark:text-gray-400" title={header}>{header}</span>
-                                                        <span className="text-gray-400">→</span>
-                                                        <select
-                                                            className="flex-1 p-1 rounded border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-xs"
-                                                            value={columnMapping[header] || ''}
-                                                            onChange={(e) => setColumnMapping({ ...columnMapping, [header]: e.target.value })}
-                                                        >
-                                                            <option value="">-- Ignora --</option>
-                                                            <option value="first_name">Nome</option>
-                                                            <option value="last_name">Cognome</option>
-                                                            <option value="email">Email</option>
-                                                            <option value="phone">Telefono</option>
-                                                            <option value="fiscal_code">Codice Fiscale</option>
-                                                            <option value="address">Indirizzo</option>
-                                                            <option value="city">Città</option>
-                                                            <option value="zip_code">CAP</option>
-                                                            <option value="zip_code">CAP</option>
-                                                            <option value="preferred_styles">Stili Preferiti</option>
-                                                            <option value="notes">Note</option>
-                                                            <option value="created_at">Data Reg.</option>
-                                                        </select>
-                                                    </div>
-                                                ))}
-                                            </div>
-                                        ) : (
-                                            <p className="text-xs text-center text-gray-500 py-4">Clicca "Leggi Intestazioni" per caricare le colonne dal tuo foglio.</p>
-                                        )}
+                {/* Step 3: Different for Import/Export */}
 
-                                        <div className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
-                                            <button
-                                                onClick={saveMapping}
-                                                disabled={isLoading}
-                                                className="w-full py-2 bg-blue-600/10 text-blue-600 hover:bg-blue-600/20 rounded font-bold text-xs transition-colors"
-                                            >
-                                                Salva come Predefinito
+                {!isLoading && step === 3 && activeTab === 'import' && (
+                    <div className="space-y-6">
+                        <button onClick={() => setStep(2)} className="text-sm text-gray-500 hover:text-gray-900">← Indietro</button>
+                        <div className="bg-yellow-50 dark:bg-yellow-900/20 p-4 rounded-lg flex items-start gap-3">
+                            <AlertCircle className="w-5 h-5 text-yellow-600 mt-0.5" />
+                            <div className="text-sm text-yellow-800 dark:text-yellow-200">
+                                Mappa le colonne del file Excel/Sheets con i campi di InkFlow.
+                            </div>
+                        </div>
+
+                        <div className="space-y-4 grid grid-cols-2 gap-4">
+                            {[
+                                { key: 'full_name', label: 'Nome (o Nome Completo)' },
+                                { key: 'surname', label: 'Cognome' },
+                                { key: 'email', label: 'Email' },
+                                { key: 'phone', label: 'Telefono' },
+                                { key: 'fiscal_code', label: 'Codice Fiscale' },
+                                { key: 'address', label: 'Indirizzo' },
+                                { key: 'city', label: 'Città' },
+                                { key: 'zip_code', label: 'CAP' },
+                                { key: 'zip_code', label: 'CAP' },
+                                { key: 'preferred_styles', label: 'Stili Preferiti (separati da virgola)' },
+                                { key: 'notes', label: 'Note' }
+                            ].map((field) => (
+                                <div key={field.key}>
+                                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                                        {field.label}
+                                    </label>
+                                    <select
+                                        className="w-full p-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
+                                        value={(mapping as any)[field.key]}
+                                        onChange={(e) => setMapping({ ...mapping, [field.key]: e.target.value })}
+                                    >
+                                        <option value="">Seleziona...</option>
+                                        {headers.map(h => <option key={h} value={h}>{h}</option>)}
+                                    </select>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                )}
+
+                {!isLoading && step === 3 && activeTab === 'export' && (
+                    <div className="space-y-6 text-center py-8 relative">
+                        <button onClick={() => setStep(2)} className="absolute top-0 left-0 text-sm text-gray-500 hover:text-gray-900">← Indietro</button>
+
+                        <div className="w-16 h-16 bg-yellow-100 rounded-full flex items-center justify-center mx-auto mb-4 text-yellow-600">
+                            <AlertCircle size={32} />
+                        </div>
+
+                        <h3 className="text-xl font-bold text-gray-900 dark:text-white">Conferma Esportazione</h3>
+                        <p className="text-gray-600 dark:text-gray-400 max-w-sm mx-auto mt-2">
+                            Stai per esportare tutti i clienti nel foglio <b>{selectedSheet}</b>. <br />
+                            <span className="text-red-500 font-bold text-xs mt-2 block">ATTENZIONE: Il contenuto verrà sovrascritto.</span>
+                        </p>
+
+                        {/* Mapping Configuration UI */}
+                        <div className="mt-6 text-left max-w-md mx-auto">
+                            <button
+                                onClick={() => { setIsConfiguring(!isConfiguring); if (!isConfiguring && sheetHeaders.length === 0) fetchSheetHeaders(); }}
+                                className="text-sm text-blue-600 hover:text-blue-500 font-medium flex items-center gap-2 mx-auto mb-2"
+                            >
+                                {isConfiguring ? 'Chiudi Configurazione' : 'Opzioni Avanzate: Configura Colonne'}
+                            </button>
+
+                            {isConfiguring && (
+                                <div className="bg-gray-50 dark:bg-gray-900/50 p-4 rounded-lg border border-gray-200 dark:border-gray-700 animate-in fade-in zoom-in-95 duration-200">
+                                    <div className="flex justify-between items-center mb-4">
+                                        <h4 className="font-bold text-sm">Mappatura Colonne</h4>
+                                        {sheetHeaders.length === 0 && (
+                                            <button onClick={fetchSheetHeaders} disabled={isLoading} className="text-xs bg-gray-200 dark:bg-gray-700 px-2 py-1 rounded">
+                                                Leggi Intestazioni
                                             </button>
-                                        </div>
+                                        )}
                                     </div>
-                                )}
-                            </div>
 
-                            <div className="flex justify-center gap-4 mt-8">
-                                <button
-                                    onClick={() => handleExport()}
-                                    className="px-8 py-3 bg-accent text-white font-bold rounded-xl hover:bg-accent-hover transition-transform active:scale-95 shadow-lg shadow-accent/20 flex items-center gap-2"
-                                    disabled={isLoading}
-                                >
-                                    {isLoading ? <RefreshCw className="w-5 h-5 animate-spin" /> : 'Conferma e Sovrascrivi'}
-                                </button>
-                            </div>
+                                    {sheetHeaders.length > 0 ? (
+                                        <div className="space-y-2 max-h-60 overflow-y-auto pr-2 custom-scrollbar">
+                                            {sheetHeaders.map(header => (
+                                                <div key={header} className="flex items-center justify-between gap-2 text-sm">
+                                                    <span className="truncate w-1/3 text-gray-600 dark:text-gray-400" title={header}>{header}</span>
+                                                    <span className="text-gray-400">→</span>
+                                                    <select
+                                                        className="flex-1 p-1 rounded border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-xs"
+                                                        value={columnMapping[header] || ''}
+                                                        onChange={(e) => setColumnMapping({ ...columnMapping, [header]: e.target.value })}
+                                                    >
+                                                        <option value="">-- Ignora --</option>
+                                                        <option value="first_name">Nome</option>
+                                                        <option value="last_name">Cognome</option>
+                                                        <option value="email">Email</option>
+                                                        <option value="phone">Telefono</option>
+                                                        <option value="fiscal_code">Codice Fiscale</option>
+                                                        <option value="address">Indirizzo</option>
+                                                        <option value="city">Città</option>
+                                                        <option value="zip_code">CAP</option>
+                                                        <option value="preferred_styles">Stili Preferiti</option>
+                                                        <option value="notes">Note</option>
+                                                        <option value="created_at">Data Reg.</option>
+                                                    </select>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    ) : (
+                                        <p className="text-xs text-center text-gray-500 py-4">Clicca "Leggi Intestazioni" per caricare le colonne dal tuo foglio.</p>
+                                    )}
 
-                            <div className="mt-6 flex justify-center">
-                                <label className="flex items-center gap-2 cursor-pointer text-sm text-gray-700 dark:text-gray-300 select-none bg-gray-100 dark:bg-gray-800 px-4 py-2 rounded-lg border border-gray-200 dark:border-gray-700">
-                                    <input
-                                        type="checkbox"
-                                        checked={isDefault}
-                                        onChange={(e) => setIsDefault(e.target.checked)}
-                                        className="rounded border-gray-300 text-green-600 focus:ring-green-500"
-                                    />
-                                    <span>Usa come foglio predefinito per il salvataggio automatico</span>
-                                </label>
-                            </div>
-                        </div>
-                    )}
-
-                    {!isLoading && step === 4 && (
-                        <div className="text-center py-8">
-                            <div className="w-16 h-16 bg-green-100 dark:bg-green-900/30 rounded-full flex items-center justify-center mx-auto mb-4">
-                                <Check className="w-8 h-8 text-green-600 dark:text-green-400" />
-                            </div>
-                            <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">
-                                {activeTab === 'import' ? 'Importazione Completata!' : 'Esportazione Completata!'}
-                            </h3>
-
-                            {activeTab === 'import' ? (
-                                <div className="text-gray-600 dark:text-gray-400 bg-gray-50 dark:bg-gray-800 p-4 rounded-lg inline-block text-left text-sm">
-                                    <p>Totale: <b>{importStats.total}</b></p>
-                                    <p className="text-green-600">Successo: <b>{importStats.success}</b></p>
-                                    <p className="text-red-500">Errori: <b>{importStats.failed}</b></p>
-                                </div>
-                            ) : (
-                                <div className="text-gray-600 dark:text-gray-400 bg-gray-50 dark:bg-gray-800 p-4 rounded-lg inline-block text-center text-sm">
-                                    <p>Clienti esportati:</p>
-                                    <p className="text-2xl font-bold text-green-600">{exportStats.total}</p>
+                                    <div className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
+                                        <button
+                                            onClick={saveMapping}
+                                            disabled={isLoading}
+                                            className="w-full py-2 bg-blue-600/10 text-blue-600 hover:bg-blue-600/20 rounded font-bold text-xs transition-colors"
+                                        >
+                                            Salva come Predefinito
+                                        </button>
+                                    </div>
                                 </div>
                             )}
+                        </div>
 
-                            <div className="mt-8">
-                                <button onClick={() => { onSyncSuccess(); onClose(); }} className="px-6 py-2 bg-primary text-white rounded-lg hover:bg-primary-hover">
-                                    Chiudi
-                                </button>
+                        <div className="flex justify-center gap-4 mt-8">
+                            <button
+                                onClick={() => handleExport()}
+                                className="px-8 py-3 bg-accent text-white font-bold rounded-xl hover:bg-accent-hover transition-transform active:scale-95 shadow-lg shadow-accent/20 flex items-center gap-2"
+                                disabled={isLoading}
+                            >
+                                {isLoading ? <RefreshCw className="w-5 h-5 animate-spin" /> : 'Conferma e Sovrascrivi'}
+                            </button>
+                        </div>
+
+                        <div className="mt-6 flex justify-center">
+                            <label className="flex items-center gap-2 cursor-pointer text-sm text-gray-700 dark:text-gray-300 select-none bg-gray-100 dark:bg-gray-800 px-4 py-2 rounded-lg border border-gray-200 dark:border-gray-700">
+                                <input
+                                    type="checkbox"
+                                    checked={isDefault}
+                                    onChange={(e) => setIsDefault(e.target.checked)}
+                                    className="rounded border-gray-300 text-green-600 focus:ring-green-500"
+                                />
+                                <span>Usa come foglio predefinito per il salvataggio automatico</span>
+                            </label>
+                        </div>
+                    </div>
+                )}
+
+                {/* Step 4: Success Message (Shared) */}
+                {!isLoading && step === 4 && (
+                    <div className="text-center py-8">
+                        <div className="w-16 h-16 bg-green-100 dark:bg-green-900/30 rounded-full flex items-center justify-center mx-auto mb-4">
+                            <Check className="w-8 h-8 text-green-600 dark:text-green-400" />
+                        </div>
+                        <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">
+                            {activeTab === 'import' ? 'Importazione Completata!' : 'Esportazione Completata!'}
+                        </h3>
+
+                        {activeTab === 'import' ? (
+                            <div className="text-gray-600 dark:text-gray-400 bg-gray-50 dark:bg-gray-800 p-4 rounded-lg inline-block text-left text-sm">
+                                <p>Totale: <b>{importStats.total}</b></p>
+                                <p className="text-green-600">Successo: <b>{importStats.success}</b></p>
+                                <p className="text-red-500">Errori: <b>{importStats.failed}</b></p>
+                            </div>
+                        ) : (
+                            <div className="text-gray-600 dark:text-gray-400 bg-gray-50 dark:bg-gray-800 p-4 rounded-lg inline-block text-center text-sm">
+                                <p>Clienti esportati:</p>
+                                <p className="text-2xl font-bold text-green-600">{exportStats.total}</p>
+                            </div>
+                        )}
+
+                        <div className="mt-8">
+                            <button onClick={() => { onSyncSuccess(); onClose(); }} className="px-6 py-2 bg-primary text-white rounded-lg hover:bg-primary-hover">
+                                Chiudi
+                            </button>
+                        </div>
+                    </div>
+                )}
+
+                {/* Config Tab Content - Integrated inside scrollable area */}
+                {!isLoading && activeTab === 'config' && (
+                    <div className="space-y-6 pt-2">
+                        <div className="bg-gray-50 dark:bg-gray-800/50 p-6 rounded-xl border border-gray-200 dark:border-gray-700">
+                            <h3 className="font-bold text-lg mb-4 text-gray-900 dark:text-white">Stato Sincronizzazione</h3>
+
+                            <div className="space-y-4">
+                                <div className="flex items-center justify-between">
+                                    <span className="text-gray-600 dark:text-gray-400">Sync Automatico (App → Sheets)</span>
+                                    <label className="relative inline-flex items-center cursor-pointer">
+                                        <input
+                                            type="checkbox"
+                                            className="sr-only peer"
+                                            checked={studioConfig?.google_sheets_config?.auto_sync_enabled || false}
+                                            onChange={async (e) => {
+                                                if (!studioConfig?.google_sheets_config?.spreadsheet_id) {
+                                                    alert("Devi prima configurare un foglio tramite la tab 'Esporta' o selezionandone uno.");
+                                                    return;
+                                                }
+                                                const newVal = e.target.checked;
+                                                try {
+                                                    await api.settings.updateStudio(user!.studio_id!, {
+                                                        google_sheets_config: {
+                                                            ...studioConfig.google_sheets_config,
+                                                            auto_sync_enabled: newVal
+                                                        }
+                                                    });
+                                                    setStudioConfig({
+                                                        ...studioConfig,
+                                                        google_sheets_config: { ...studioConfig.google_sheets_config, auto_sync_enabled: newVal }
+                                                    });
+                                                } catch (err) {
+                                                    console.error(err);
+                                                    alert("Errore nell'aggiornamento");
+                                                }
+                                            }}
+                                        />
+                                        <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-green-300 dark:peer-focus:ring-green-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-green-600"></div>
+                                    </label>
+                                </div>
+
+                                <div className="p-4 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
+                                    <div className="text-sm text-gray-500 mb-1">Foglio Connesso</div>
+                                    <div className="font-mono text-sm truncate">
+                                        {studioConfig?.google_sheets_config?.spreadsheet_id || "Nessun foglio configurato"}
+                                    </div>
+                                    <div className="text-sm text-gray-500 mt-2 mb-1">Tab (Sheet Name)</div>
+                                    <div className="font-mono text-sm font-bold text-green-600">
+                                        {studioConfig?.google_sheets_config?.sheet_name || "-"}
+                                    </div>
+                                </div>
+
+                                <div className="text-xs text-gray-500">
+                                    Nota: Per cambiare il foglio di destinazione, usa la tab "Esporta" e seleziona "Usa come foglio predefinito".
+                                </div>
                             </div>
                         </div>
-                    )}
-                </div>
-
-                {/* Footer Actions (Step 3 Import only) */}
-                {!isLoading && step === 3 && activeTab === 'import' && (
-                    <div className="p-4 border-t border-gray-100 dark:border-gray-800 bg-gray-50/50 dark:bg-gray-800/50 flex justify-end gap-3">
-                        <button onClick={onClose} className="px-4 py-2 text-gray-600 hover:text-gray-900 font-medium">Annulla</button>
-                        <button
-                            onClick={handleImport}
-                            className="px-6 py-2 bg-primary text-white rounded-lg hover:bg-primary-hover flex items-center gap-2"
-                        >
-                            <Download className="w-4 h-4" />
-                            Avvia Importazione
-                        </button>
                     </div>
                 )}
             </div>
+
+            {/* Footer Actions (Step 3 Import only) */}
+            {!isLoading && step === 3 && activeTab === 'import' && (
+                <div className="p-4 border-t border-gray-100 dark:border-gray-800 bg-gray-50/50 dark:bg-gray-800/50 flex justify-end gap-3">
+                    <button onClick={onClose} className="px-4 py-2 text-gray-600 hover:text-gray-900 font-medium">Annulla</button>
+                    <button
+                        onClick={handleImport}
+                        className="px-6 py-2 bg-primary text-white rounded-lg hover:bg-primary-hover flex items-center gap-2"
+                    >
+                        <Download className="w-4 h-4" />
+                        Avvia Importazione
+                    </button>
+                </div>
+            )}
         </div>
     );
 }
