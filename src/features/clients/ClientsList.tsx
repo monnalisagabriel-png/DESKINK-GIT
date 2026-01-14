@@ -216,8 +216,8 @@ export const ClientsList: React.FC = () => {
                                         onClick={syncClients}
                                         disabled={!hasConfig || isSyncing}
                                         className={`flex items-center gap-2 px-3 py-2 rounded-lg font-medium transition-colors whitespace-nowrap ${hasConfig
-                                                ? 'bg-green-600/10 border border-green-600/20 hover:bg-green-600/20 text-green-500'
-                                                : 'bg-gray-500/10 border border-gray-500/20 text-gray-500 cursor-not-allowed opacity-50'
+                                            ? 'bg-green-600/10 border border-green-600/20 hover:bg-green-600/20 text-green-500'
+                                            : 'bg-gray-500/10 border border-gray-500/20 text-gray-500 cursor-not-allowed opacity-50'
                                             }`}
                                         title={hasConfig ? "Aggiorna da Google Sheets (Usa configurazione salvata)" : "Configura prima un foglio Google"}
                                     >
@@ -351,8 +351,8 @@ export const ClientsList: React.FC = () => {
             </div>
 
             {/* Desktop Table (lg+) */}
-            <div className="hidden lg:block bg-bg-secondary rounded-lg border border-border overflow-x-auto flex-1">
-                <table className="w-full text-left border-collapse min-w-[800px]">
+            <div className="hidden lg:block bg-bg-secondary rounded-lg border border-border overflow-hidden flex-1">
+                <table className="w-full text-left border-collapse">
                     <thead className="bg-bg-tertiary">
                         <tr className="text-sm text-text-muted font-medium border-b border-border">
                             <th className="px-6 py-3 w-12">
@@ -399,16 +399,16 @@ export const ClientsList: React.FC = () => {
                                         <div className="text-xs text-text-muted">ID: {client.id}</div>
                                     </td>
                                     <td className="px-6 py-4">
-                                        <div className="flex flex-col gap-1 text-sm text-text-secondary">
+                                        <div className="flex flex-col gap-1 text-sm text-text-secondary break-all">
                                             <div className="flex items-center gap-2">
-                                                <Mail size={14} /> {client.email}
+                                                <Mail size={14} className="shrink-0" /> <span className="break-all">{client.email}</span>
                                             </div>
                                             <div
                                                 className="flex items-center gap-2 hover:text-white cursor-pointer transition-colors"
                                                 onClick={(e) => handleWhatsAppClick(e, client.phone)}
                                                 title="Apri WhatsApp"
                                             >
-                                                <Phone size={14} /> {client.phone}
+                                                <Phone size={14} className="shrink-0" /> <span className="whitespace-nowrap">{client.phone}</span>
                                             </div>
                                         </div>
                                     </td>
