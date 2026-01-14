@@ -3,6 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { Save, AlertTriangle, History } from 'lucide-react';
 import { api } from '../../../services/api';
 import type { ConsentTemplate } from '../../../services/types';
+import { useAuth } from '../../auth/AuthContext';
 
 export const TemplateTab: React.FC = () => {
     const [template, setTemplate] = useState<ConsentTemplate | null>(null);
@@ -14,19 +15,29 @@ export const TemplateTab: React.FC = () => {
     const [title, setTitle] = useState('');
     const [requiredResign, setRequiredResign] = useState(false);
 
+    const { user } = useAuth();
+
     useEffect(() => {
-        loadTemplate();
-    }, []);
+        if (user?.studio_id) {
+            loadTemplate();
+        }
+    }, [user?.studio_id]);
 
     const loadTemplate = async () => {
+        if (!user?.studio_id) return;
         setLoading(true);
         try {
-            const data = await api.consents.getTemplate('studio-1'); // Assume current studio
+            const data = await api.consents.getTemplate(user.studio_id);
             if (data) {
                 setTemplate(data);
                 setTitle(data.title);
                 setContent(data.content);
                 setRequiredResign(data.required_resign);
+            } else {
+                // Initialize defaults for new template
+                setTitle('Consenso Informato');
+                setContent('<h3>Termini e Condizioni</h3><p>Inserisci qui il testo del tuo consenso...</p>');
+                setRequiredResign(false);
             }
         } finally {
             setLoading(false);

@@ -21,9 +21,9 @@ export const ConsentsPage: React.FC = () => {
 
     const handleStartSignature = async (client: Client) => {
         try {
-            const template = await api.consents.getTemplate('studio-1');
+            const template = await api.consents.getTemplate(client.studio_id);
             if (!template) {
-                alert('Nessun template attivo trovato. Crea prima un template.');
+                alert('Nessun template attivo trovato per questo studio. L\'owner deve prima creare un template.');
                 return;
             }
             setCurrentTemplate(template);
