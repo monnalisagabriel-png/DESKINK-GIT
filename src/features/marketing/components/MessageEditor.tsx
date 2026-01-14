@@ -44,7 +44,7 @@ export const MessageEditor: React.FC<MessageEditorProps> = ({ data, onChange, on
         try {
             const options = await api.marketing.generateAIMessage({
                 ...aiPrompt,
-                apiKey,
+                apiKey: studio?.ai_settings?.gemini_api_key || apiKey,
                 studioName: studio?.name || 'lo Studio',
                 studioAddress: studio?.address,
                 studioPhone: studio?.phone
@@ -160,22 +160,30 @@ export const MessageEditor: React.FC<MessageEditorProps> = ({ data, onChange, on
                 <div className="space-y-4 mb-6">
                     <div className="bg-bg-tertiary p-3 md:p-4 rounded-lg border border-border">
                         <label className="block text-xs font-bold text-text-muted uppercase mb-2">Configurazione AI</label>
-                        <div className="flex flex-col sm:flex-row gap-2 mb-2">
-                            <input
-                                type="password"
-                                placeholder="Tua API Key (Opzionale)"
-                                className="flex-1 bg-bg-primary border border-border rounded px-3 py-1.5 text-sm text-white focus:outline-none w-full"
-                                value={apiKey}
-                                onChange={(e) => setApiKey(e.target.value)}
-                            />
-                            <div className="flex items-center justify-center gap-1.5 px-3 py-1.5 rounded bg-green-500/10 border border-green-500/20 shrink-0">
-                                <span className="relative flex h-2 w-2">
-                                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
-                                    <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
-                                </span>
-                                <span className="text-xs font-medium text-green-500">System AI Active</span>
+                        {studio?.ai_settings?.gemini_api_key ? (
+                            <div className="flex items-center gap-2 p-3 bg-green-500/10 border border-green-500/20 rounded-lg">
+                                <div className="flex items-center justify-center h-5 w-5 rounded-full bg-green-500/20 text-green-500">
+                                    <Sparkles size={12} fill="currentColor" />
+                                </div>
+                                <div className="flex-1">
+                                    <p className="text-sm font-medium text-green-500">AI Studio Attiva</p>
+                                    <p className="text-xs text-green-400/80">Usa la chiave configurata nelle impostazioni</p>
+                                </div>
                             </div>
-                        </div>
+                        ) : (
+                            <div className="flex flex-col sm:flex-row gap-2 mb-2">
+                                <input
+                                    type="password"
+                                    placeholder="Tua API Key (Opzionale)"
+                                    className="flex-1 bg-bg-primary border border-border rounded px-3 py-1.5 text-sm text-white focus:outline-none w-full"
+                                    value={apiKey}
+                                    onChange={(e) => setApiKey(e.target.value)}
+                                />
+                                <div className="flex items-center justify-center gap-1.5 px-3 py-1.5 rounded bg-yellow-500/10 border border-yellow-500/20 shrink-0">
+                                    <span className="text-xs font-medium text-yellow-500">Manuale</span>
+                                </div>
+                            </div>
+                        )}
                     </div>
 
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">

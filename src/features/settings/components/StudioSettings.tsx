@@ -184,6 +184,27 @@ export const StudioSettings: React.FC = () => {
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-4 border-t border-border">
                         <div className="md:col-span-2">
+                            <h3 className="text-text-primary font-medium mb-4">Configurazione AI</h3>
+                        </div>
+                        <div className="md:col-span-2">
+                            <label className="block text-sm font-medium text-text-muted mb-1">Chiave API Gemini</label>
+                            <div className="relative">
+                                <input
+                                    type="password"
+                                    value={studio.ai_settings?.gemini_api_key || ''}
+                                    onChange={e => setStudio({ ...studio, ai_settings: { ...studio.ai_settings, gemini_api_key: e.target.value } })}
+                                    className="w-full bg-bg-tertiary border border-border rounded-lg px-4 py-2 text-white focus:border-accent focus:outline-none"
+                                    placeholder="Incolla qui la tua API Key"
+                                />
+                                <p className="text-xs text-text-muted mt-1">
+                                    Necessaria per generare testi marketing con l'intelligenza artificiale.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-4 border-t border-border">
+                        <div className="md:col-span-2">
                             <h3 className="text-text-primary font-medium mb-4">Dati Fiscali</h3>
                         </div>
                         <div className="md:col-span-2">
@@ -227,7 +248,7 @@ export const StudioSettings: React.FC = () => {
                         </button>
                     </div>
                 </form>
-            </div>
-        </div>
+            </div >
+        </div >
     );
 };

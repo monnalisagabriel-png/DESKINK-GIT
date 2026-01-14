@@ -417,6 +417,9 @@ export interface Studio {
     auto_sync_enabled?: boolean;
     mapping?: Record<string, string>;
   };
+  ai_settings?: {
+    gemini_api_key?: string;
+  };
   academy_terms?: string;
   academy_terms_version?: number;
 }
