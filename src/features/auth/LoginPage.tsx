@@ -45,7 +45,8 @@ export const LoginPage: React.FC = () => {
             } else {
                 // Show more details for debugging
                 const detail = err.message || JSON.stringify(err);
-                setError(`Errore: ${detail} (Status: ${err.status || 'N/A'})`);
+                const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || 'NOT SET (using mock?)';
+                setError(`Errore: ${detail} (Status: ${err.status || 'N/A'})\nTarget: ${supabaseUrl.substring(0, 15)}...`);
             }
         } finally {
             setLoading(false);
