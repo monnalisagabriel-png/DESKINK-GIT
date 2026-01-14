@@ -328,9 +328,9 @@ export const ClientProfile: React.FC = () => {
 
             <div className="flex-1 overflow-y-auto p-4 md:p-8">
                 {/* Profile Header Card */}
-                <div className="bg-bg-secondary rounded-2xl border border-border p-6 md:p-8 flex flex-col lg:flex-row gap-8 mb-8">
+                <div className="bg-bg-secondary rounded-2xl border border-border p-6 md:p-8 flex flex-col xl:flex-row gap-8 mb-8">
                     {/* Avatar / Initials */}
-                    <div className="shrink-0 flex justify-center lg:justify-start">
+                    <div className="shrink-0 flex justify-center xl:justify-start">
                         <div className="w-24 h-24 md:w-32 md:h-32 rounded-full bg-gradient-to-br from-accent to-purple-600 p-1 shadow-xl shadow-accent/20">
                             <div className="w-full h-full rounded-full bg-bg-tertiary flex items-center justify-center border-4 border-bg-primary overflow-hidden relative group cursor-pointer">
                                 {client.full_name ? (
@@ -450,25 +450,27 @@ export const ClientProfile: React.FC = () => {
                             </div>
                         ) : (
                             <div className="space-y-4">
-                                <h2 className="text-3xl font-bold text-white">{client.full_name}</h2>
+                                <h2 className="text-3xl font-bold text-white break-words">{client.full_name}</h2>
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-y-2 gap-x-4 text-text-secondary text-base">
-                                    <span className="flex items-center gap-2"><Mail size={18} /> {client.email || 'N/D'}</span>
-                                    <span className="flex items-center gap-2"><Phone size={18} /> {client.phone || 'N/D'}</span>
+                                    <span className="flex items-center gap-2 break-all"><Mail size={18} className="shrink-0" /> {client.email || 'N/D'}</span>
+                                    <span className="flex items-center gap-2"><Phone size={18} className="shrink-0" /> {client.phone || 'N/D'}</span>
                                     {(client.address || client.city) && (
-                                        <span className="flex items-center gap-2">
-                                            <MapPin size={18} />
-                                            {[client.address, client.city, client.zip_code].filter(Boolean).join(', ')}
+                                        <span className="flex items-center gap-2 col-span-1 md:col-span-2 xl:col-span-1">
+                                            <MapPin size={18} className="shrink-0" />
+                                            <span className="break-words">
+                                                {[client.address, client.city, client.zip_code].filter(Boolean).join(', ')}
+                                            </span>
                                         </span>
                                     )}
                                     {client.fiscal_code && (
                                         <span className="flex items-center gap-2">
-                                            <CreditCard size={18} /> {client.fiscal_code}
+                                            <CreditCard size={18} className="shrink-0" /> <span className="break-all">{client.fiscal_code}</span>
                                         </span>
                                     )}
                                 </div>
                                 {client.preferred_styles && client.preferred_styles.length > 0 && (
                                     <div className="flex items-center gap-2 mt-4">
-                                        <Tag size={18} className="text-accent" />
+                                        <Tag size={18} className="text-accent shrink-0" />
                                         <div className="flex gap-2 flex-wrap">
                                             {client.preferred_styles.map((style, idx) => (
                                                 <span key={idx} className="bg-accent/10 text-accent px-2.5 py-1 rounded-full text-sm border border-accent/20">
