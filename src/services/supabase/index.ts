@@ -187,8 +187,17 @@ export class SupabaseRepository implements IRepository {
                         appointment: newApt,
                         user_id: createSession.user.id
                     }
-                }).then(({ error: syncError }) => {
-                    if (syncError) console.warn('Google Sync (Create) failed:', syncError);
+                }).then(({ data, error: syncError }) => {
+                    if (syncError) {
+                        console.warn('Google Sync (Create) failed:', syncError);
+                    } else if (data?.message) {
+                        console.warn('Google Sync (Create) info:', data.message);
+                        if (data.message === 'No calendar mapped') {
+                            console.warn('--> ATTENZIONE: Nessun calendario mappato per questo artista.');
+                        }
+                    } else {
+                        console.log('Google Sync (Create) success:', data);
+                    }
                 });
             }
 
@@ -361,8 +370,17 @@ export class SupabaseRepository implements IRepository {
                         appointment: updated,
                         user_id: updateSession.user.id
                     }
-                }).then(({ error: syncError }) => {
-                    if (syncError) console.warn('Google Sync (Update) failed:', syncError);
+                }).then(({ data, error: syncError }) => {
+                    if (syncError) {
+                        console.warn('Google Sync (Update) failed:', syncError);
+                    } else if (data?.message) {
+                        console.warn('Google Sync (Update) info:', data.message);
+                        if (data.message === 'No calendar mapped') {
+                            console.warn('--> ATTENZIONE: Nessun calendario mappato per questo artista.');
+                        }
+                    } else {
+                        console.log('Google Sync (Update) success:', data);
+                    }
                 });
             }
 
@@ -388,8 +406,12 @@ export class SupabaseRepository implements IRepository {
                             appointment: apt,
                             user_id: deleteSession.user.id
                         }
-                    }).then(({ error: syncError }) => {
-                        if (syncError) console.warn('Google Sync (Delete) failed:', syncError);
+                    }).then(({ data, error: syncError }) => {
+                        if (syncError) {
+                            console.warn('Google Sync (Delete) failed:', syncError);
+                        } else if (data?.message) {
+                            console.log('Google Sync (Delete) response:', data.message);
+                        }
                     });
                 }
             }
