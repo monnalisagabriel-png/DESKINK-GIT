@@ -1,6 +1,7 @@
 
 import { useEffect, useState } from 'react';
 import { supabase } from '../lib/supabase';
+import { useAuth } from '../features/auth/AuthContext';
 
 export const DebugSupabase = () => {
     const [status, setStatus] = useState<string>('Connecting...');
@@ -8,28 +9,21 @@ export const DebugSupabase = () => {
     const [logs, setLogs] = useState<string[]>([]);
     const [channelStatus, setChannelStatus] = useState<string>('Idle');
 
-    useEffect(() => {
-        const checkConnection = async () => {
-            try {
-                const { data: { session }, error } = await supabase.auth.getSession();
-                if (error) {
-                    setStatus('Error connecting');
-                    setDetails(error.message);
-                } else {
-                    setStatus('Connected');
-                    const userDetails = session?.user
-                        ? `User: ${session.user.email}\nStudio ID: ${session.user.user_metadata?.studio_id}`
-                        : 'No active session';
-                    setDetails(`Supabase Reachable.\n${userDetails}`);
-                }
-            } catch (err: any) {
-                setStatus('Exception');
-                setDetails(err.message || 'Unknown error');
-            }
-        };
+    // Use AuthContext to see what the app actually sees (hydrated user)
+    const { user, isLoading } = useAuth();
 
-        checkConnection();
-    }, []);
+    useEffect(() => {
+        if (!isLoading) {
+            if (user) {
+                setStatus('Connected');
+                const details = `User: ${user.email}\nStudio ID: ${user.studio_id || 'Missing'}\nRole: ${user.role}`;
+                setDetails(`AuthContext State:\n${details}`);
+            } else {
+                setStatus('Not Authenticated');
+                setDetails('User is not logged in via AuthContext');
+            }
+        }
+    }, [user, isLoading]);
 
     useEffect(() => {
         // Debug Realtime Listener
