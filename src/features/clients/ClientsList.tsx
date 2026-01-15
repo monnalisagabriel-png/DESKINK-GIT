@@ -8,12 +8,19 @@ import { useAuth } from '../auth/AuthContext';
 import { GoogleSheetsSyncModal } from './components/GoogleSheetsSyncModal';
 import { useGoogleSheetsSync } from './hooks/useGoogleSheetsSync';
 import { ReviewRequestModal } from '../../components/ReviewRequestModal';
+import { useRealtime } from '../../hooks/useRealtime';
 
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 
 export const ClientsList: React.FC = () => {
     const queryClient = useQueryClient();
     const { user } = useAuth();
+
+    // Realtime Subscription
+    useRealtime('clients', () => {
+        console.log('[ClientsList] Realtime update detected. Invalidating query...');
+        queryClient.invalidateQueries({ queryKey: ['clients', user?.studio_id] });
+    });
 
     // React Query for data fetching
     const { data: clients = [], isLoading: loading } = useQuery({

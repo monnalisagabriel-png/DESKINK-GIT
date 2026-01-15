@@ -20,6 +20,7 @@ import {
 import { api } from '../../../services/api';
 import type { Appointment } from '../../../services/types';
 import { useAuth } from '../../auth/AuthContext';
+import { useRealtime } from '../../../hooks/useRealtime';
 
 export type CalendarView = 'year' | 'month' | 'week' | 'day';
 
@@ -34,6 +35,12 @@ export const useCalendar = () => {
     useEffect(() => {
         fetchAppointments();
     }, [currentDate, view, selectedArtistId]);
+
+    // Realtime Subscription
+    useRealtime('appointments', () => {
+        console.log('[useCalendar] Realtime update detected. Refreshing appointments...');
+        fetchAppointments();
+    });
 
     const fetchAppointments = async () => {
         setIsLoading(true);
