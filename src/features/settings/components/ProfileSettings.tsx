@@ -162,9 +162,9 @@ export const ProfileSettings: React.FC = () => {
                                 type="text"
                                 value={name}
                                 onChange={(e) => setName(e.target.value)}
-                                className="w-full bg-bg-secondary border border-border rounded-lg pl-10 pr-4 py-2.5 text-text-primary focus:ring-2 focus:ring-accent outline-none"
+                                className="w-full h-12 bg-bg-secondary border border-border rounded-lg pl-10 pr-4 text-text-primary focus:ring-2 focus:ring-accent outline-none"
                             />
-                            <User className="absolute left-3 top-2.5 text-text-muted" size={18} />
+                            <User className="absolute left-3 top-1/2 -translate-y-1/2 text-text-muted" size={18} />
                         </div>
                     </div>
                     <div>
@@ -174,9 +174,9 @@ export const ProfileSettings: React.FC = () => {
                                 type="email"
                                 value={email}
                                 disabled
-                                className="w-full bg-bg-tertiary border border-border rounded-lg pl-10 pr-4 py-2.5 text-text-muted cursor-not-allowed"
+                                className="w-full h-12 bg-bg-tertiary border border-border rounded-lg pl-10 pr-4 text-text-primary opacity-70 cursor-not-allowed"
                             />
-                            <Mail className="absolute left-3 top-2.5 text-text-muted" size={18} />
+                            <Mail className="absolute left-3 top-1/2 -translate-y-1/2 text-text-muted" size={18} />
                         </div>
                     </div>
                     {/* Student Course Display */}
