@@ -48,3 +48,10 @@ body {
 .min-w-0 {
     min-width: 0 !important;
 }
+
+/* Hide native WebKit date/time pickers to prevent overlap with custom icons */
+input[type="date"]::-webkit-calendar-picker-indicator,
+input[type="time"]::-webkit-calendar-picker-indicator {
+    display: none;
+    -webkit-appearance: none;
+}

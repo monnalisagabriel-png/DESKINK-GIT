@@ -69,9 +69,9 @@ export const SettingsPage: React.FC = () => {
     });
 
     return (
-        <div className="w-full p-4 md:p-8 flex flex-col md:flex-row gap-8">
+        <div className="w-full p-4 md:p-8 flex flex-col xl:flex-row gap-8">
             {/* Sidebar Tabs */}
-            <div className="w-full md:w-64 flex-shrink-0">
+            <div className="w-full xl:w-64 flex-shrink-0">
                 <h1 className="text-2xl font-bold text-text-primary mb-6">
                     {isStudioContext ? 'Studio' : 'Impostazioni'}
                 </h1>

@@ -285,7 +285,7 @@ export const AppointmentDrawer: React.FC<AppointmentDrawerProps> = ({
                             <div className="relative">
                                 <input
                                     type="date"
-                                    className="w-full bg-bg-primary border border-border rounded-lg pl-10 pr-4 py-2.5 text-text-primary focus:ring-2 focus:ring-accent outline-none"
+                                    className="w-full bg-bg-primary border border-border rounded-lg pl-10 pr-4 py-2.5 text-text-primary focus:ring-2 focus:ring-accent outline-none appearance-none"
                                     value={formData.start_time ? format(new Date(formData.start_time), 'yyyy-MM-dd') : ''}
                                     onChange={(e) => {
                                         if (!e.target.value) return;
@@ -311,7 +311,7 @@ export const AppointmentDrawer: React.FC<AppointmentDrawerProps> = ({
                             <div className="relative">
                                 <input
                                     type="time"
-                                    className="w-full bg-bg-primary border border-border rounded-lg pl-10 pr-4 py-2.5 text-text-primary focus:ring-2 focus:ring-accent outline-none"
+                                    className="w-full bg-bg-primary border border-border rounded-lg pl-10 pr-4 py-2.5 text-text-primary focus:ring-2 focus:ring-accent outline-none appearance-none"
                                     value={formData.start_time ? format(new Date(formData.start_time), 'HH:mm') : ''}
                                     onChange={(e) => {
                                         if (!e.target.value) return;
@@ -338,7 +338,7 @@ export const AppointmentDrawer: React.FC<AppointmentDrawerProps> = ({
                             <div className="relative">
                                 <input
                                     type="time"
-                                    className="w-full bg-bg-primary border border-border rounded-lg pl-10 pr-4 py-2.5 text-text-primary focus:ring-2 focus:ring-accent outline-none"
+                                    className="w-full bg-bg-primary border border-border rounded-lg pl-10 pr-4 py-2.5 text-text-primary focus:ring-2 focus:ring-accent outline-none appearance-none"
                                     value={formData.end_time ? format(new Date(formData.end_time), 'HH:mm') : ''}
                                     onChange={(e) => {
                                         if (!e.target.value) return;
