@@ -41,9 +41,52 @@ serve(async (req) => {
             });
         }
 
-        // 2. Refresh Token if needed (Basic check)
-        // Note: For robustness, real refresh logic is needed here. For now assuming fresh.
-        const accessToken = integration.access_token;
+        // 2. Check Expiry & Refresh
+        let accessToken = integration.access_token;
+        const expiresAt = integration.expires_at ? new Date(integration.expires_at).getTime() : 0;
+
+        // Refresh 1 minute before expiry or if no expiry set (safer to check)
+        if (integration.refresh_token && (Date.now() > expiresAt - 60000)) {
+            console.log('[push-to-google] Token expired or expiring. Refreshing...');
+            try {
+                const refreshResponse = await fetch('https://oauth2.googleapis.com/token', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                    body: new URLSearchParams({
+                        client_id: Deno.env.get('GOOGLE_CLIENT_ID')!,
+                        client_secret: Deno.env.get('GOOGLE_CLIENT_SECRET')!,
+                        refresh_token: integration.refresh_token,
+                        grant_type: 'refresh_token',
+                    }),
+                });
+
+                const refreshData = await refreshResponse.json();
+
+                if (!refreshResponse.ok) {
+                    console.error('[push-to-google] Refresh failed:', refreshData);
+                    // Proceed with old token as last resort? Or fail? 
+                    // Failing is better than 401 loop usually, but let's try old one or throw.
+                    // If refresh fails (e.g. revoked), we can't do much.
+                    throw new Error(`Token refresh failed: ${refreshData.error_description || refreshData.error}`);
+                }
+
+                accessToken = refreshData.access_token;
+                const expiresIn = refreshData.expires_in || 3599;
+
+                // Update DB asynchronously (don't block critical path too much, but good to wait)
+                await supabase.from('user_integrations').update({
+                    access_token: accessToken,
+                    expires_at: new Date(Date.now() + (expiresIn * 1000)).toISOString()
+                }).eq('user_id', user_id);
+
+                console.log('[push-to-google] Token refreshed and saved.');
+
+            } catch (refreshErr) {
+                console.error('[push-to-google] Refresh exception:', refreshErr);
+                // We might continue with old token if it was just a network blip on refresh, 
+                // but usually if logic says expired, it won't work.
+            }
+        }
 
         // 3. Determine Target Calendar
         const mapping = integration.settings?.calendar_mapping || {};

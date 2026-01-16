@@ -14,13 +14,7 @@ export const WaitlistForm: React.FC = () => {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [template, setTemplate] = useState<ConsentTemplate | null>(null);
-    const [logs, setLogs] = useState<string[]>([]);
 
-    // Debug helper
-    const addLog = (msg: string) => {
-        console.log("WaitlistForm: " + msg);
-        setLogs(prev => [...prev, `${new Date().toLocaleTimeString()} - ${msg}`]);
-    };
 
     const [formData, setFormData] = useState({
         interest_type: 'TATTOO' as 'TATTOO' | 'ACADEMY',
@@ -71,45 +65,38 @@ export const WaitlistForm: React.FC = () => {
         const isValidUUID = (id: string) => /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id);
         if (!studioId || !isValidUUID(studioId)) {
             setError("Link non valido (Studio ID mancante o errato).");
-            addLog(`Invalid studioId: ${studioId}`);
+
             return;
         }
 
         setError(null);
         setLoading(true);
-        setLogs([]); // Clear previous logs
-        addLog("Starting submission...");
-        addLog(`Data: ${JSON.stringify({ ...formData, images: `[${formData.images.length} images]` })}`);
-        addLog(`StudioID: ${studioId}`);
+        setError(null);
+        setLoading(true);
 
         try {
             if (!api.clients?.getByContact) {
                 const msg = "CRITICAL: api.clients.getByContact is undefined!";
-                addLog(msg);
                 throw new Error(msg);
             }
 
             // Check if client exists using secure RPC
-            addLog("Checking existing client via RPC...");
             const existingClientId = await api.clients.getByContact(
                 formData.email,
                 formData.phone,
                 studioId
             );
-            addLog(`Client check result: ${existingClientId}`);
 
             if (existingClientId) {
                 // Client exists, skip consent
-                addLog("Client exists. Submitting request...");
                 await submitWaitlistRequest(null, existingClientId);
             } else {
                 // New client, proceed directly (Skip consent signature)
-                addLog("New client. Proceeding to creation...");
                 await submitWaitlistRequest(null, 'new');
             }
         } catch (err: any) {
             console.error("Submission Error:", err);
-            addLog(`Submission Error MAIN CATCH: ${err.message}`);
+            console.error("Submission Error:", err);
             setError(`Si è verificato un errore: ${err.message}`);
         } finally {
             setLoading(false);
@@ -138,13 +125,10 @@ export const WaitlistForm: React.FC = () => {
         // If the client is new and consent is given, create the client first.
         let clientIdToUse = knownClientId || 'new';
 
-        addLog(`submitWaitlistRequest called. ClientIdToUse: ${clientIdToUse}`);
-
         if (clientIdToUse === 'new') {
             try {
                 // Use public RPC to bypass RLS select restrictions
                 if (api.clients.createPublic) {
-                    addLog("calling api.clients.createPublic...");
                     const newClient = await api.clients.createPublic({
                         full_name: formData.full_name || 'Nuovo Cliente',
                         email: formData.email,
@@ -158,11 +142,9 @@ export const WaitlistForm: React.FC = () => {
                         preferred_styles: formData.styles || [],
                         images: []
                     });
-                    addLog(`createPublic success. ID: ${newClient?.id}`);
                     if (!newClient?.id) throw new Error("Created client has no ID");
                     clientIdToUse = newClient.id;
                 } else {
-                    addLog("createPublic NOT available. Using standard create...");
                     // Fallback to standard create (deprecated for public)
                     const newClient = await api.clients.create({
                         full_name: formData.full_name || 'Nuovo Cliente',
@@ -181,17 +163,14 @@ export const WaitlistForm: React.FC = () => {
                 }
 
             } catch (err: any) {
-                addLog(`Error creating new client: ${err.message}`);
                 console.error("Error creating new client:", err);
                 throw new Error(`Failed to create new client: ${err.message}`);
             }
         }
 
         try {
-            addLog(`Adding to waitlist table. ClientID: ${clientIdToUse}`);
             if (api.waitlist.addToWaitlistPublic) {
-                addLog("calling addToWaitlistPublic...");
-                const entry = await api.waitlist.addToWaitlistPublic({
+                await api.waitlist.addToWaitlistPublic({
                     studio_id: studioId || 'studio-1',
                     client_id: clientIdToUse,
                     client_name: formData.full_name,
@@ -203,9 +182,7 @@ export const WaitlistForm: React.FC = () => {
                     artist_pref_id: undefined,
                     images: formData.images
                 }, signatureData || undefined, template?.version);
-                addLog(`addToWaitlistPublic success. ID: ${entry?.id}`);
             } else {
-                addLog("addToWaitlistPublic NOT available. Using standard addToWaitlist...");
                 await api.waitlist.addToWaitlist({
                     studio_id: studioId || 'studio-1',
                     client_id: clientIdToUse,
@@ -220,10 +197,8 @@ export const WaitlistForm: React.FC = () => {
                 }, signatureData || undefined, template?.version);
             }
 
-            addLog("Submission complete. Setting submitted=true");
             setSubmitted(true);
         } catch (err: any) {
-            addLog(`Error adding to waitlist: ${err.message}`);
             console.error("Error adding to waitlist:", err);
             throw err;
         }
@@ -355,7 +330,7 @@ export const WaitlistForm: React.FC = () => {
                             <label className={clsx(
                                 "flex-1 flex items-center justify-center gap-3 p-4 rounded-xl border-2 cursor-pointer transition-all",
                                 formData.interest_type === 'TATTOO'
-                                    ? "border-accent bg-accent/10 text-white"
+                                    ? "border-accent bg-accent/10 text-accent"
                                     : "border-border bg-bg-tertiary text-text-muted hover:border-text-muted"
                             )}>
                                 <input
@@ -372,7 +347,7 @@ export const WaitlistForm: React.FC = () => {
                             <label className={clsx(
                                 "flex-1 flex items-center justify-center gap-3 p-4 rounded-xl border-2 cursor-pointer transition-all",
                                 formData.interest_type === 'ACADEMY'
-                                    ? "border-accent bg-accent/10 text-white"
+                                    ? "border-accent bg-accent/10 text-accent"
                                     : "border-border bg-bg-tertiary text-text-muted hover:border-text-muted"
                             )}>
                                 <input
@@ -584,13 +559,7 @@ export const WaitlistForm: React.FC = () => {
                         )}
                     </button>
 
-                    {/* DEBUG LOG VIEW */}
-                    <div className="mt-8 p-4 bg-black/80 rounded-lg text-xs font-mono text-green-400 max-h-48 overflow-y-auto border border-green-900">
-                        <p className="font-bold text-white mb-2 underline">DEBUG LOGS (Invia screenshot se si blocca):</p>
-                        {logs.length === 0 ? <span className="opacity-50">Log vuoto (pronto)...</span> : logs.map((l, i) => (
-                            <div key={i} className="mb-1 border-b border-green-900/30 pb-1">{l}</div>
-                        ))}
-                    </div>
+
 
                 </form>
             </div>
