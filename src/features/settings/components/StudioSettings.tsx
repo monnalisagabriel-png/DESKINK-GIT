@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Building, Globe, MapPin, Save, Trash2, UploadCloud } from 'lucide-react';
+import { Building, Globe, MapPin, Save, Trash2, UploadCloud, ExternalLink } from 'lucide-react';
 import { api } from '../../../services/api';
 import { useAuth } from '../../auth/AuthContext';
 import { DragDropUpload } from '../../../components/DragDropUpload';
@@ -161,15 +161,28 @@ export const StudioSettings: React.FC = () => {
                         </div>
                         <div>
                             <label className="block text-sm font-medium text-text-muted mb-1">Link Report Studio</label>
-                            <div className="relative">
-                                <Globe size={18} className="absolute left-3 top-2.5 text-text-muted" />
-                                <input
-                                    type="url"
-                                    value={studio.report_url || ''}
-                                    onChange={e => setStudio({ ...studio, report_url: e.target.value })}
-                                    className="w-full bg-bg-tertiary border border-border rounded-lg pl-10 pr-4 py-2 text-text-primary focus:border-accent focus:outline-none"
-                                    placeholder="https://..."
-                                />
+                            <div className="flex gap-2">
+                                <div className="relative flex-1">
+                                    <Globe size={18} className="absolute left-3 top-2.5 text-text-muted" />
+                                    <input
+                                        type="url"
+                                        value={studio.report_url || ''}
+                                        onChange={e => setStudio({ ...studio, report_url: e.target.value })}
+                                        className="w-full bg-bg-tertiary border border-border rounded-lg pl-10 pr-4 py-2 text-text-primary focus:border-accent focus:outline-none"
+                                        placeholder="https://..."
+                                    />
+                                </div>
+                                {studio.report_url && (
+                                    <a
+                                        href={studio.report_url}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="px-3 bg-bg-tertiary border border-border rounded-lg text-text-muted hover:text-accent transition-colors flex items-center justify-center hover:bg-white/5"
+                                        title="Apri link"
+                                    >
+                                        <ExternalLink size={20} />
+                                    </a>
+                                )}
                             </div>
                         </div>
                         <div>
