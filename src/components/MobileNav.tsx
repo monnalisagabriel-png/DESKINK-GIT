@@ -113,7 +113,7 @@ export const MobileNav: React.FC = () => {
                         </div>
                     )}
                     <span className="font-bold text-lg text-text-primary truncate max-w-[200px]">
-                        {studio?.name || 'InkFlow'}
+                        {studio?.name || 'DESKINK'}
                     </span>
                 </div>
             </div>
@@ -326,7 +326,7 @@ export const MobileNav: React.FC = () => {
                                 <X size={24} />
                             </button>
 
-                            <h2 className="text-2xl font-bold text-gray-900 mb-2">Condividi InkFlow</h2>
+                            <h2 className="text-2xl font-bold text-gray-900 mb-2">Condividi DESKINK</h2>
                             <p className="text-gray-500 mb-6">Fai scansionare questo codice per accedere all'applicazione</p>
 
                             <div className="bg-gray-100 p-4 rounded-xl inline-block mb-6">

@@ -56,7 +56,7 @@ export const CampaignSummary: React.FC<CampaignSummaryProps> = ({ data, recipien
             <div className="bg-bg-secondary p-6 rounded-lg border border-border">
                 <div className="flex justify-between items-start mb-6">
                     <div>
-                        <h2 className="text-xl font-bold text-white mb-1">Riepilogo Campagna</h2>
+                        <h2 className="text-xl font-bold text-text-primary mb-1">Riepilogo Campagna</h2>
                         <p className="text-text-muted">Controlla i dettagli prima di procedere.</p>
                     </div>
                     <button onClick={onEdit} className="text-accent hover:text-accent-hover flex items-center gap-2 text-sm font-medium">
@@ -67,15 +67,15 @@ export const CampaignSummary: React.FC<CampaignSummaryProps> = ({ data, recipien
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
                     <div className="bg-bg-tertiary p-4 rounded-lg">
                         <label className="text-xs text-text-muted uppercase font-bold">Titolo</label>
-                        <p className="text-white font-medium mt-1">{data.title || 'Senza titolo'}</p>
+                        <p className="text-text-primary font-medium mt-1">{data.title || 'Senza titolo'}</p>
                     </div>
                     <div className="bg-bg-tertiary p-4 rounded-lg">
                         <label className="text-xs text-text-muted uppercase font-bold">Canale</label>
-                        <p className="text-white font-medium mt-1">{data.channel}</p>
+                        <p className="text-text-primary font-medium mt-1">{data.channel}</p>
                     </div>
                     <div className="bg-bg-tertiary p-4 rounded-lg">
                         <label className="text-xs text-text-muted uppercase font-bold">Destinatari</label>
-                        <p className="text-white font-medium mt-1">{data.recipients_count || 0} clienti selezionati</p>
+                        <p className="text-text-primary font-medium mt-1">{data.recipients_count || 0} clienti selezionati</p>
                     </div>
                 </div>
 
@@ -90,7 +90,7 @@ export const CampaignSummary: React.FC<CampaignSummaryProps> = ({ data, recipien
 
             {/* Manual Send List */}
             <div className="bg-bg-secondary p-6 rounded-lg border border-border">
-                <h3 className="text-xl font-bold text-white mb-4">Invio Manuale ({data.recipients_count} destinatari)</h3>
+                <h3 className="text-xl font-bold text-text-primary mb-4">Invio Manuale ({data.recipients_count} destinatari)</h3>
                 <p className="text-sm text-text-muted mb-6">
                     Clicca sul pulsante WhatsApp accanto ad ogni cliente per aprire la chat con il messaggio precompilato.
                     Non è necessaria alcuna automazione o API.
@@ -112,7 +112,7 @@ export const CampaignSummary: React.FC<CampaignSummaryProps> = ({ data, recipien
                                 return (
                                     <div key={client.id} className="p-4 border-b border-border last:border-0 flex items-center justify-between hover:bg-white/5 transition-colors">
                                         <div>
-                                            <div className="font-medium text-white">{client.full_name}</div>
+                                            <div className="font-medium text-text-primary">{client.full_name}</div>
                                             <div className="text-xs text-text-secondary">{client.phone}</div>
                                         </div>
                                         <a

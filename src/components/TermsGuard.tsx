@@ -87,7 +87,7 @@ export const TermsGuard: React.FC<{ children: React.ReactNode }> = ({ children }
                         <div className="w-12 h-12 rounded-full bg-accent/20 flex items-center justify-center mb-2">
                             <ShieldCheck className="text-accent" size={24} />
                         </div>
-                        <h1 className="text-2xl font-bold text-white">Aggiornamento Termini</h1>
+                        <h1 className="text-2xl font-bold text-text-primary">Aggiornamento Termini</h1>
                         <p className="text-text-muted">
                             L'accademia ha aggiornato i Termini e Condizioni. <br />
                             Per continuare ad accedere alla piattaforma, è necessario leggere e accettare i nuovi termini.

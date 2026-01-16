@@ -355,7 +355,7 @@ export const WaitlistForm: React.FC = () => {
                             <label className={clsx(
                                 "flex-1 flex items-center justify-center gap-3 p-4 rounded-xl border-2 cursor-pointer transition-all",
                                 formData.interest_type === 'TATTOO'
-                                    ? "border-accent bg-accent/10 text-white"
+                                    ? "border-accent bg-accent/10 text-accent"
                                     : "border-border bg-bg-tertiary text-text-muted hover:border-text-muted"
                             )}>
                                 <input
@@ -372,7 +372,7 @@ export const WaitlistForm: React.FC = () => {
                             <label className={clsx(
                                 "flex-1 flex items-center justify-center gap-3 p-4 rounded-xl border-2 cursor-pointer transition-all",
                                 formData.interest_type === 'ACADEMY'
-                                    ? "border-accent bg-accent/10 text-white"
+                                    ? "border-accent bg-accent/10 text-accent"
                                     : "border-border bg-bg-tertiary text-text-muted hover:border-text-muted"
                             )}>
                                 <input

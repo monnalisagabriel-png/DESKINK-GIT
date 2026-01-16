@@ -489,7 +489,7 @@ export const AcademyPage: React.FC = () => {
             {/* Header */}
             <div className="flex flex-col md:flex-row items-center justify-between gap-4">
                 <div>
-                    <h1 className="text-2xl font-bold text-white">Academy</h1>
+                    <h1 className="text-2xl font-bold text-text-primary">Academy</h1>
                     <p className="text-text-muted">Gestione corsi, materiali e studenti.</p>
                 </div>
 
@@ -498,20 +498,20 @@ export const AcademyPage: React.FC = () => {
                         <>
                             <button
                                 onClick={() => setView('LIST')}
-                                className={clsx("px-4 py-2 rounded-lg font-bold transition-colors", view === 'LIST' ? "bg-accent text-white" : "bg-bg-tertiary text-text-muted hover:text-white")}
+                                className={clsx("px-4 py-2 rounded-lg font-bold transition-colors", view === 'LIST' ? "bg-accent text-white" : "bg-bg-tertiary text-text-muted hover:text-text-primary")}
                             >
                                 Corsi
                             </button>
                             <button
                                 onClick={() => setView('STUDENTS_LIST')}
-                                className={clsx("px-4 py-2 rounded-lg font-bold transition-colors", view === 'STUDENTS_LIST' ? "bg-accent text-white" : "bg-bg-tertiary text-text-muted hover:text-white")}
+                                className={clsx("px-4 py-2 rounded-lg font-bold transition-colors", view === 'STUDENTS_LIST' ? "bg-accent text-white" : "bg-bg-tertiary text-text-muted hover:text-text-primary")}
                             >
                                 Studenti Connessi
                             </button>
 
                             <button
                                 onClick={() => setIsTermsModalOpen(true)}
-                                className="px-4 py-2 rounded-lg font-bold transition-colors bg-bg-tertiary text-text-muted hover:text-white flex items-center gap-2"
+                                className="px-4 py-2 rounded-lg font-bold transition-colors bg-bg-tertiary text-text-muted hover:text-text-primary flex items-center gap-2"
                             >
                                 <FileText size={18} />
                                 <span className="hidden lg:inline">Termini</span>
@@ -544,7 +544,7 @@ export const AcademyPage: React.FC = () => {
                 {view === 'STUDENTS_LIST' ? (
                     <div className="space-y-6">
                         <div className="bg-bg-secondary p-6 rounded-xl border border-border">
-                            <h2 className="text-xl font-bold text-white mb-4 flex items-center gap-2">
+                            <h2 className="text-xl font-bold text-text-primary mb-4 flex items-center gap-2">
                                 <Users size={24} className="text-accent" />
                                 Studenti Connessi ({students.length})
                             </h2>
@@ -566,7 +566,7 @@ export const AcademyPage: React.FC = () => {
                                                     {student.full_name?.substring(0, 2).toUpperCase() || 'ST'}
                                                 </div>
                                                 <div className="flex-1 min-w-0">
-                                                    <p className="text-white font-bold truncate">{student.full_name || 'N/A'}</p>
+                                                    <p className="text-text-primary font-bold truncate">{student.full_name || 'N/A'}</p>
                                                     <p className="text-sm text-text-secondary truncate">{student.email}</p>
                                                 </div>
                                                 <span className="text-xs px-2 py-1 rounded bg-white/5 text-text-muted uppercase">
@@ -610,7 +610,7 @@ export const AcademyPage: React.FC = () => {
                                                             <div className="w-8 h-8 rounded-full bg-accent/20 flex items-center justify-center text-accent text-xs font-bold">
                                                                 {student.full_name?.substring(0, 2).toUpperCase() || 'ST'}
                                                             </div>
-                                                            <span className="text-white font-medium">{student.full_name || 'N/A'}</span>
+                                                            <span className="text-text-primary font-medium">{student.full_name || 'N/A'}</span>
                                                         </div>
                                                     </td>
                                                     <td className="py-3 px-4 text-text-secondary">{student.email}</td>
@@ -648,7 +648,7 @@ export const AcademyPage: React.FC = () => {
                                             {course.duration}
                                         </span>
                                     </div>
-                                    <h3 className="text-xl font-bold text-white mb-2">{course.title}</h3>
+                                    <h3 className="text-xl font-bold text-text-primary mb-2">{course.title}</h3>
                                     <p className="text-sm text-text-secondary line-clamp-3 mb-4">
                                         {course.description}
                                     </p>
@@ -681,7 +681,7 @@ export const AcademyPage: React.FC = () => {
                         <div className="p-8 border-b border-border bg-bg-tertiary/20">
                             <div className="flex justify-between items-start">
                                 <div>
-                                    <h2 className="text-3xl font-bold text-white mb-2">{selectedCourse.title}</h2>
+                                    <h2 className="text-3xl font-bold text-text-primary mb-2">{selectedCourse.title}</h2>
                                     <p className="text-text-muted">{selectedCourse.description}</p>
                                 </div>
                                 <button
@@ -696,25 +696,25 @@ export const AcademyPage: React.FC = () => {
                             <div className="flex gap-2 mt-6 overflow-x-auto pb-2 scrollbar-hide -mx-4 px-4 md:mx-0 md:px-0">
                                 <button
                                     onClick={() => setActiveTab('INFO')}
-                                    className={clsx("px-3 py-2 md:px-4 rounded-lg font-medium transition-colors whitespace-nowrap text-sm md:text-base flex-shrink-0", activeTab === 'INFO' ? "bg-accent text-white shadow-lg shadow-accent/20" : "text-text-secondary hover:text-white")}
+                                    className={clsx("px-3 py-2 md:px-4 rounded-lg font-medium transition-colors whitespace-nowrap text-sm md:text-base flex-shrink-0", activeTab === 'INFO' ? "bg-accent text-white shadow-lg shadow-accent/20" : "text-text-secondary hover:text-text-primary")}
                                 >
                                     Info Gen.
                                 </button>
                                 <button
                                     onClick={() => setActiveTab('MATERIALS')}
-                                    className={clsx("px-3 py-2 md:px-4 rounded-lg font-medium transition-colors whitespace-nowrap text-sm md:text-base flex-shrink-0", activeTab === 'MATERIALS' ? "bg-accent text-white shadow-lg shadow-accent/20" : "text-text-secondary hover:text-white")}
+                                    className={clsx("px-3 py-2 md:px-4 rounded-lg font-medium transition-colors whitespace-nowrap text-sm md:text-base flex-shrink-0", activeTab === 'MATERIALS' ? "bg-accent text-white shadow-lg shadow-accent/20" : "text-text-secondary hover:text-text-primary")}
                                 >
                                     Materiale Didattico
                                 </button>
                                 <button
                                     onClick={() => setActiveTab('STUDENTS')}
-                                    className={clsx("px-3 py-2 md:px-4 rounded-lg font-medium transition-colors whitespace-nowrap text-sm md:text-base flex-shrink-0", activeTab === 'STUDENTS' ? "bg-accent text-white shadow-lg shadow-accent/20" : "text-text-secondary hover:text-white")}
+                                    className={clsx("px-3 py-2 md:px-4 rounded-lg font-medium transition-colors whitespace-nowrap text-sm md:text-base flex-shrink-0", activeTab === 'STUDENTS' ? "bg-accent text-white shadow-lg shadow-accent/20" : "text-text-secondary hover:text-text-primary")}
                                 >
                                     Corsisti
                                 </button>
                                 <button
                                     onClick={() => setActiveTab('ATTENDANCE')}
-                                    className={clsx("px-3 py-2 md:px-4 rounded-lg font-medium transition-colors whitespace-nowrap text-sm md:text-base flex-shrink-0", activeTab === 'ATTENDANCE' ? "bg-accent text-white shadow-lg shadow-accent/20" : "text-text-secondary hover:text-white")}
+                                    className={clsx("px-3 py-2 md:px-4 rounded-lg font-medium transition-colors whitespace-nowrap text-sm md:text-base flex-shrink-0", activeTab === 'ATTENDANCE' ? "bg-accent text-white shadow-lg shadow-accent/20" : "text-text-secondary hover:text-text-primary")}
                                 >
                                     Registro
                                 </button>
@@ -729,7 +729,7 @@ export const AcademyPage: React.FC = () => {
                                         <label className="block text-sm font-medium text-text-secondary mb-2">Titolo Corso</label>
                                         <input
                                             type="text"
-                                            className="w-full bg-bg-tertiary border border-border rounded-lg px-4 py-3 text-white focus:ring-2 focus:ring-accent outline-none"
+                                            className="w-full bg-bg-tertiary border border-border rounded-lg px-4 py-3 text-text-primary focus:ring-2 focus:ring-accent outline-none"
                                             value={selectedCourse.title}
                                             onChange={(e) => handleUpdateCourse({ title: e.target.value })}
                                         />
@@ -739,7 +739,7 @@ export const AcademyPage: React.FC = () => {
                                             <label className="block text-sm font-medium text-text-secondary mb-2">Durata</label>
                                             <input
                                                 type="text"
-                                                className="w-full bg-bg-tertiary border border-border rounded-lg px-4 py-3 text-white focus:ring-2 focus:ring-accent outline-none"
+                                                className="w-full bg-bg-tertiary border border-border rounded-lg px-4 py-3 text-text-primary focus:ring-2 focus:ring-accent outline-none"
                                                 value={selectedCourse.duration}
                                                 onChange={(e) => handleUpdateCourse({ duration: e.target.value })}
                                             />
@@ -748,7 +748,7 @@ export const AcademyPage: React.FC = () => {
                                     <div>
                                         <label className="block text-sm font-medium text-text-secondary mb-2">Descrizione</label>
                                         <textarea
-                                            className="w-full bg-bg-tertiary border border-border rounded-lg px-4 py-3 text-white focus:ring-2 focus:ring-accent outline-none h-32 resize-none"
+                                            className="w-full bg-bg-tertiary border border-border rounded-lg px-4 py-3 text-text-primary focus:ring-2 focus:ring-accent outline-none h-32 resize-none"
                                             value={selectedCourse.description}
                                             onChange={(e) => handleUpdateCourse({ description: e.target.value })}
                                         />
@@ -760,7 +760,7 @@ export const AcademyPage: React.FC = () => {
                             {activeTab === 'MATERIALS' && (
                                 <div>
                                     <div className="flex justify-between items-center mb-6">
-                                        <h3 className="text-xl font-bold text-white">Materiali Didattici</h3>
+                                        <h3 className="text-xl font-bold text-text-primary">Materiali Didattici</h3>
                                         <button
                                             onClick={handleOpenAddMaterial}
                                             className="flex items-center gap-2 bg-white/10 hover:bg-white/20 text-white px-4 py-2 rounded-lg font-medium transition-colors"
@@ -773,13 +773,13 @@ export const AcademyPage: React.FC = () => {
                                     {isMaterialModalOpen && (
                                         <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4">
                                             <div className="bg-bg-secondary p-6 rounded-xl border border-border w-full max-w-md space-y-4">
-                                                <h3 className="text-xl font-bold text-white">Carica Materiale</h3>
+                                                <h3 className="text-xl font-bold text-text-primary">Carica Materiale</h3>
 
                                                 <div>
                                                     <label className="block text-sm text-text-muted mb-1">Titolo</label>
                                                     <input
                                                         type="text"
-                                                        className="w-full bg-bg-tertiary border border-border rounded px-3 py-2 text-white"
+                                                        className="w-full bg-bg-tertiary border border-border rounded px-3 py-2 text-text-primary"
                                                         value={newMaterialData.title}
                                                         onChange={e => setNewMaterialData({ ...newMaterialData, title: e.target.value })}
                                                         placeholder="Es. Dispensa Anatomia"
@@ -789,7 +789,7 @@ export const AcademyPage: React.FC = () => {
                                                 <div>
                                                     <label className="block text-sm text-text-muted mb-1">Tipo</label>
                                                     <select
-                                                        className="w-full bg-bg-tertiary border border-border rounded px-3 py-2 text-white"
+                                                        className="w-full bg-bg-tertiary border border-border rounded px-3 py-2 text-text-primary"
                                                         value={newMaterialData.type}
                                                         onChange={e => setNewMaterialData({ ...newMaterialData, type: e.target.value as any })}
                                                     >

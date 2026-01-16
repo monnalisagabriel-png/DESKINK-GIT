@@ -67,7 +67,7 @@ export const DragDropUpload: React.FC<DragDropUploadProps> = ({
                 accept={accept}
             />
             <Upload className="mx-auto mb-4 text-text-muted" size={32} />
-            <p className="text-white font-medium mb-1">{label}</p>
+            <p className="text-text-primary font-medium mb-1">{label}</p>
             <p className="text-sm text-text-muted">{sublabel}</p>
         </div>
     );

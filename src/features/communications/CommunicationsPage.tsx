@@ -94,7 +94,7 @@ export const CommunicationsPage: React.FC = () => {
                     <MessageCircle size={32} />
                 </div>
                 <div>
-                    <h1 className="text-2xl font-bold text-white">Bacheca Team</h1>
+                    <h1 className="text-2xl font-bold text-text-primary">Bacheca Team</h1>
                     <p className="text-text-muted">Chat e aggiornamenti per tutto il team.</p>
                 </div>
             </div>
@@ -102,16 +102,16 @@ export const CommunicationsPage: React.FC = () => {
             {/* Create Post Section (Admin/Manager only) */}
             {canCreate && (
                 <div className="bg-bg-secondary p-6 rounded-xl border border-border shadow-lg">
-                    <h3 className="text-lg font-bold text-white mb-4">Nuova Comunicazione</h3>
+                    <h3 className="text-lg font-bold text-text-primary mb-4">Nuova Comunicazione</h3>
                     <form onSubmit={handleCreatePost} className="space-y-4">
                         <textarea
-                            className="w-full bg-bg-tertiary border border-border rounded-lg p-4 text-white focus:ring-2 focus:ring-accent outline-none resize-none h-32"
+                            className="w-full bg-bg-tertiary border border-border rounded-lg p-4 text-text-primary focus:ring-2 focus:ring-accent outline-none resize-none h-32"
                             placeholder="Scrivi un messaggio per il team..."
                             value={newContent}
                             onChange={e => setNewContent(e.target.value)}
                         />
                         <div className="flex items-center justify-between">
-                            <label className="flex items-center gap-2 text-text-secondary cursor-pointer hover:text-white transition-colors">
+                            <label className="flex items-center gap-2 text-text-secondary cursor-pointer hover:text-text-primary transition-colors">
                                 <input
                                     type="checkbox"
                                     checked={isImportant}
@@ -150,7 +150,7 @@ export const CommunicationsPage: React.FC = () => {
                                     {(comm.author_name || '?').charAt(0)}
                                 </div>
                                 <div>
-                                    <h4 className="font-bold text-white flex items-center gap-2">
+                                    <h4 className="font-bold text-text-primary flex items-center gap-2">
                                         {comm.author_name || 'Utente Sconosciuto'}
                                         {comm.is_important && (
                                             <span className="text-xs bg-red-500 text-white px-2 py-0.5 rounded-full flex items-center gap-1 font-bold uppercase tracking-wider">
@@ -186,7 +186,7 @@ export const CommunicationsPage: React.FC = () => {
                                     {comm.replies.map(reply => (
                                         <div key={reply.id} className="bg-bg-tertiary p-3 rounded-lg rounded-tl-none relative group">
                                             <div className="flex justify-between items-start mb-1">
-                                                <span className="text-sm font-bold text-white">{reply.author_name || 'Utente Sconosciuto'}</span>
+                                                <span className="text-sm font-bold text-text-primary">{reply.author_name || 'Utente Sconosciuto'}</span>
                                                 <span className="text-[10px] text-text-muted">
                                                     {format(new Date(reply.created_at), "d MMM HH:mm", { locale: it })}
                                                 </span>
@@ -203,7 +203,7 @@ export const CommunicationsPage: React.FC = () => {
                                     <input
                                         type="text"
                                         autoFocus
-                                        className="flex-1 bg-bg-tertiary border border-border rounded-lg px-4 py-2 text-white focus:ring-1 focus:ring-accent outline-none text-sm"
+                                        className="flex-1 bg-bg-tertiary border border-border rounded-lg px-4 py-2 text-text-primary focus:ring-1 focus:ring-accent outline-none text-sm"
                                         placeholder="Scrivi una risposta..."
                                         value={replyContent}
                                         onChange={e => setReplyContent(e.target.value)}
@@ -236,7 +236,7 @@ export const CommunicationsPage: React.FC = () => {
                             ) : (
                                 <button
                                     onClick={() => setReplyingTo(comm.id)}
-                                    className="text-sm text-text-muted hover:text-white flex items-center gap-2 transition-colors px-2 py-1 rounded hover:bg-bg-tertiary w-fit"
+                                    className="text-sm text-text-muted hover:text-text-primary flex items-center gap-2 transition-colors px-2 py-1 rounded hover:bg-bg-tertiary w-fit"
                                 >
                                     <Reply size={16} /> Rispondi
                                 </button>
@@ -248,7 +248,7 @@ export const CommunicationsPage: React.FC = () => {
                 {communications.length === 0 && (
                     <div className="text-center py-12 bg-bg-secondary rounded-xl border border-border border-dashed">
                         <MessageCircle size={48} className="mx-auto text-text-muted mb-4 opacity-50" />
-                        <h3 className="text-lg font-medium text-white">Nessuna comunicazione</h3>
+                        <h3 className="text-lg font-medium text-text-primary">Nessuna comunicazione</h3>
                         <p className="text-text-muted">Non ci sono ancora messaggi nella bacheca.</p>
                     </div>
                 )}

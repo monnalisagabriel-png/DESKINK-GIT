@@ -67,7 +67,7 @@ export const MonthView: React.FC<MonthViewProps> = ({
                             key={day.toString()}
                             onClick={() => onDateClick(day)}
                             className={clsx(
-                                "p-1 md:p-2 border-b border-r border-border cursor-pointer transition-colors hover:bg-white/5 overflow-hidden flex flex-col",
+                                "p-1 md:p-2 border-b border-r border-border cursor-pointer transition-colors hover:bg-bg-tertiary overflow-hidden flex flex-col",
                                 !isCurrentMonth && "bg-bg-primary/30 text-text-muted",
                                 isToday && "bg-accent/5"
                             )}
@@ -99,17 +99,15 @@ export const MonthView: React.FC<MonthViewProps> = ({
                                             className={clsx(
                                                 "text-xs px-2 py-1 rounded truncate border-l-2 mb-1 transition-opacity hover:opacity-80",
                                                 !color && (
-                                                    apt.status === 'CONFIRMED' ? "bg-green-500/10 border-green-500 text-green-200" :
-                                                        apt.status === 'PENDING' ? "bg-orange-500/10 border-orange-500 text-orange-200" :
-                                                            "bg-gray-700/50 border-gray-500 text-gray-300"
+                                                    apt.status === 'CONFIRMED' ? "bg-green-500/10 border-green-500 text-green-700 dark:text-green-200" :
+                                                        apt.status === 'PENDING' ? "bg-orange-500/10 border-orange-500 text-orange-700 dark:text-orange-200" :
+                                                            "bg-gray-100 dark:bg-gray-700/50 border-gray-500 text-gray-700 dark:text-gray-300"
                                                 )
                                             )}
                                             style={color ? {
-                                                backgroundColor: `${color}33`, // ~20% opacity
+                                                backgroundColor: `${color}33`,
                                                 borderColor: color,
-                                                color: '#fff' // White text usually readable on dark with colored bg, or maybe color? Let's try white text with colored bg/border. 
-                                                // Wait, previous design was text-colored. Let's try to match.
-                                                // "bg-[color]/10 text-[color]"
+                                                color: color
                                             } : undefined}
                                         >
                                             <span style={color ? { color: color } : undefined}>

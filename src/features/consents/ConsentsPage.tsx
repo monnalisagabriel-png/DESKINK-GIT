@@ -62,12 +62,12 @@ export const ConsentsPage: React.FC = () => {
             <div className="fixed inset-0 z-50 bg-bg-primary flex flex-col">
                 <div className="p-4 border-b border-border bg-bg-secondary flex justify-between items-center">
                     <div>
-                        <h2 className="text-xl font-bold text-white">Firma Consenso</h2>
+                        <h2 className="text-xl font-bold text-text-primary">Firma Consenso</h2>
                         <p className="text-text-muted">Cliente: {signingClient.full_name}</p>
                     </div>
                     <button
                         onClick={() => setIsSigning(false)}
-                        className="text-text-muted hover:text-white px-4 py-2"
+                        className="text-text-muted hover:text-text-primary px-4 py-2"
                     >
                         Annulla
                     </button>
@@ -87,7 +87,7 @@ export const ConsentsPage: React.FC = () => {
 
                     {/* Signature Pad */}
                     <div className="pb-8">
-                        <h3 className="text-white text-lg font-semibold mb-4 flex items-center gap-2">
+                        <h3 className="text-text-primary text-lg font-semibold mb-4 flex items-center gap-2">
                             <PenTool size={20} className="text-accent" />
                             Firma qui sotto
                         </h3>
@@ -106,7 +106,7 @@ export const ConsentsPage: React.FC = () => {
             <div className="max-w-7xl mx-auto space-y-6">
                 <div className="flex items-center justify-between">
                     <div>
-                        <h1 className="text-3xl font-bold text-white mb-2">Consensi Digitali</h1>
+                        <h1 className="text-3xl font-bold text-text-primary mb-2">Consensi Digitali</h1>
                         <p className="text-text-muted">Gestisci i consensi informati e la privacy.</p>
                     </div>
                 </div>
@@ -119,7 +119,7 @@ export const ConsentsPage: React.FC = () => {
                             'px-6 py-3 text-sm font-medium transition-colors border-b-2',
                             activeTab === 'clients'
                                 ? 'border-accent text-accent'
-                                : 'border-transparent text-text-muted hover:text-white'
+                                : 'border-transparent text-text-muted hover:text-text-primary'
                         )}
                     >
                         <div className="flex items-center gap-2">
@@ -135,7 +135,7 @@ export const ConsentsPage: React.FC = () => {
                                 'px-6 py-3 text-sm font-medium transition-colors border-b-2',
                                 activeTab === 'template'
                                     ? 'border-accent text-accent'
-                                    : 'border-transparent text-text-muted hover:text-white'
+                                    : 'border-transparent text-text-muted hover:text-text-primary'
                             )}
                         >
                             <div className="flex items-center gap-2">

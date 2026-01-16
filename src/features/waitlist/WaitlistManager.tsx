@@ -151,7 +151,7 @@ export const WaitlistManager: React.FC = () => {
         };
 
         const btnDefault =
-            `px-3 py-1.5 bg-bg-tertiary hover:bg-white/10 text-text-muted hover:text-white rounded-lg text-xs font-medium border border-border whitespace-nowrap`;
+            `px-3 py-1.5 bg-bg-tertiary hover:bg-white/10 text-text-muted hover:text-text-primary rounded-lg text-xs font-medium border border-border whitespace-nowrap`;
 
         return (
             <div className={clsx("flex items-center gap-2", isMobile ? "grid grid-cols-2 w-full" : "justify-end")}>
@@ -186,7 +186,7 @@ export const WaitlistManager: React.FC = () => {
 
                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                     <div>
-                        <h1 className="text-2xl md:text-3xl font-bold text-white mb-1 md:mb-2">Lista d'Attesa</h1>
+                        <h1 className="text-2xl md:text-3xl font-bold text-text-primary mb-1 md:mb-2">Lista d'Attesa</h1>
                         <p className="text-sm text-text-muted">Gestisci le richieste di appuntamento in arrivo.</p>
                     </div>
                     <div className="flex gap-3">
@@ -196,14 +196,14 @@ export const WaitlistManager: React.FC = () => {
                                 setCopied(true);
                                 setTimeout(() => setCopied(false), 2000);
                             }}
-                            className="flex items-center gap-2 bg-bg-tertiary hover:bg-white/10 text-white px-4 py-2 rounded-lg border border-border transition-colors text-sm"
+                            className="flex items-center gap-2 bg-bg-tertiary hover:bg-white/10 text-text-primary px-4 py-2 rounded-lg border border-border transition-colors text-sm"
                         >
                             {copied ? <Check size={18} className="text-green-500" /> : <Link size={18} />}
                             <span className="hidden sm:inline">{copied ? 'Copiato!' : 'Copia Link'}</span>
                         </button>
                         <button
                             onClick={() => setShowQr(!showQr)}
-                            className="flex items-center gap-2 bg-bg-tertiary hover:bg-white/10 text-white px-4 py-2 rounded-lg border border-border transition-colors text-sm"
+                            className="flex items-center gap-2 bg-bg-tertiary hover:bg-white/10 text-text-primary px-4 py-2 rounded-lg border border-border transition-colors text-sm"
                         >
                             <QrCode size={18} />
                             <span className="hidden sm:inline">{showQr ? 'Nascondi QR' : 'Mostra QR Code'}</span>
@@ -218,7 +218,7 @@ export const WaitlistManager: React.FC = () => {
                         onClick={() => setInterestFilter('ALL')}
                         className={clsx(
                             "px-4 py-2 text-sm font-medium border-b-2 transition-colors",
-                            interestFilter === 'ALL' ? "border-white text-white" : "border-transparent text-text-muted hover:text-white"
+                            interestFilter === 'ALL' ? "border-white text-text-primary" : "border-transparent text-text-muted hover:text-text-primary"
                         )}
                     >
                         Tutti
@@ -227,7 +227,7 @@ export const WaitlistManager: React.FC = () => {
                         onClick={() => setInterestFilter('TATTOO')}
                         className={clsx(
                             "px-4 py-2 text-sm font-medium border-b-2 transition-colors flex items-center gap-2",
-                            interestFilter === 'TATTOO' ? "border-accent text-accent" : "border-transparent text-text-muted hover:text-white"
+                            interestFilter === 'TATTOO' ? "border-accent text-accent" : "border-transparent text-text-muted hover:text-text-primary"
                         )}
                     >
                         <PenTool size={14} />
@@ -237,7 +237,7 @@ export const WaitlistManager: React.FC = () => {
                         onClick={() => setInterestFilter('ACADEMY')}
                         className={clsx(
                             "px-4 py-2 text-sm font-medium border-b-2 transition-colors flex items-center gap-2",
-                            interestFilter === 'ACADEMY' ? "border-purple-500 text-purple-500" : "border-transparent text-text-muted hover:text-white"
+                            interestFilter === 'ACADEMY' ? "border-purple-500 text-purple-500" : "border-transparent text-text-muted hover:text-text-primary"
                         )}
                     >
                         <span className="text-sm">🎓</span>
@@ -279,15 +279,15 @@ export const WaitlistManager: React.FC = () => {
                         <select
                             value={activeTab}
                             onChange={(e) => setActiveTab(e.target.value as any)}
-                            className="w-full bg-transparent text-white font-medium outline-none appearance-none p-2"
+                            className="w-full bg-transparent text-text-primary font-medium outline-none appearance-none p-2"
                         >
-                            <option value="PENDING" className="bg-bg-secondary text-white">
+                            <option value="PENDING" className="bg-bg-secondary text-text-primary">
                                 🕒 In Attesa ({entries.filter(e => e.status === 'PENDING').length})
                             </option>
-                            <option value="IN_PROGRESS" className="bg-bg-secondary text-white">
+                            <option value="IN_PROGRESS" className="bg-bg-secondary text-text-primary">
                                 👤 In Lavorazione ({entries.filter(e => e.status === 'IN_PROGRESS' || e.status === 'CONTACTED').length})
                             </option>
-                            <option value="COMPLETED" className="bg-bg-secondary text-white">
+                            <option value="COMPLETED" className="bg-bg-secondary text-text-primary">
                                 ✅ Completati ({entries.filter(e => e.status === 'BOOKED' || e.status === 'REJECTED').length})
                             </option>
                         </select>
@@ -303,7 +303,7 @@ export const WaitlistManager: React.FC = () => {
                         onClick={() => setActiveTab('PENDING')}
                         className={clsx(
                             'px-6 py-3 border-b-2 font-medium transition-colors flex items-center gap-2 text-sm',
-                            activeTab === 'PENDING' ? 'border-accent text-accent' : 'border-transparent text-text-muted hover:text-white'
+                            activeTab === 'PENDING' ? 'border-accent text-accent' : 'border-transparent text-text-muted hover:text-text-primary'
                         )}
                     >
                         <Clock size={16} />
@@ -316,7 +316,7 @@ export const WaitlistManager: React.FC = () => {
                         onClick={() => setActiveTab('IN_PROGRESS')}
                         className={clsx(
                             'px-6 py-3 border-b-2 font-medium transition-colors flex items-center gap-2 text-sm',
-                            activeTab === 'IN_PROGRESS' ? 'border-accent text-accent' : 'border-transparent text-text-muted hover:text-white'
+                            activeTab === 'IN_PROGRESS' ? 'border-accent text-accent' : 'border-transparent text-text-muted hover:text-text-primary'
                         )}
                     >
                         <UserPlus size={16} />
@@ -329,7 +329,7 @@ export const WaitlistManager: React.FC = () => {
                         onClick={() => setActiveTab('COMPLETED')}
                         className={clsx(
                             'px-6 py-3 border-b-2 font-medium transition-colors flex items-center gap-2 text-sm',
-                            activeTab === 'COMPLETED' ? 'border-accent text-accent' : 'border-transparent text-text-muted hover:text-white'
+                            activeTab === 'COMPLETED' ? 'border-accent text-accent' : 'border-transparent text-text-muted hover:text-text-primary'
                         )}
                     >
                         <CheckCircle size={16} />
@@ -350,7 +350,7 @@ export const WaitlistManager: React.FC = () => {
                             placeholder="Cerca per nome o email..."
                             value={searchTerm}
                             onChange={(e) => setSearchTerm(e.target.value)}
-                            className="w-full bg-bg-secondary border border-border rounded-lg pl-9 pr-4 py-2 text-sm text-white focus:border-accent focus:outline-none"
+                            className="w-full bg-bg-secondary border border-border rounded-lg pl-9 pr-4 py-2 text-sm text-text-primary focus:border-accent focus:outline-none"
                         />
                     </div>
                     <button
@@ -359,7 +359,7 @@ export const WaitlistManager: React.FC = () => {
                             "flex items-center justify-center gap-2 px-4 py-2 border rounded-lg text-sm transition-colors",
                             isFilterOpen
                                 ? "bg-accent text-white border-accent"
-                                : "bg-bg-secondary border-border text-text-muted hover:text-white"
+                                : "bg-bg-secondary border-border text-text-muted hover:text-text-primary"
                         )}
                     >
                         <Filter size={16} />
@@ -378,7 +378,7 @@ export const WaitlistManager: React.FC = () => {
                                     type="date"
                                     value={dateFilter}
                                     onChange={(e) => setDateFilter(e.target.value)}
-                                    className="w-full bg-bg-tertiary border border-border rounded px-3 py-2 text-white text-sm focus:border-accent focus:outline-none"
+                                    className="w-full bg-bg-tertiary border border-border rounded px-3 py-2 text-text-primary text-sm focus:border-accent focus:outline-none"
                                 />
                             </div>
                             <div className="flex-1">
@@ -386,7 +386,7 @@ export const WaitlistManager: React.FC = () => {
                                 <select
                                     value={styleFilter}
                                     onChange={(e) => setStyleFilter(e.target.value)}
-                                    className="w-full bg-bg-tertiary border border-border rounded px-3 py-2 text-white text-sm focus:border-accent focus:outline-none"
+                                    className="w-full bg-bg-tertiary border border-border rounded px-3 py-2 text-text-primary text-sm focus:border-accent focus:outline-none"
                                 >
                                     <option value="">Tutti gli stili</option>
                                     <option value="Realistico">Realistico</option>
@@ -404,7 +404,7 @@ export const WaitlistManager: React.FC = () => {
                                         onClick={() => setSortOrder('ASC')}
                                         className={clsx(
                                             "px-3 py-1.5 rounded text-xs font-medium transition-colors flex items-center gap-1",
-                                            sortOrder === 'ASC' ? "bg-accent text-white shadow-sm" : "text-text-muted hover:text-white"
+                                            sortOrder === 'ASC' ? "bg-accent text-white shadow-sm" : "text-text-muted hover:text-text-primary"
                                         )}
                                     >
                                         <ArrowUpNarrowWide size={14} />
@@ -414,7 +414,7 @@ export const WaitlistManager: React.FC = () => {
                                         onClick={() => setSortOrder('DESC')}
                                         className={clsx(
                                             "px-3 py-1.5 rounded text-xs font-medium transition-colors flex items-center gap-1",
-                                            sortOrder === 'DESC' ? "bg-accent text-white shadow-sm" : "text-text-muted hover:text-white"
+                                            sortOrder === 'DESC' ? "bg-accent text-white shadow-sm" : "text-text-muted hover:text-text-primary"
                                         )}
                                     >
                                         <ArrowDownWideNarrow size={14} />
@@ -460,7 +460,7 @@ export const WaitlistManager: React.FC = () => {
                                         <td className="p-4">
                                             <div className="flex items-center justify-between gap-2">
                                                 <div>
-                                                    <div className="font-medium text-white hover:text-accent cursor-pointer transition-colors" onClick={() => entry.client_id ? navigate(`/clients/${entry.client_id}`, { state: { fromWaitlist: true } }) : alert('Scheda cliente non disponibile')}>
+                                                    <div className="font-medium text-text-primary hover:text-accent cursor-pointer transition-colors" onClick={() => entry.client_id ? navigate(`/clients/${entry.client_id}`, { state: { fromWaitlist: true } }) : alert('Scheda cliente non disponibile')}>
                                                         {entry.client_name || 'Senza Nome'}
                                                     </div>
                                                     <div className="text-xs text-text-muted truncate max-w-[150px]">{entry.email}</div>
@@ -478,7 +478,7 @@ export const WaitlistManager: React.FC = () => {
                                                 </div>
                                                 <button
                                                     onClick={() => entry.client_id ? navigate(`/clients/${entry.client_id}`, { state: { fromWaitlist: true } }) : alert('Scheda cliente non disponibile')}
-                                                    className="text-text-muted hover:text-white p-1 rounded-md hover:bg-white/10 transition-colors"
+                                                    className="text-text-muted hover:text-text-primary p-1 rounded-md hover:bg-white/10 transition-colors"
                                                     title={entry.client_id ? "Vai alla scheda cliente" : "Scheda non disponibile"}
                                                 >
                                                     <ArrowUpRight size={16} />
@@ -531,7 +531,7 @@ export const WaitlistManager: React.FC = () => {
                             <div key={entry.id} className="bg-bg-secondary rounded-xl border border-border p-4 flex flex-col gap-3 min-w-0 w-full overflow-hidden">
                                 <div className="flex justify-between items-start gap-2 min-w-0">
                                     <div className="min-w-0 flex-1">
-                                        <h4 className="font-bold text-white text-lg truncate hover:text-accent cursor-pointer transition-colors" onClick={() => entry.client_id ? navigate(`/clients/${entry.client_id}`, { state: { fromWaitlist: true } }) : alert('Scheda cliente non disponibile')}>{entry.client_name || 'Senza Nome'}</h4>
+                                        <h4 className="font-bold text-text-primary text-lg truncate hover:text-accent cursor-pointer transition-colors" onClick={() => entry.client_id ? navigate(`/clients/${entry.client_id}`, { state: { fromWaitlist: true } }) : alert('Scheda cliente non disponibile')}>{entry.client_name || 'Senza Nome'}</h4>
                                         <p className="text-xs text-text-muted truncate">{entry.email}</p>
                                         <div className="flex gap-1 mt-1">
                                             {entry.interest_type === 'ACADEMY' ? (

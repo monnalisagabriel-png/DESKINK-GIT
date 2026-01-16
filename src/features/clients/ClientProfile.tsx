@@ -376,7 +376,7 @@ export const ClientProfile: React.FC = () => {
                     <ArrowLeft size={24} />
                 </button>
                 <div>
-                    <h1 className="text-xl font-bold text-white flex items-center gap-3">
+                    <h1 className="text-xl font-bold text-text-primary flex items-center gap-3">
                         {isNewClient ? 'Nuovo Cliente' : client.full_name}
                         {!isNewClient && (
                             <span className={clsx(
@@ -407,7 +407,7 @@ export const ClientProfile: React.FC = () => {
                         <div className="w-24 h-24 md:w-32 md:h-32 rounded-full bg-gradient-to-br from-accent to-purple-600 p-1 shadow-xl shadow-accent/20">
                             <div className="w-full h-full rounded-full bg-bg-tertiary flex items-center justify-center border-4 border-bg-primary overflow-hidden relative group cursor-pointer">
                                 {client.full_name ? (
-                                    <span className="text-2xl md:text-4xl font-bold text-white">
+                                    <span className="text-2xl md:text-4xl font-bold text-text-primary">
                                         {client.full_name.charAt(0).toUpperCase()}
                                     </span>
                                 ) : (
@@ -426,7 +426,7 @@ export const ClientProfile: React.FC = () => {
                                         type="text"
                                         value={formData.full_name || ''}
                                         onChange={(e) => handleInputChange('full_name', e.target.value)}
-                                        className="w-full text-xl md:text-2xl font-bold bg-bg-tertiary border border-border rounded-lg px-4 py-2 text-white focus:ring-2 focus:ring-accent focus:border-transparent outline-none transition-all placeholder:text-gray-600"
+                                        className="w-full text-xl md:text-2xl font-bold bg-bg-tertiary border border-border rounded-lg px-4 py-2 text-text-primary focus:ring-2 focus:ring-accent focus:border-transparent outline-none transition-all placeholder:text-gray-600"
                                         placeholder="Nome e Cognome *"
                                     />
                                 </div>
@@ -435,7 +435,7 @@ export const ClientProfile: React.FC = () => {
                                         type="email"
                                         value={formData.email || ''}
                                         onChange={(e) => handleInputChange('email', e.target.value)}
-                                        className="w-full bg-bg-tertiary border border-border rounded-lg px-4 py-2 text-white focus:border-accent outline-none"
+                                        className="w-full bg-bg-tertiary border border-border rounded-lg px-4 py-2 text-text-primary focus:border-accent outline-none"
                                         placeholder="Email *"
                                     />
                                 </div>
@@ -444,7 +444,7 @@ export const ClientProfile: React.FC = () => {
                                         type="tel"
                                         value={formData.phone || ''}
                                         onChange={(e) => handleInputChange('phone', e.target.value)}
-                                        className="w-full bg-bg-tertiary border border-border rounded-lg px-4 py-2 text-white focus:border-accent outline-none"
+                                        className="w-full bg-bg-tertiary border border-border rounded-lg px-4 py-2 text-text-primary focus:border-accent outline-none"
                                         placeholder="Telefono *"
                                     />
                                 </div>
@@ -453,7 +453,7 @@ export const ClientProfile: React.FC = () => {
                                         type="text"
                                         value={formData.fiscal_code || ''}
                                         onChange={(e) => handleInputChange('fiscal_code', e.target.value)}
-                                        className="w-full bg-bg-tertiary border border-border rounded-lg px-4 py-2 text-white focus:border-accent outline-none"
+                                        className="w-full bg-bg-tertiary border border-border rounded-lg px-4 py-2 text-text-primary focus:border-accent outline-none"
                                         placeholder="Codice Fiscale *"
                                     />
                                 </div>
@@ -462,7 +462,7 @@ export const ClientProfile: React.FC = () => {
                                         type="text"
                                         value={formData.address || ''}
                                         onChange={(e) => handleInputChange('address', e.target.value)}
-                                        className="w-full bg-bg-tertiary border border-border rounded-lg px-4 py-2 text-white focus:border-accent outline-none"
+                                        className="w-full bg-bg-tertiary border border-border rounded-lg px-4 py-2 text-text-primary focus:border-accent outline-none"
                                         placeholder="Indirizzo *"
                                     />
                                 </div>
@@ -471,14 +471,14 @@ export const ClientProfile: React.FC = () => {
                                         type="text"
                                         value={formData.city || ''}
                                         onChange={(e) => handleInputChange('city', e.target.value)}
-                                        className="w-full bg-bg-tertiary border border-border rounded-lg px-4 py-2 text-white focus:border-accent outline-none"
+                                        className="w-full bg-bg-tertiary border border-border rounded-lg px-4 py-2 text-text-primary focus:border-accent outline-none"
                                         placeholder="Città *"
                                     />
                                     <input
                                         type="text"
                                         value={formData.zip_code || ''}
                                         onChange={(e) => handleInputChange('zip_code', e.target.value)}
-                                        className="w-24 bg-bg-tertiary border border-border rounded-lg px-4 py-2 text-white focus:border-accent outline-none"
+                                        className="w-24 bg-bg-tertiary border border-border rounded-lg px-4 py-2 text-text-primary focus:border-accent outline-none"
                                         placeholder="CAP *"
                                     />
                                 </div>
@@ -523,7 +523,7 @@ export const ClientProfile: React.FC = () => {
                             </div>
                         ) : (
                             <div className="space-y-4">
-                                <h2 className="text-3xl font-bold text-white break-words">{client.full_name}</h2>
+                                <h2 className="text-3xl font-bold text-text-primary break-words">{client.full_name}</h2>
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-y-2 gap-x-4 text-text-secondary text-base">
                                     <span className="flex items-center gap-2 break-all"><Mail size={18} className="shrink-0" /> {client.email || 'N/D'}</span>
                                     <span className="flex items-center gap-2"><Phone size={18} className="shrink-0" /> {client.phone || 'N/D'}</span>
@@ -585,7 +585,7 @@ export const ClientProfile: React.FC = () => {
                                         </button>
                                         <button
                                             onClick={handleEditClick}
-                                            className="px-4 py-2 bg-bg-tertiary hover:bg-white/10 border border-border rounded-lg text-white font-medium transition-colors"
+                                            className="px-4 py-2 bg-bg-tertiary hover:bg-white/10 border border-border rounded-lg text-text-primary font-medium transition-colors"
                                         >
                                             Modifica Profilo
                                         </button>
@@ -618,7 +618,7 @@ export const ClientProfile: React.FC = () => {
                                     "pb-4 flex items-center gap-2 text-sm font-medium transition-colors border-b-2 whitespace-nowrap",
                                     activeTab === tab.id
                                         ? "text-accent border-accent"
-                                        : "text-text-muted border-transparent hover:text-white hover:border-gray-700"
+                                        : "text-text-muted border-transparent hover:text-text-primary hover:border-gray-700"
                                 )}
                             >
                                 <tab.icon size={18} />
@@ -633,11 +633,11 @@ export const ClientProfile: React.FC = () => {
                     {activeTab === 'request' && waitlistEntry && (
                         <div className="space-y-6">
                             <div className="bg-bg-secondary rounded-lg border border-border p-6">
-                                <h3 className="text-lg font-bold text-white mb-4">Dettagli Richiesta</h3>
+                                <h3 className="text-lg font-bold text-text-primary mb-4">Dettagli Richiesta</h3>
                                 <div className="space-y-4">
                                     <div>
                                         <label className="text-sm text-text-muted">Descrizione Idea</label>
-                                        <p className="text-white mt-1 whitespace-pre-wrap">{waitlistEntry.description || 'Nessuna descrizione.'}</p>
+                                        <p className="text-text-primary mt-1 whitespace-pre-wrap">{waitlistEntry.description || 'Nessuna descrizione.'}</p>
                                     </div>
                                     <div>
                                         <label className="text-sm text-text-muted">Stili Indicati</label>
@@ -716,7 +716,7 @@ export const ClientProfile: React.FC = () => {
                                                     className="rounded border-border bg-bg-tertiary text-accent focus:ring-accent w-5 h-5"
                                                 />
                                                 <div>
-                                                    <h4 className="font-bold text-white">{apt.service_name}</h4>
+                                                    <h4 className="font-bold text-text-primary">{apt.service_name}</h4>
                                                     <p className="text-sm text-text-muted">
                                                         {new Date(apt.start_time).toLocaleDateString()} - {new Date(apt.start_time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                                                     </p>
@@ -732,7 +732,7 @@ export const ClientProfile: React.FC = () => {
                                                     )}>
                                                         {apt.status}
                                                     </span>
-                                                    {apt.price && <p className="text-sm font-bold text-white mt-1">€ {apt.price}</p>}
+                                                    {apt.price && <p className="text-sm font-bold text-text-primary mt-1">€ {apt.price}</p>}
                                                 </div>
                                                 <button
                                                     onClick={() => handleDeleteAppointment(apt.id)}
@@ -809,7 +809,7 @@ export const ClientProfile: React.FC = () => {
                                                     <FileText size={24} />
                                                 </div>
                                                 <div>
-                                                    <h4 className="font-bold text-white">Consenso Firmato v{c.template_version || '1'}</h4>
+                                                    <h4 className="font-bold text-text-primary">Consenso Firmato v{c.template_version || '1'}</h4>
                                                     <p className="text-sm text-text-muted">Firmato il {new Date(c.signed_at).toLocaleDateString()} alle {new Date(c.signed_at).toLocaleTimeString()}</p>
                                                 </div>
                                             </div>

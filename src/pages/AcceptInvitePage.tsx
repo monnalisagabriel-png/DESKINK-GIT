@@ -126,7 +126,7 @@ export const AcceptInvitePage: React.FC = () => {
     };
 
     if (loading) {
-        return <div className="min-h-screen bg-bg-primary flex items-center justify-center text-white">Validazione invito...</div>;
+        return <div className="min-h-screen bg-bg-primary flex items-center justify-center text-text-primary">Validazione invito...</div>;
     }
 
     if (invitationError) {
@@ -134,13 +134,13 @@ export const AcceptInvitePage: React.FC = () => {
             <div className="min-h-screen bg-bg-primary flex items-center justify-center p-4">
                 <div className="bg-bg-secondary p-8 rounded-xl border border-red-500/30 max-w-md w-full text-center">
                     <AlertTriangle size={48} className="mx-auto text-red-500 mb-4" />
-                    <h2 className="text-xl font-bold text-white mb-2">Invito Non Valido</h2>
+                    <h2 className="text-xl font-bold text-text-primary mb-2">Invito Non Valido</h2>
                     <p className="text-text-muted mb-6">{invitationError}</p>
                     <div className="text-xs text-left bg-black/30 p-2 rounded mb-4 font-mono text-gray-500 break-all">
                         Debug: {token}
                     </div>
                     <button onClick={() => navigate('/')} className="text-accent hover:underline">Torna alla Dashboard</button>
-                    <button onClick={() => window.location.reload()} className="block mx-auto mt-4 text-sm text-text-muted hover:text-white">Riprova</button>
+                    <button onClick={() => window.location.reload()} className="block mx-auto mt-4 text-sm text-text-muted hover:text-text-primary">Riprova</button>
                 </div>
             </div>
         );
@@ -152,9 +152,9 @@ export const AcceptInvitePage: React.FC = () => {
             <div className="min-h-screen bg-bg-primary flex items-center justify-center p-4">
                 <div className="bg-bg-secondary p-8 rounded-xl border border-yellow-500/30 max-w-md w-full text-center">
                     <AlertTriangle size={48} className="mx-auto text-yellow-500 mb-4" />
-                    <h2 className="text-xl font-bold text-white mb-2">Utente già loggato</h2>
+                    <h2 className="text-xl font-bold text-text-primary mb-2">Utente già loggato</h2>
                     <p className="text-text-muted mb-4">
-                        Sei loggato come <span className="text-white font-bold">{user.email}</span>,
+                        Sei loggato come <span className="text-text-primary font-bold">{user.email}</span>,
                         ma questo invito è per <span className="text-accent font-bold">{invitation.email}</span>.
                     </p>
                     <p className="text-text-muted text-sm mb-6">
@@ -181,22 +181,22 @@ export const AcceptInvitePage: React.FC = () => {
                     <div className="inline-flex p-4 rounded-full bg-accent/10 text-accent mb-4">
                         <Shield size={32} />
                     </div>
-                    <h1 className="text-2xl font-bold text-white mb-2">Accetta Invito</h1>
+                    <h1 className="text-2xl font-bold text-text-primary mb-2">Accetta Invito</h1>
                     <p className="text-text-muted text-sm">
-                        Sei stato invitato a unirti al team come <span className="text-white font-medium capitalize">{invitation.role}</span>.
+                        Sei stato invitato a unirti al team come <span className="text-text-primary font-medium capitalize">{invitation.role}</span>.
                     </p>
                 </div>
 
                 <div className="flex bg-bg-tertiary p-1 rounded-lg mb-6">
                     <button
                         onClick={() => setAuthMode('signin')}
-                        className={`flex-1 py-2 text-sm font-medium rounded-md transition-all ${authMode === 'signin' ? 'bg-bg-primary text-white shadow' : 'text-text-muted hover:text-white'}`}
+                        className={`flex-1 py-2 text-sm font-medium rounded-md transition-all ${authMode === 'signin' ? 'bg-bg-primary text-text-primary shadow' : 'text-text-muted hover:text-text-primary'}`}
                     >
                         Ho già un account
                     </button>
                     <button
                         onClick={() => setAuthMode('signup')}
-                        className={`flex-1 py-2 text-sm font-medium rounded-md transition-all ${authMode === 'signup' ? 'bg-bg-primary text-white shadow' : 'text-text-muted hover:text-white'}`}
+                        className={`flex-1 py-2 text-sm font-medium rounded-md transition-all ${authMode === 'signup' ? 'bg-bg-primary text-text-primary shadow' : 'text-text-muted hover:text-text-primary'}`}
                     >
                         Crea account
                     </button>
@@ -210,7 +210,7 @@ export const AcceptInvitePage: React.FC = () => {
                                 type="text"
                                 value={fullName}
                                 onChange={e => setFullName(e.target.value)}
-                                className="w-full bg-bg-tertiary border border-border rounded-lg px-4 py-3 text-white focus:ring-accent focus:border-accent"
+                                className="w-full bg-bg-tertiary border border-border rounded-lg px-4 py-3 text-text-primary focus:ring-accent focus:border-accent"
                                 placeholder="Mario Rossi"
                                 required
                             />
@@ -225,7 +225,7 @@ export const AcceptInvitePage: React.FC = () => {
                                 type="email"
                                 value={email}
                                 onChange={e => setEmail(e.target.value)}
-                                className="w-full bg-bg-tertiary border border-border rounded-lg pl-10 pr-4 py-3 text-white focus:ring-accent focus:border-accent"
+                                className="w-full bg-bg-tertiary border border-border rounded-lg pl-10 pr-4 py-3 text-text-primary focus:ring-accent focus:border-accent"
                                 placeholder="tu@esempio.com"
                                 required
                             />
@@ -240,7 +240,7 @@ export const AcceptInvitePage: React.FC = () => {
                                 type="password"
                                 value={password}
                                 onChange={e => setPassword(e.target.value)}
-                                className="w-full bg-bg-tertiary border border-border rounded-lg pl-10 pr-4 py-3 text-white focus:ring-accent focus:border-accent"
+                                className="w-full bg-bg-tertiary border border-border rounded-lg pl-10 pr-4 py-3 text-text-primary focus:ring-accent focus:border-accent"
                                 placeholder="••••••••"
                                 required
                                 minLength={6}

@@ -59,12 +59,12 @@ export const LoginPage: React.FC = () => {
                 <div className="text-center mb-6">
                     <div className="flex justify-center mb-4">
                         <img
-                            src="/logo.jpg"
-                            alt="InkFlow CRM"
-                            className="w-24 h-24 rounded-full object-cover border-4 border-accent/20 shadow-xl"
+                            src="/logo.png"
+                            alt="DESKINK CRM"
+                            className="w-24 h-24 rounded-full object-cover shadow-xl"
                         />
                     </div>
-                    <h1 className="text-2xl font-bold text-white mb-2">InkFlow CRM</h1>
+                    <h1 className="text-2xl font-bold text-text-primary mb-2">DESKINK</h1>
                     <p className="text-text-muted text-sm px-4">
                         Gestisci il tuo studio di tatuaggi con efficienza. Agenda, Clienti e Contabilità tutto in un'unica app.
                     </p>
@@ -74,13 +74,13 @@ export const LoginPage: React.FC = () => {
                 <div className="flex mb-6 bg-bg-tertiary p-1 rounded-lg">
                     <button
                         onClick={() => { setActiveTab('login'); setError(null); setMessage(null); }}
-                        className={`flex-1 py-2 text-sm font-medium rounded-md transition-all ${activeTab === 'login' ? 'bg-bg-primary text-white shadow-sm' : 'text-text-muted hover:text-white'}`}
+                        className={`flex-1 py-2 text-sm font-medium rounded-md transition-all ${activeTab === 'login' ? 'bg-bg-primary text-text-primary shadow-sm' : 'text-text-muted hover:text-text-primary'}`}
                     >
                         Ho già un account
                     </button>
                     <button
                         onClick={() => { setActiveTab('signup'); setError(null); setMessage(null); }}
-                        className={`flex-1 py-2 text-sm font-medium rounded-md transition-all ${activeTab === 'signup' ? 'bg-bg-primary text-white shadow-sm' : 'text-text-muted hover:text-white'}`}
+                        className={`flex-1 py-2 text-sm font-medium rounded-md transition-all ${activeTab === 'signup' ? 'bg-bg-primary text-text-primary shadow-sm' : 'text-text-muted hover:text-text-primary'}`}
                     >
                         Crea nuovo account
                     </button>
@@ -105,7 +105,7 @@ export const LoginPage: React.FC = () => {
                             type="email"
                             value={email}
                             onChange={(e) => setEmail(e.target.value)}
-                            className="w-full bg-bg-tertiary border border-border rounded-lg px-3 py-2 text-white focus:ring-accent focus:border-accent transition-all"
+                            className="w-full bg-bg-tertiary border border-border rounded-lg px-3 py-2 text-text-primary focus:ring-accent focus:border-accent transition-all"
                             placeholder="nome@esempio.com"
                             required
                         />
@@ -117,7 +117,7 @@ export const LoginPage: React.FC = () => {
                                 type={showPassword ? "text" : "password"}
                                 value={password}
                                 onChange={(e) => setPassword(e.target.value)}
-                                className="w-full bg-bg-tertiary border border-border rounded-lg px-3 py-2 text-white focus:ring-accent focus:border-accent pr-10 transition-all"
+                                className="w-full bg-bg-tertiary border border-border rounded-lg px-3 py-2 text-text-primary focus:ring-accent focus:border-accent pr-10 transition-all"
                                 placeholder="Inserisci la password"
                                 required
                                 minLength={6}
@@ -125,7 +125,7 @@ export const LoginPage: React.FC = () => {
                             <button
                                 type="button"
                                 onClick={() => setShowPassword(!showPassword)}
-                                className="absolute right-3 top-1/2 -translate-y-1/2 text-text-muted hover:text-white transition-colors"
+                                className="absolute right-3 top-1/2 -translate-y-1/2 text-text-muted hover:text-text-primary transition-colors"
                             >
                                 {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                             </button>

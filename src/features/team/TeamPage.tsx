@@ -58,7 +58,7 @@ export const TeamPage: React.FC = () => {
     };
 
     return (
-        <div className="p-4 md:p-8 pt-20 md:pt-8 text-white max-w-2xl mx-auto">
+        <div className="p-4 md:p-8 pt-20 md:pt-8 text-text-primary max-w-2xl mx-auto">
             <h1 className="text-2xl font-bold mb-2 flex items-center gap-2">
                 <Users className="text-accent" /> Gestione Team
             </h1>
@@ -105,7 +105,7 @@ export const TeamPage: React.FC = () => {
                             type="email"
                             value={email}
                             onChange={(e) => setEmail(e.target.value)}
-                            className="w-full bg-bg-tertiary border border-border rounded-lg px-4 py-3 text-white focus:ring-accent focus:border-accent"
+                            className="w-full bg-bg-tertiary border border-border rounded-lg px-4 py-3 text-text-primary focus:ring-accent focus:border-accent"
                             placeholder="collega@esempio.com"
                             required
                         />
@@ -222,11 +222,11 @@ const TeamList: React.FC<{ studioId?: string }> = ({ studioId }) => {
             {members.map(member => (
                 <div key={member.id} className="flex items-center justify-between p-4 bg-bg-tertiary rounded-lg border border-border group">
                     <div className="flex items-center gap-4">
-                        <div className="w-10 h-10 rounded-full bg-bg-primary flex items-center justify-center font-bold text-lg text-white">
+                        <div className="w-10 h-10 rounded-full bg-bg-primary flex items-center justify-center font-bold text-lg text-text-primary">
                             {member.full_name?.charAt(0).toUpperCase()}
                         </div>
                         <div>
-                            <div className="font-bold text-white">{member.full_name}</div>
+                            <div className="font-bold text-text-primary">{member.full_name}</div>
                             <div className="text-sm text-text-muted">
                                 {member.email}
                             </div>

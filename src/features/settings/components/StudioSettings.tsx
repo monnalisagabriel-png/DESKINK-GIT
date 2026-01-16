@@ -177,7 +177,7 @@ export const StudioSettings: React.FC = () => {
                                 type="text"
                                 value={studio.address || ''}
                                 onChange={e => setStudio({ ...studio, address: e.target.value })}
-                                className="w-full bg-bg-tertiary border border-border rounded-lg px-4 py-2 text-white focus:border-accent focus:outline-none"
+                                className="w-full bg-bg-tertiary border border-border rounded-lg px-4 py-2 text-text-primary focus:border-accent focus:outline-none"
                             />
                         </div>
                     </div>
@@ -193,7 +193,7 @@ export const StudioSettings: React.FC = () => {
                                     type="password"
                                     value={studio.ai_settings?.gemini_api_key || ''}
                                     onChange={e => setStudio({ ...studio, ai_settings: { ...studio.ai_settings, gemini_api_key: e.target.value } })}
-                                    className="w-full bg-bg-tertiary border border-border rounded-lg px-4 py-2 text-white focus:border-accent focus:outline-none"
+                                    className="w-full bg-bg-tertiary border border-border rounded-lg px-4 py-2 text-text-primary focus:border-accent focus:outline-none"
                                     placeholder="Incolla qui la tua API Key"
                                 />
                                 <p className="text-xs text-text-muted mt-1">
@@ -213,8 +213,8 @@ export const StudioSettings: React.FC = () => {
                                 type="text"
                                 value={studio.company_name || ''}
                                 onChange={e => setStudio({ ...studio, company_name: e.target.value })}
-                                className="w-full bg-bg-tertiary border border-border rounded-lg px-4 py-2 text-white focus:border-accent focus:outline-none"
-                                placeholder="Es. InkFlow S.r.l."
+                                className="w-full bg-bg-tertiary border border-border rounded-lg px-4 py-2 text-text-primary focus:border-accent focus:outline-none"
+                                placeholder="Es. DESKINK S.r.l."
                             />
                         </div>
                         <div>
@@ -223,7 +223,7 @@ export const StudioSettings: React.FC = () => {
                                 type="text"
                                 value={studio.vat_number || ''}
                                 onChange={e => setStudio({ ...studio, vat_number: e.target.value })}
-                                className="w-full bg-bg-tertiary border border-border rounded-lg px-4 py-2 text-white focus:border-accent focus:outline-none"
+                                className="w-full bg-bg-tertiary border border-border rounded-lg px-4 py-2 text-text-primary focus:border-accent focus:outline-none"
                             />
                         </div>
                         <div>
@@ -232,7 +232,7 @@ export const StudioSettings: React.FC = () => {
                                 type="text"
                                 value={studio.fiscal_code || ''}
                                 onChange={e => setStudio({ ...studio, fiscal_code: e.target.value })}
-                                className="w-full bg-bg-tertiary border border-border rounded-lg px-4 py-2 text-white focus:border-accent focus:outline-none"
+                                className="w-full bg-bg-tertiary border border-border rounded-lg px-4 py-2 text-text-primary focus:border-accent focus:outline-none"
                             />
                         </div>
                     </div>

@@ -124,7 +124,7 @@ export const Sidebar = () => {
                         <img
                             src={studio.logo_url}
                             alt={studio.name}
-                            className="w-20 h-20 rounded-full object-cover border-2 border-accent shadow-lg"
+                            className="w-20 h-20 rounded-full object-cover shadow-lg"
                         />
                     ) : (
                         <div className="w-16 h-16 rounded-full bg-accent/20 flex items-center justify-center border border-accent/30">
@@ -133,7 +133,7 @@ export const Sidebar = () => {
                     )}
                     <div className="text-center">
                         <h1 className="text-lg font-bold bg-gradient-to-r from-accent to-red-500 bg-clip-text text-transparent">
-                            {studio?.name || 'InkFlow'}
+                            {studio?.name || 'DESKINK'}
                         </h1>
                         <p className="text-xs text-text-muted capitalize">
                             {user?.role === 'owner' ? 'Owner' : user?.role?.toLowerCase() || 'Member'}
@@ -230,7 +230,7 @@ export const Sidebar = () => {
                                 <X size={24} />
                             </button>
 
-                            <h2 className="text-2xl font-bold text-gray-900 mb-2">Condividi InkFlow</h2>
+                            <h2 className="text-2xl font-bold text-gray-900 mb-2">Condividi DESKINK</h2>
                             <p className="text-gray-500 mb-6">Fai scansionare questo codice per accedere all'applicazione</p>
 
                             <div className="bg-gray-100 p-4 rounded-xl inline-block mb-6">

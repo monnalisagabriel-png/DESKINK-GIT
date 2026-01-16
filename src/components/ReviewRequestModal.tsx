@@ -13,7 +13,7 @@ interface ReviewRequestModalProps {
 
 export function ReviewRequestModal({ isOpen, onClose, clientName, clientPhone, studioId }: ReviewRequestModalProps) {
     const [reviewUrl, setReviewUrl] = useState<string | null>(null);
-    const [studioName, setStudioName] = useState<string>('InkFlow Studio');
+    const [studioName, setStudioName] = useState<string>('DESKINK Studio');
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
 
@@ -24,7 +24,7 @@ export function ReviewRequestModal({ isOpen, onClose, clientName, clientPhone, s
             api.settings.getStudio(studioId)
                 .then(studio => {
                     if (studio) {
-                        setStudioName(studio.name || 'InkFlow Studio');
+                        setStudioName(studio.name || 'DESKINK Studio');
                         if (studio.google_review_url) {
                             setReviewUrl(studio.google_review_url);
                         } else {

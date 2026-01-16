@@ -202,7 +202,7 @@ export const ClientsList: React.FC = () => {
             <div className="flex flex-col gap-4 mb-6">
                 <div className="flex flex-col md:flex-row items-center justify-between gap-4">
                     <div>
-                        <h1 className="text-2xl font-bold text-white">Clienti <span className="text-lg font-normal text-text-muted">({clients.length})</span></h1>
+                        <h1 className="text-2xl font-bold text-text-primary">Clienti <span className="text-lg font-normal text-text-muted">({clients.length})</span></h1>
                         <p className="text-text-muted">Gestisci il database e lo storico clienti.</p>
                     </div>
 
@@ -234,7 +234,7 @@ export const ClientsList: React.FC = () => {
 
                                     <button
                                         onClick={() => { setModalTab('config'); setShowImport(true); }}
-                                        className="flex items-center gap-2 bg-gray-500/10 border border-gray-500/20 hover:bg-gray-500/20 text-gray-400 hover:text-white px-3 py-2 rounded-lg font-medium transition-colors whitespace-nowrap"
+                                        className="flex items-center gap-2 bg-gray-500/10 border border-gray-500/20 hover:bg-gray-500/20 text-gray-400 hover:text-text-primary px-3 py-2 rounded-lg font-medium transition-colors whitespace-nowrap"
                                         title="Impostazioni Google Sheets"
                                     >
                                         <span className="hidden lg:inline">⚙️</span>
@@ -267,7 +267,7 @@ export const ClientsList: React.FC = () => {
                         <input
                             type="text"
                             placeholder="Cerca cliente..."
-                            className="w-full bg-bg-secondary border border-border rounded-lg pl-10 pr-4 py-2 text-white focus:ring-2 focus:ring-accent focus:border-transparent outline-none"
+                            className="w-full bg-bg-secondary border border-border rounded-lg pl-10 pr-4 py-2 text-text-primary focus:ring-2 focus:ring-accent focus:border-transparent outline-none"
                             value={search}
                             onChange={(e) => setSearch(e.target.value)}
                         />
@@ -275,7 +275,7 @@ export const ClientsList: React.FC = () => {
                     </div>
                     <button
                         onClick={() => setShowFilters(!showFilters)}
-                        className={`p-2 rounded-lg border transition-colors ${showFilters ? 'bg-accent/10 border-accent text-accent' : 'bg-bg-secondary border-border text-text-muted hover:text-white'}`}
+                        className={`p-2 rounded-lg border transition-colors ${showFilters ? 'bg-accent/10 border-accent text-accent' : 'bg-bg-secondary border-border text-text-muted hover:text-text-primary'}`}
                         title="Filtri"
                     >
                         <Filter size={20} />
@@ -296,7 +296,7 @@ export const ClientsList: React.FC = () => {
                         <div className="flex items-center gap-2">
                             <button
                                 onClick={() => setSelectedClients(new Set())}
-                                className="text-text-muted hover:text-white px-3 py-1 text-sm pt-1.5"
+                                className="text-text-muted hover:text-text-primary px-3 py-1 text-sm pt-1.5"
                             >
                                 Annulla
                             </button>
@@ -331,7 +331,7 @@ export const ClientsList: React.FC = () => {
                                     <button
                                         key={opt.value}
                                         onClick={() => setFilters(prev => ({ ...prev, broadcast: opt.value as any }))}
-                                        className={`flex-1 py-1.5 text-sm font-medium rounded-md transition-all ${filters.broadcast === opt.value ? 'bg-bg-primary text-white shadow-sm' : 'text-text-muted hover:text-white'}`}
+                                        className={`flex-1 py-1.5 text-sm font-medium rounded-md transition-all ${filters.broadcast === opt.value ? 'bg-bg-primary text-text-primary shadow-sm' : 'text-text-muted hover:text-text-primary'}`}
                                     >
                                         {opt.label}
                                     </button>
@@ -343,7 +343,7 @@ export const ClientsList: React.FC = () => {
                         <div>
                             <label className="block text-xs font-medium text-text-muted mb-2 uppercase tracking-wider">Stile Tatuaggio</label>
                             <select
-                                className="w-full bg-bg-tertiary border border-bg-primary rounded-lg px-3 py-2 text-white focus:ring-2 focus:ring-accent outline-none"
+                                className="w-full bg-bg-tertiary border border-bg-primary rounded-lg px-3 py-2 text-text-primary focus:ring-2 focus:ring-accent outline-none"
                                 value={filters.style}
                                 onChange={(e) => setFilters(prev => ({ ...prev, style: e.target.value }))}
                             >
@@ -402,7 +402,7 @@ export const ClientsList: React.FC = () => {
                                         </div>
                                     </td>
                                     <td className="px-6 py-4">
-                                        <div className="font-medium text-white">{client.full_name}</div>
+                                        <div className="font-medium text-text-primary">{client.full_name}</div>
                                         <div className="text-xs text-text-muted">ID: {client.id}</div>
                                     </td>
                                     <td className="px-6 py-4">
@@ -411,7 +411,7 @@ export const ClientsList: React.FC = () => {
                                                 <Mail size={14} className="shrink-0" /> <span className="break-all">{client.email}</span>
                                             </div>
                                             <div
-                                                className="flex items-center gap-2 hover:text-white cursor-pointer transition-colors"
+                                                className="flex items-center gap-2 hover:text-text-primary cursor-pointer transition-colors"
                                                 onClick={(e) => handleWhatsAppClick(e, client.phone)}
                                                 title="Apri WhatsApp"
                                             >
@@ -436,7 +436,7 @@ export const ClientsList: React.FC = () => {
                                                 onClick={(e) => handleToggleBroadcast(e, client)}
                                                 className={`p-2 rounded-lg transition-colors ${client.whatsapp_broadcast_opt_in
                                                     ? 'text-green-500 hover:bg-green-500/10'
-                                                    : 'text-text-muted hover:text-white hover:bg-bg-tertiary'
+                                                    : 'text-text-muted hover:text-text-primary hover:bg-bg-tertiary'
                                                     }`}
                                                 title={client.whatsapp_broadcast_opt_in ? "Rimuovi da Broadcast" : "Aggiungi a Broadcast"}
                                             >
@@ -484,7 +484,7 @@ export const ClientsList: React.FC = () => {
                                         )}
                                     </div>
                                     <div>
-                                        <div className="font-bold text-white text-lg">{client.full_name}</div>
+                                        <div className="font-bold text-text-primary text-lg">{client.full_name}</div>
                                         <div className="text-xs text-text-muted">ID: {client.id}</div>
                                     </div>
                                 </div>
@@ -531,8 +531,8 @@ export const ClientsList: React.FC = () => {
                     <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4" onClick={() => setShowQR(false)}>
                         <div className="bg-bg-secondary border border-border rounded-2xl p-6 max-w-sm w-full shadow-2xl" onClick={e => e.stopPropagation()}>
                             <div className="flex justify-between items-center mb-6">
-                                <h3 className="text-xl font-bold text-white">QR Code Clienti</h3>
-                                <button onClick={() => setShowQR(false)} className="text-text-muted hover:text-white transition-colors">
+                                <h3 className="text-xl font-bold text-text-primary">QR Code Clienti</h3>
+                                <button onClick={() => setShowQR(false)} className="text-text-muted hover:text-text-primary transition-colors">
                                     <X size={24} />
                                 </button>
                             </div>
@@ -563,7 +563,7 @@ export const ClientsList: React.FC = () => {
                                         />
                                         <button
                                             onClick={() => window.open(registrationLink, '_blank')}
-                                            className="bg-bg-tertiary hover:bg-white/10 border border-border text-white p-2 rounded-lg transition-colors"
+                                            className="bg-bg-tertiary hover:bg-white/10 border border-border text-text-primary p-2 rounded-lg transition-colors"
                                             title="Apri Link"
                                         >
                                             <ExternalLink size={18} />
@@ -574,7 +574,7 @@ export const ClientsList: React.FC = () => {
                                                 setCopied(true);
                                                 setTimeout(() => setCopied(false), 2000);
                                             }}
-                                            className="bg-bg-tertiary hover:bg-white/10 border border-border text-white p-2 rounded-lg transition-colors"
+                                            className="bg-bg-tertiary hover:bg-white/10 border border-border text-text-primary p-2 rounded-lg transition-colors"
                                             title="Copia Link"
                                         >
                                             {copied ? <Check size={18} className="text-green-500" /> : <Copy size={18} />}

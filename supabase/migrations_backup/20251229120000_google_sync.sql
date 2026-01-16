@@ -1,6 +1,6 @@
 -- Create table for storing User Integrations (Google Tokens)
 create table if not exists user_integrations (
-  id uuid default uuid_generate_v4() primary key,
+  id uuid default gen_random_uuid() primary key,
   user_id uuid references auth.users(id) on delete cascade not null,
   provider text not null check (provider in ('google')),
   access_token text not null, -- Should be encrypted in production
