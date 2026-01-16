@@ -23,18 +23,24 @@ export function ReviewRequestModal({ isOpen, onClose, clientName, clientPhone, s
             setError(null);
             api.settings.getStudio(studioId)
                 .then(studio => {
+                    console.log('[ReviewModal] Fetched studio:', studio);
                     if (studio) {
                         setStudioName(studio.name || 'InkFlow Studio');
                         if (studio.google_review_url) {
+                            console.log('[ReviewModal] Found Google Review URL:', studio.google_review_url);
                             setReviewUrl(studio.google_review_url);
                         } else {
+                            console.warn('[ReviewModal] google_review_url is missing in studio data');
                             setReviewUrl(null);
                             setError('Link recensione Google non configurato nelle Impostazioni Studio');
                         }
+                    } else {
+                        console.error('[ReviewModal] Studio data is null');
+                        setError('Dati studio non trovati');
                     }
                 })
                 .catch(err => {
-                    console.error('Failed to fetch studio settings', err);
+                    console.error('[ReviewModal] Failed to fetch studio settings', err);
                     setError('Errore nel recupero delle impostazioni dello studio');
                 })
                 .finally(() => setLoading(false));
@@ -54,24 +60,50 @@ Ti basterà mostrarci la recensione pubblicata al link: ${reviewUrl || '[LINK RE
 Grazie per aver scelto il ${studioName} e per il tuo supporto!`;
 
     const handleSendWhatsapp = () => {
-        if (!reviewUrl) return;
-
-        const encodedMessage = encodeURIComponent(message);
-        // If phone is provided, target it, otherwise generic link (user picks contact)
-        // Ideally we should use the client's phone number if available. 
-        // Assuming clientPhone format is clean or needs sanitization.
-        // For simplicity, we'll try to use the phone if valid, else just open wa.me to pick contact? 
-        // Actually wa.me/number?text=... requires a number. 
-
-        let url = `https://wa.me/?text=${encodedMessage}`;
-        if (clientPhone) {
-            const cleanPhone = clientPhone.replace(/\D/g, '');
-            if (cleanPhone.length >= 10) {
-                url = `https://wa.me/${cleanPhone}?text=${encodedMessage}`;
-            }
+        if (!reviewUrl) {
+            console.error('[ReviewModal] Review URL is missing, cannot send.');
+            return;
         }
 
-        window.open(url, '_blank');
+        console.log('[ReviewModal] Sending WhatsApp. Client:', clientName, 'Phone:', clientPhone, 'URL:', reviewUrl);
+
+        const encodedMessage = encodeURIComponent(message);
+
+        let url = `https://wa.me/?text=${encodedMessage}`;
+
+        if (clientPhone) {
+            // Remove everything except digits
+            const cleanPhone = clientPhone.replace(/\D/g, '');
+
+            // Check if it looks like a valid phone number (at least 6 digits)
+            // If it starts with '3' (Italian mobile) and no country code, maybe prepend 39? 
+            // For now, let's just stick to raw digits. User might have stored it with +39 or 0039.
+            if (cleanPhone.length >= 6) {
+                // If it doesn't start with a country code (approximate check), maybe warn? 
+                // But WhatsApp is usually smart enough or 0039/39 overlap.
+                // Safest to just use what we have if it's long enough.
+                url = `https://wa.me/${cleanPhone}?text=${encodedMessage}`;
+            } else {
+                console.warn('[ReviewModal] Phone number too short after cleaning:', cleanPhone);
+            }
+        } else {
+            console.log('[ReviewModal] No phone provided, using generic link.');
+        }
+
+        console.log('[ReviewModal] Opening URL:', url);
+
+        // Use a try-catch for window.open just in case, though unlikely to throw synchronously
+        try {
+            const newWindow = window.open(url, '_blank');
+            if (!newWindow || newWindow.closed || typeof newWindow.closed == 'undefined') {
+                // Popup blocked?
+                console.warn('[ReviewModal] Window might have been blocked.');
+            }
+        } catch (e) {
+            console.error('[ReviewModal] Failed to open window:', e);
+            alert('Impossibile aprire il link di WhatsApp. Controlla le impostazioni del browser.');
+        }
+
         onClose();
     };
 
