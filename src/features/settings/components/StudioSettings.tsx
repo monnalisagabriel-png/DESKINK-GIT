@@ -80,8 +80,8 @@ export const StudioSettings: React.FC = () => {
                 </h2>
 
                 <form onSubmit={handleSave} className="space-y-6">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <div className="md:col-span-2">
+                    <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
+                        <div className="xl:col-span-2">
                             <label className="block text-sm font-medium text-text-muted mb-2">Logo Studio</label>
                             {studio.logo_url ? (
                                 <div className="flex items-center gap-6 p-4 bg-bg-tertiary rounded-xl border border-border">
@@ -182,11 +182,11 @@ export const StudioSettings: React.FC = () => {
                         </div>
                     </div>
 
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-4 border-t border-border">
-                        <div className="md:col-span-2">
+                    <div className="grid grid-cols-1 xl:grid-cols-2 gap-6 pt-4 border-t border-border">
+                        <div className="xl:col-span-2">
                             <h3 className="text-text-primary font-medium mb-4">Configurazione AI</h3>
                         </div>
-                        <div className="md:col-span-2">
+                        <div className="xl:col-span-2">
                             <label className="block text-sm font-medium text-text-muted mb-1">Chiave API Gemini</label>
                             <div className="relative">
                                 <input
@@ -203,11 +203,11 @@ export const StudioSettings: React.FC = () => {
                         </div>
                     </div>
 
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-4 border-t border-border">
-                        <div className="md:col-span-2">
+                    <div className="grid grid-cols-1 xl:grid-cols-2 gap-6 pt-4 border-t border-border">
+                        <div className="xl:col-span-2">
                             <h3 className="text-text-primary font-medium mb-4">Dati Fiscali</h3>
                         </div>
-                        <div className="md:col-span-2">
+                        <div className="xl:col-span-2">
                             <label className="block text-sm font-medium text-text-muted mb-1">Ragione Sociale</label>
                             <input
                                 type="text"

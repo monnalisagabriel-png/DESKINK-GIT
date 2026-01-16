@@ -154,7 +154,7 @@ export const ProfileSettings: React.FC = () => {
             </div>
 
             <div className="space-y-4">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
                     <div>
                         <label className="block text-sm font-medium text-text-secondary mb-2">Nome Completo</label>
                         <div className="relative">

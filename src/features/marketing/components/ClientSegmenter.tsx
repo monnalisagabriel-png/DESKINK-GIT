@@ -98,8 +98,8 @@ export const ClientSegmenter: React.FC<ClientSegmenterProps> = ({ data, onChange
     return (
         <div className="flex flex-col h-full gap-6">
             {/* Filters Bar */}
-            <div className="bg-bg-secondary p-4 rounded-lg border border-border flex flex-col md:flex-row gap-4 items-end md:items-center">
-                <div className="flex-1 relative w-full">
+            <div className="bg-bg-secondary p-4 rounded-lg border border-border grid grid-cols-1 md:grid-cols-3 gap-4 items-end">
+                <div className="relative w-full">
                     <label className="block text-xs text-text-secondary mb-1">Cerca</label>
                     <input
                         type="text"
@@ -111,7 +111,7 @@ export const ClientSegmenter: React.FC<ClientSegmenterProps> = ({ data, onChange
                     <Search className="absolute left-3 top-8 text-text-muted" size={16} />
                 </div>
 
-                <div className="w-full md:w-64">
+                <div className="w-full">
                     <label className="block text-xs text-text-secondary mb-1">Stato Broadcast</label>
                     <select
                         className="w-full bg-bg-primary border border-border rounded px-3 py-2 text-text-primary focus:outline-none focus:ring-1 focus:ring-accent"
@@ -124,7 +124,7 @@ export const ClientSegmenter: React.FC<ClientSegmenterProps> = ({ data, onChange
                     </select>
                 </div>
 
-                <div className="w-full md:w-64">
+                <div className="w-full">
                     <label className="block text-xs text-text-secondary mb-1">Stile Tatuaggio</label>
                     <select
                         className="w-full bg-bg-primary border border-border rounded px-3 py-2 text-text-primary focus:outline-none focus:ring-1 focus:ring-accent"
@@ -163,11 +163,11 @@ export const ClientSegmenter: React.FC<ClientSegmenterProps> = ({ data, onChange
                     <table className="w-full text-left border-collapse">
                         <thead className="bg-bg-tertiary sticky top-0 z-10">
                             <tr>
-                                <th className="w-12 px-4 py-3"></th>
-                                <th className="px-4 py-3 text-xs font-semibold text-text-secondary uppercase">Cliente</th>
-                                <th className="px-4 py-3 text-xs font-semibold text-text-secondary uppercase">Telefono</th>
-                                <th className="px-4 py-3 text-xs font-semibold text-text-secondary uppercase">Stato Broadcast</th>
-                                <th className="px-4 py-3 text-xs font-semibold text-text-secondary uppercase">Stili</th>
+                                <th className="w-10 px-2 py-3"></th>
+                                <th className="px-2 py-3 text-xs font-semibold text-text-secondary uppercase">Cliente</th>
+                                <th className="px-2 py-3 text-xs font-semibold text-text-secondary uppercase">Telefono</th>
+                                <th className="px-2 py-3 text-xs font-semibold text-text-secondary uppercase">Stato Broadcast</th>
+                                <th className="px-2 py-3 text-xs font-semibold text-text-secondary uppercase">Stili</th>
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-border">
@@ -187,28 +187,28 @@ export const ClientSegmenter: React.FC<ClientSegmenterProps> = ({ data, onChange
                                             )}
                                             onClick={() => toggleClient(client.id)}
                                         >
-                                            <td className="px-4 py-3">
+                                            <td className="px-2 py-3">
                                                 {isSelected ? <CheckSquare size={18} className="text-accent" /> : <Square size={18} className="text-text-muted" />}
                                             </td>
-                                            <td className="px-4 py-3">
-                                                <div className="text-sm text-text-primary font-medium">{client.full_name}</div>
-                                                <div className="text-xs text-text-muted">{client.email}</div>
+                                            <td className="px-2 py-3">
+                                                <div className="text-sm text-text-primary font-medium truncate max-w-[120px]">{client.full_name}</div>
+                                                <div className="text-xs text-text-muted truncate max-w-[120px]">{client.email}</div>
                                             </td>
-                                            <td className="px-4 py-3 text-sm text-text-secondary">
+                                            <td className="px-2 py-3 text-sm text-text-secondary whitespace-nowrap">
                                                 {client.phone}
                                             </td>
-                                            <td className="px-4 py-3">
+                                            <td className="px-2 py-3">
                                                 {client.whatsapp_broadcast_opt_in ? (
-                                                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-medium bg-green-500/10 text-green-500">
-                                                        <Megaphone size={12} /> In Broadcast
+                                                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-medium bg-green-500/10 text-green-500 whitespace-nowrap">
+                                                        <Megaphone size={10} /> In Broadcast
                                                     </span>
                                                 ) : (
-                                                    <span className="inline-flex px-2 py-0.5 rounded text-xs font-medium bg-red-500/10 text-red-500">
+                                                    <span className="inline-flex px-2 py-0.5 rounded text-[10px] font-medium bg-red-500/10 text-red-500 whitespace-nowrap">
                                                         Non in lista
                                                     </span>
                                                 )}
                                             </td>
-                                            <td className="px-4 py-3 text-sm text-text-secondary">
+                                            <td className="px-2 py-3 text-sm text-text-secondary truncate max-w-[100px]">
                                                 {client.preferred_styles?.join(', ') || '-'}
                                             </td>
                                         </tr>
