@@ -489,7 +489,7 @@ export const AcademyPage: React.FC = () => {
             {/* Header */}
             <div className="flex flex-col md:flex-row items-center justify-between gap-4">
                 <div>
-                    <h1 className="text-2xl font-bold text-white">Academy</h1>
+                    <h1 className="text-2xl font-bold text-text-primary">Academy</h1>
                     <p className="text-text-muted">Gestione corsi, materiali e studenti.</p>
                 </div>
 
@@ -498,20 +498,20 @@ export const AcademyPage: React.FC = () => {
                         <>
                             <button
                                 onClick={() => setView('LIST')}
-                                className={clsx("px-4 py-2 rounded-lg font-bold transition-colors", view === 'LIST' ? "bg-accent text-white" : "bg-bg-tertiary text-text-muted hover:text-white")}
+                                className={clsx("px-4 py-2 rounded-lg font-bold transition-colors", view === 'LIST' ? "bg-accent text-white" : "bg-bg-tertiary text-text-muted hover:text-text-primary")}
                             >
                                 Corsi
                             </button>
                             <button
                                 onClick={() => setView('STUDENTS_LIST')}
-                                className={clsx("px-4 py-2 rounded-lg font-bold transition-colors", view === 'STUDENTS_LIST' ? "bg-accent text-white" : "bg-bg-tertiary text-text-muted hover:text-white")}
+                                className={clsx("px-4 py-2 rounded-lg font-bold transition-colors", view === 'STUDENTS_LIST' ? "bg-accent text-white" : "bg-bg-tertiary text-text-muted hover:text-text-primary")}
                             >
                                 Studenti Connessi
                             </button>
 
                             <button
                                 onClick={() => setIsTermsModalOpen(true)}
-                                className="px-4 py-2 rounded-lg font-bold transition-colors bg-bg-tertiary text-text-muted hover:text-white flex items-center gap-2"
+                                className="px-4 py-2 rounded-lg font-bold transition-colors bg-bg-tertiary text-text-muted hover:text-text-primary flex items-center gap-2"
                             >
                                 <FileText size={18} />
                                 <span className="hidden lg:inline">Termini</span>
@@ -520,7 +520,7 @@ export const AcademyPage: React.FC = () => {
                             {view === 'LIST' && (
                                 <button
                                     onClick={() => setView('CREATE')}
-                                    className="flex items-center gap-2 bg-white/10 hover:bg-white/20 text-white px-4 py-2 rounded-lg font-bold transition-colors border border-dashed border-white/20"
+                                    className="flex items-center gap-2 bg-bg-tertiary hover:bg-bg-primary text-text-primary px-4 py-2 rounded-lg font-bold transition-colors border border-dashed border-border"
                                 >
                                     <Plus size={20} /> Nuovo Corso
                                 </button>
@@ -532,7 +532,7 @@ export const AcademyPage: React.FC = () => {
                 {view === 'CREATE' || view === 'MANAGE' ? (
                     <button
                         onClick={() => setView('LIST')}
-                        className="flex items-center gap-2 bg-bg-tertiary hover:bg-white/10 text-white px-4 py-2 rounded-lg font-bold transition-colors border border-border"
+                        className="flex items-center gap-2 bg-bg-tertiary hover:bg-bg-primary text-text-primary px-4 py-2 rounded-lg font-bold transition-colors border border-border"
                     >
                         Indietro
                     </button>
@@ -544,7 +544,7 @@ export const AcademyPage: React.FC = () => {
                 {view === 'STUDENTS_LIST' ? (
                     <div className="space-y-6">
                         <div className="bg-bg-secondary p-6 rounded-xl border border-border">
-                            <h2 className="text-xl font-bold text-white mb-4 flex items-center gap-2">
+                            <h2 className="text-xl font-bold text-text-primary mb-4 flex items-center gap-2">
                                 <Users size={24} className="text-accent" />
                                 Studenti Connessi ({students.length})
                             </h2>
@@ -566,7 +566,7 @@ export const AcademyPage: React.FC = () => {
                                                     {student.full_name?.substring(0, 2).toUpperCase() || 'ST'}
                                                 </div>
                                                 <div className="flex-1 min-w-0">
-                                                    <p className="text-white font-bold truncate">{student.full_name || 'N/A'}</p>
+                                                    <p className="text-text-primary font-bold truncate">{student.full_name || 'N/A'}</p>
                                                     <p className="text-sm text-text-secondary truncate">{student.email}</p>
                                                 </div>
                                                 <span className="text-xs px-2 py-1 rounded bg-white/5 text-text-muted uppercase">
@@ -574,7 +574,7 @@ export const AcademyPage: React.FC = () => {
                                                 </span>
                                             </div>
                                             <button
-                                                className="w-full text-white hover:bg-white/10 px-3 py-2 bg-accent/20 rounded text-sm border border-accent/20 font-bold flex items-center justify-center gap-2 transition-colors"
+                                                className="w-full text-text-primary hover:bg-bg-primary px-3 py-2 bg-bg-secondary rounded text-sm border border-border font-bold flex items-center justify-center gap-2 transition-colors"
                                                 onClick={() => handleOpenProfile(student)}
                                             >
                                                 Vedi Scheda
@@ -610,7 +610,7 @@ export const AcademyPage: React.FC = () => {
                                                             <div className="w-8 h-8 rounded-full bg-accent/20 flex items-center justify-center text-accent text-xs font-bold">
                                                                 {student.full_name?.substring(0, 2).toUpperCase() || 'ST'}
                                                             </div>
-                                                            <span className="text-white font-medium">{student.full_name || 'N/A'}</span>
+                                                            <span className="text-text-primary font-medium">{student.full_name || 'N/A'}</span>
                                                         </div>
                                                     </td>
                                                     <td className="py-3 px-4 text-text-secondary">{student.email}</td>
@@ -619,7 +619,7 @@ export const AcademyPage: React.FC = () => {
                                                     </td>
                                                     <td className="py-3 px-4">
                                                         <button
-                                                            className="text-white hover:bg-white/10 px-3 py-1 bg-accent/20 rounded text-xs border border-accent/20 font-bold flex items-center gap-1 transition-colors"
+                                                            className="text-text-primary hover:bg-bg-primary px-3 py-1 bg-bg-secondary rounded text-xs border border-border font-bold flex items-center gap-1 transition-colors"
                                                             onClick={() => handleOpenProfile(student)}
                                                         >
                                                             Vedi Scheda
@@ -648,7 +648,7 @@ export const AcademyPage: React.FC = () => {
                                             {course.duration}
                                         </span>
                                     </div>
-                                    <h3 className="text-xl font-bold text-white mb-2">{course.title}</h3>
+                                    <h3 className="text-xl font-bold text-text-primary mb-2">{course.title}</h3>
                                     <p className="text-sm text-text-secondary line-clamp-3 mb-4">
                                         {course.description}
                                     </p>
@@ -667,7 +667,7 @@ export const AcademyPage: React.FC = () => {
                                 <div className="bg-bg-tertiary/50 p-4 border-t border-border">
                                     <button
                                         onClick={() => handleManageCourse(course)}
-                                        className="w-full py-2 bg-white/5 hover:bg-white/10 text-white rounded-lg transition-colors text-sm font-medium"
+                                        className="w-full py-2 bg-bg-secondary hover:bg-bg-primary text-text-primary rounded-lg transition-colors text-sm font-medium border border-border"
                                     >
                                         Gestisci Corso
                                     </button>
@@ -681,7 +681,7 @@ export const AcademyPage: React.FC = () => {
                         <div className="p-8 border-b border-border bg-bg-tertiary/20">
                             <div className="flex justify-between items-start">
                                 <div>
-                                    <h2 className="text-3xl font-bold text-white mb-2">{selectedCourse.title}</h2>
+                                    <h2 className="text-3xl font-bold text-text-primary mb-2">{selectedCourse.title}</h2>
                                     <p className="text-text-muted">{selectedCourse.description}</p>
                                 </div>
                                 <button
@@ -696,25 +696,25 @@ export const AcademyPage: React.FC = () => {
                             <div className="flex gap-2 mt-6 overflow-x-auto pb-2 scrollbar-hide -mx-4 px-4 md:mx-0 md:px-0">
                                 <button
                                     onClick={() => setActiveTab('INFO')}
-                                    className={clsx("px-3 py-2 md:px-4 rounded-lg font-medium transition-colors whitespace-nowrap text-sm md:text-base flex-shrink-0", activeTab === 'INFO' ? "bg-accent text-white shadow-lg shadow-accent/20" : "text-text-secondary hover:text-white")}
+                                    className={clsx("px-3 py-2 md:px-4 rounded-lg font-medium transition-colors whitespace-nowrap text-sm md:text-base flex-shrink-0", activeTab === 'INFO' ? "bg-accent text-white shadow-lg shadow-accent/20" : "text-text-secondary hover:text-text-primary")}
                                 >
                                     Info Gen.
                                 </button>
                                 <button
                                     onClick={() => setActiveTab('MATERIALS')}
-                                    className={clsx("px-3 py-2 md:px-4 rounded-lg font-medium transition-colors whitespace-nowrap text-sm md:text-base flex-shrink-0", activeTab === 'MATERIALS' ? "bg-accent text-white shadow-lg shadow-accent/20" : "text-text-secondary hover:text-white")}
+                                    className={clsx("px-3 py-2 md:px-4 rounded-lg font-medium transition-colors whitespace-nowrap text-sm md:text-base flex-shrink-0", activeTab === 'MATERIALS' ? "bg-accent text-white shadow-lg shadow-accent/20" : "text-text-secondary hover:text-text-primary")}
                                 >
                                     Materiale Didattico
                                 </button>
                                 <button
                                     onClick={() => setActiveTab('STUDENTS')}
-                                    className={clsx("px-3 py-2 md:px-4 rounded-lg font-medium transition-colors whitespace-nowrap text-sm md:text-base flex-shrink-0", activeTab === 'STUDENTS' ? "bg-accent text-white shadow-lg shadow-accent/20" : "text-text-secondary hover:text-white")}
+                                    className={clsx("px-3 py-2 md:px-4 rounded-lg font-medium transition-colors whitespace-nowrap text-sm md:text-base flex-shrink-0", activeTab === 'STUDENTS' ? "bg-accent text-white shadow-lg shadow-accent/20" : "text-text-secondary hover:text-text-primary")}
                                 >
                                     Corsisti
                                 </button>
                                 <button
                                     onClick={() => setActiveTab('ATTENDANCE')}
-                                    className={clsx("px-3 py-2 md:px-4 rounded-lg font-medium transition-colors whitespace-nowrap text-sm md:text-base flex-shrink-0", activeTab === 'ATTENDANCE' ? "bg-accent text-white shadow-lg shadow-accent/20" : "text-text-secondary hover:text-white")}
+                                    className={clsx("px-3 py-2 md:px-4 rounded-lg font-medium transition-colors whitespace-nowrap text-sm md:text-base flex-shrink-0", activeTab === 'ATTENDANCE' ? "bg-accent text-white shadow-lg shadow-accent/20" : "text-text-secondary hover:text-text-primary")}
                                 >
                                     Registro
                                 </button>
@@ -729,7 +729,7 @@ export const AcademyPage: React.FC = () => {
                                         <label className="block text-sm font-medium text-text-secondary mb-2">Titolo Corso</label>
                                         <input
                                             type="text"
-                                            className="w-full bg-bg-tertiary border border-border rounded-lg px-4 py-3 text-white focus:ring-2 focus:ring-accent outline-none"
+                                            className="w-full bg-bg-tertiary border border-border rounded-lg px-4 py-3 text-text-primary focus:ring-2 focus:ring-accent outline-none"
                                             value={selectedCourse.title}
                                             onChange={(e) => handleUpdateCourse({ title: e.target.value })}
                                         />
@@ -739,7 +739,7 @@ export const AcademyPage: React.FC = () => {
                                             <label className="block text-sm font-medium text-text-secondary mb-2">Durata</label>
                                             <input
                                                 type="text"
-                                                className="w-full bg-bg-tertiary border border-border rounded-lg px-4 py-3 text-white focus:ring-2 focus:ring-accent outline-none"
+                                                className="w-full bg-bg-tertiary border border-border rounded-lg px-4 py-3 text-text-primary focus:ring-2 focus:ring-accent outline-none"
                                                 value={selectedCourse.duration}
                                                 onChange={(e) => handleUpdateCourse({ duration: e.target.value })}
                                             />
@@ -748,7 +748,7 @@ export const AcademyPage: React.FC = () => {
                                     <div>
                                         <label className="block text-sm font-medium text-text-secondary mb-2">Descrizione</label>
                                         <textarea
-                                            className="w-full bg-bg-tertiary border border-border rounded-lg px-4 py-3 text-white focus:ring-2 focus:ring-accent outline-none h-32 resize-none"
+                                            className="w-full bg-bg-tertiary border border-border rounded-lg px-4 py-3 text-text-primary focus:ring-2 focus:ring-accent outline-none h-32 resize-none"
                                             value={selectedCourse.description}
                                             onChange={(e) => handleUpdateCourse({ description: e.target.value })}
                                         />
@@ -760,10 +760,10 @@ export const AcademyPage: React.FC = () => {
                             {activeTab === 'MATERIALS' && (
                                 <div>
                                     <div className="flex justify-between items-center mb-6">
-                                        <h3 className="text-xl font-bold text-white">Materiali Didattici</h3>
+                                        <h3 className="text-xl font-bold text-text-primary">Materiali Didattici</h3>
                                         <button
                                             onClick={handleOpenAddMaterial}
-                                            className="flex items-center gap-2 bg-white/10 hover:bg-white/20 text-white px-4 py-2 rounded-lg font-medium transition-colors"
+                                            className="flex items-center gap-2 bg-bg-primary hover:bg-bg-tertiary text-text-primary px-4 py-2 rounded-lg font-medium transition-colors border border-border"
                                         >
                                             <Plus size={18} /> Aggiungi Materiale
                                         </button>
@@ -773,13 +773,13 @@ export const AcademyPage: React.FC = () => {
                                     {isMaterialModalOpen && (
                                         <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4">
                                             <div className="bg-bg-secondary p-6 rounded-xl border border-border w-full max-w-md space-y-4">
-                                                <h3 className="text-xl font-bold text-white">Carica Materiale</h3>
+                                                <h3 className="text-xl font-bold text-text-primary">Carica Materiale</h3>
 
                                                 <div>
                                                     <label className="block text-sm text-text-muted mb-1">Titolo</label>
                                                     <input
                                                         type="text"
-                                                        className="w-full bg-bg-tertiary border border-border rounded px-3 py-2 text-white"
+                                                        className="w-full bg-bg-tertiary border border-border rounded px-3 py-2 text-text-primary"
                                                         value={newMaterialData.title}
                                                         onChange={e => setNewMaterialData({ ...newMaterialData, title: e.target.value })}
                                                         placeholder="Es. Dispensa Anatomia"
@@ -789,7 +789,7 @@ export const AcademyPage: React.FC = () => {
                                                 <div>
                                                     <label className="block text-sm text-text-muted mb-1">Tipo</label>
                                                     <select
-                                                        className="w-full bg-bg-tertiary border border-border rounded px-3 py-2 text-white"
+                                                        className="w-full bg-bg-tertiary border border-border rounded px-3 py-2 text-text-primary"
                                                         value={newMaterialData.type}
                                                         onChange={e => setNewMaterialData({ ...newMaterialData, type: e.target.value as any })}
                                                     >
@@ -812,7 +812,7 @@ export const AcademyPage: React.FC = () => {
                                                 <div className="flex gap-2 justify-end mt-4">
                                                     <button
                                                         onClick={() => setIsMaterialModalOpen(false)}
-                                                        className="px-4 py-2 text-text-muted hover:text-white"
+                                                        className="px-4 py-2 text-text-muted hover:text-text-primary"
                                                     >
                                                         Annulla
                                                     </button>
@@ -845,7 +845,7 @@ export const AcademyPage: React.FC = () => {
                                                     {mat.type === 'VIDEO' ? <PlayCircle size={20} /> : <FileText size={20} />}
                                                 </div>
                                                 <div className="flex-1 overflow-hidden">
-                                                    <p className="text-white font-medium truncate">{mat.title}</p>
+                                                    <p className="text-text-primary font-medium truncate">{mat.title}</p>
                                                     <p className="text-xs text-text-muted">{mat.type}</p>
                                                 </div>
                                                 <button className="text-red-400 hover:text-red-300 transition-colors">
@@ -861,10 +861,10 @@ export const AcademyPage: React.FC = () => {
                             {activeTab === 'STUDENTS' && (
                                 <div>
                                     <div className="flex justify-between items-center mb-6">
-                                        <h3 className="text-xl font-bold text-white">Corsisti Iscritti</h3>
+                                        <h3 className="text-xl font-bold text-text-primary">Corsisti Iscritti</h3>
                                         <button
                                             onClick={handleOpenAddStudentModal}
-                                            className="flex items-center gap-2 bg-white/10 hover:bg-white/20 text-white px-4 py-2 rounded-lg font-medium transition-colors"
+                                            className="flex items-center gap-2 bg-bg-primary hover:bg-bg-tertiary text-text-primary px-4 py-2 rounded-lg font-medium transition-colors border border-border"
                                         >
                                             <Users size={18} /> Aggiungi Studente
                                         </button>
@@ -887,7 +887,7 @@ export const AcademyPage: React.FC = () => {
                                                                 {allUsers.find(s => s.id === sid)?.full_name?.substring(0, 2).toUpperCase() || 'ST'}
                                                             </div>
                                                             <div>
-                                                                <p className="text-white font-bold text-lg">
+                                                                <p className="text-text-primary font-bold text-lg">
                                                                     {allUsers.find(s => s.id === sid)?.full_name || 'Sconosciuto'}
                                                                 </p>
                                                                 <p className="text-sm text-text-muted">
@@ -908,7 +908,7 @@ export const AcademyPage: React.FC = () => {
                                                     <div className="flex items-center justify-between bg-black/20 p-3 rounded-lg border border-white/5">
                                                         <div>
                                                             <span className="text-xs text-text-muted uppercase font-bold tracking-wider block mb-1">Presenze</span>
-                                                            <span className="text-xl font-bold text-white">
+                                                            <span className="text-xl font-bold text-text-primary">
                                                                 {enrollment ? `${enrollment.attended_days} / ${enrollment.allowed_days}` : 'Caricamento...'}
                                                             </span>
                                                         </div>
@@ -941,7 +941,7 @@ export const AcademyPage: React.FC = () => {
                                         <div className="flex-1 overflow-y-auto pr-2">
                                             <button
                                                 onClick={() => setSelectedStudentId(null)}
-                                                className="flex items-center gap-2 text-text-secondary hover:text-white mb-6 transition-colors"
+                                                className="flex items-center gap-2 text-text-secondary hover:text-text-primary mb-6 transition-colors"
                                             >
                                                 <ChevronRight className="rotate-180" size={20} /> Torna alla lista
                                             </button>
@@ -956,7 +956,7 @@ export const AcademyPage: React.FC = () => {
                                                             <div className="flex items-center gap-2 mb-1">
                                                                 <input
                                                                     type="text"
-                                                                    className="text-2xl font-bold text-white bg-transparent border-b border-transparent hover:border-border focus:border-accent focus:outline-none w-full transition-colors"
+                                                                    className="text-2xl font-bold text-text-primary bg-transparent border-b border-transparent hover:border-border focus:border-accent focus:outline-none w-full transition-colors"
                                                                     defaultValue={students.find(s => s.id === selectedStudentId)?.full_name || ''}
                                                                     placeholder="Nome Studente"
                                                                     onBlur={async (e) => {
@@ -999,12 +999,12 @@ export const AcademyPage: React.FC = () => {
                                                     <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                                                         {/* Progress Card */}
                                                         <div className="lg:col-span-2 bg-bg-tertiary p-6 rounded-xl border border-border">
-                                                            <h4 className="text-lg font-bold text-white mb-6 flex items-center gap-2">
+                                                            <h4 className="text-lg font-bold text-text-primary mb-6 flex items-center gap-2">
                                                                 <Clock size={20} className="text-accent" /> Progresso Presenze
                                                             </h4>
 
                                                             <div className="mb-2 flex justify-between items-end">
-                                                                <span className="text-4xl font-bold text-white">{studentEnrollment.attended_days}</span>
+                                                                <span className="text-4xl font-bold text-text-primary">{studentEnrollment.attended_days}</span>
                                                                 <span className="text-xl text-text-muted mb-1">/ {studentEnrollment.allowed_days} giorni</span>
                                                             </div>
 
@@ -1036,7 +1036,7 @@ export const AcademyPage: React.FC = () => {
 
                                                         {/* Settings Card */}
                                                         <div className="bg-bg-tertiary p-6 rounded-xl border border-border space-y-6">
-                                                            <h4 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
+                                                            <h4 className="text-lg font-bold text-text-primary mb-4 flex items-center gap-2">
                                                                 <Users size={20} className="text-accent" /> Impostazioni
                                                             </h4>
 
@@ -1045,7 +1045,7 @@ export const AcademyPage: React.FC = () => {
                                                                 <div className="flex gap-2">
                                                                     <input
                                                                         type="number"
-                                                                        className="w-full bg-bg-secondary border border-border rounded px-3 py-2 text-white outline-none focus:border-accent"
+                                                                        className="w-full bg-bg-secondary border border-border rounded px-3 py-2 text-text-primary outline-none focus:border-accent"
                                                                         value={studentEnrollment.allowed_days}
                                                                         onChange={(e) => handleUpdateAllowedDays(parseInt(e.target.value) || 0)}
                                                                     />
@@ -1070,7 +1070,7 @@ export const AcademyPage: React.FC = () => {
 
                                                     {/* Financial Management Card */}
                                                     <div className="bg-bg-tertiary p-6 rounded-xl border border-border">
-                                                        <h4 className="text-lg font-bold text-white mb-6 flex items-center gap-2">
+                                                        <h4 className="text-lg font-bold text-text-primary mb-6 flex items-center gap-2">
                                                             <DollarSign size={20} className="text-accent" /> Gestione Pagamenti
                                                         </h4>
 
@@ -1079,7 +1079,7 @@ export const AcademyPage: React.FC = () => {
                                                                 <label className="block text-sm font-medium text-text-secondary mb-2">Costo Totale Corso (€)</label>
                                                                 <input
                                                                     type="number"
-                                                                    className="w-full bg-bg-secondary border border-border rounded-lg px-3 py-2 text-white outline-none focus:border-accent"
+                                                                    className="w-full bg-bg-secondary border border-border rounded-lg px-3 py-2 text-text-primary outline-none focus:border-accent"
                                                                     placeholder="0.00"
                                                                     value={studentEnrollment.total_cost || ''}
                                                                     onChange={async (e) => {
@@ -1093,7 +1093,7 @@ export const AcademyPage: React.FC = () => {
                                                             </div>
                                                             <div>
                                                                 <label className="block text-sm font-medium text-text-secondary mb-2">Totale Versato</label>
-                                                                <div className="px-3 py-2 bg-bg-secondary/50 border border-border rounded-lg text-white font-bold">
+                                                                <div className="px-3 py-2 bg-bg-secondary/50 border border-border rounded-lg text-text-primary font-bold">
                                                                     € {studentEnrollment.deposits?.reduce((acc, curr) => acc + curr.amount, 0).toFixed(2) || '0.00'}
                                                                 </div>
                                                             </div>
@@ -1147,10 +1147,10 @@ export const AcademyPage: React.FC = () => {
                                                                                 <div key={dep.id} className="p-4 flex flex-col gap-2">
                                                                                     <div className="flex justify-between items-start">
                                                                                         <div>
-                                                                                            <p className="text-white font-medium">{new Date(dep.date).toLocaleDateString()}</p>
+                                                                                            <p className="text-text-primary font-medium">{new Date(dep.date).toLocaleDateString()}</p>
                                                                                             <p className="text-sm text-text-secondary">{dep.note || '-'}</p>
                                                                                         </div>
-                                                                                        <span className="text-white font-bold bg-green-500/10 px-2 py-1 rounded text-sm border border-green-500/20">
+                                                                                        <span className="text-text-primary font-bold bg-green-500/10 px-2 py-1 rounded text-sm border border-green-500/20">
                                                                                             € {dep.amount.toFixed(2)}
                                                                                         </span>
                                                                                     </div>
@@ -1178,7 +1178,7 @@ export const AcademyPage: React.FC = () => {
                                                                 {/* Desktop Table View */}
                                                                 <div className="hidden md:block overflow-x-auto">
                                                                     <table className="w-full text-left text-sm">
-                                                                        <thead className="bg-white/5 text-text-muted">
+                                                                        <thead className="bg-bg-tertiary text-text-muted">
                                                                             <tr>
                                                                                 <th className="p-3">Data</th>
                                                                                 <th className="p-3">Nota</th>
@@ -1194,9 +1194,9 @@ export const AcademyPage: React.FC = () => {
                                                                             )}
                                                                             {(studentEnrollment.deposits || []).map((dep) => (
                                                                                 <tr key={dep.id} className="hover:bg-white/5">
-                                                                                    <td className="p-3 text-white">{new Date(dep.date).toLocaleDateString()}</td>
+                                                                                    <td className="p-3 text-text-primary">{new Date(dep.date).toLocaleDateString()}</td>
                                                                                     <td className="p-3 text-text-secondary">{dep.note || '-'}</td>
-                                                                                    <td className="p-3 text-right font-medium text-white">€ {dep.amount.toFixed(2)}</td>
+                                                                                    <td className="p-3 text-right font-medium text-text-primary">€ {dep.amount.toFixed(2)}</td>
                                                                                     <td className="p-3 text-right">
                                                                                         <button
                                                                                             onClick={async () => {
@@ -1230,7 +1230,7 @@ export const AcademyPage: React.FC = () => {
                                         <div className="flex-1 flex flex-col">
                                             <div className="flex justify-between items-center mb-6">
                                                 <div>
-                                                    <h3 className="text-xl font-bold text-white">Registro Presenze</h3>
+                                                    <h3 className="text-xl font-bold text-text-primary">Registro Presenze</h3>
                                                     <p className="text-text-muted text-sm">Seleziona uno studente per visualizzare i dettagli completi.</p>
                                                 </div>
                                             </div>
@@ -1251,7 +1251,7 @@ export const AcademyPage: React.FC = () => {
                                                                 return (
                                                                     <div
                                                                         key={sid}
-                                                                        className="p-4 flex items-center justify-between active:bg-white/5 transition-colors gap-3"
+                                                                        className="p-4 flex items-center justify-between active:bg-bg-primary transition-colors gap-3"
                                                                         onClick={() => handleSelectStudentForAttendance(sid)}
                                                                     >
                                                                         <div className="flex items-center gap-3 flex-1 min-w-0">
@@ -1259,7 +1259,7 @@ export const AcademyPage: React.FC = () => {
                                                                                 {allUsers.find(s => s.id === sid)?.full_name?.substring(0, 2).toUpperCase() || 'ST'}
                                                                             </div>
                                                                             <div className="overflow-hidden">
-                                                                                <p className="text-white font-medium truncate">
+                                                                                <p className="text-text-primary font-medium truncate">
                                                                                     {allUsers.find(s => s.id === sid)?.full_name || 'Studente Sconosciuto'}
                                                                                 </p>
                                                                                 <p className="text-xs text-text-muted truncate">
@@ -1311,7 +1311,7 @@ export const AcademyPage: React.FC = () => {
                                                             {(selectedCourse.student_ids || []).map((sid) => (
                                                                 <tr
                                                                     key={sid}
-                                                                    className="group hover:bg-white/5 transition-colors cursor-pointer"
+                                                                    className="group hover:bg-bg-tertiary transition-colors cursor-pointer"
                                                                     onClick={() => handleSelectStudentForAttendance(sid)}
                                                                 >
                                                                     <td className="p-4">
@@ -1320,7 +1320,7 @@ export const AcademyPage: React.FC = () => {
                                                                                 {allUsers.find(s => s.id === sid)?.full_name?.substring(0, 2).toUpperCase() || 'ST'}
                                                                             </div>
                                                                             <div>
-                                                                                <p className="text-white font-medium">
+                                                                                <p className="text-text-primary font-medium">
                                                                                     {allUsers.find(s => s.id === sid)?.full_name || 'Studente Sconosciuto'}
                                                                                 </p>
                                                                                 <p className="text-xs text-text-muted">
@@ -1331,13 +1331,13 @@ export const AcademyPage: React.FC = () => {
                                                                     </td>
                                                                     <td className="p-4 text-center">
                                                                         <div className="flex items-center justify-center gap-2">
-                                                                            <span className="text-xs bg-bg-secondary px-2 py-1 rounded border border-border text-text-muted group-hover:text-white transition-colors">
+                                                                            <span className="text-xs bg-bg-secondary px-2 py-1 rounded border border-border text-text-muted group-hover:text-text-primary transition-colors">
                                                                                 Gestisci Presenze
                                                                             </span>
                                                                         </div>
                                                                     </td>
                                                                     <td className="p-4 text-right">
-                                                                        <ChevronRight size={20} className="text-text-muted group-hover:text-white transition-colors ml-auto" />
+                                                                        <ChevronRight size={20} className="text-text-muted group-hover:text-text-primary transition-colors ml-auto" />
                                                                     </td>
                                                                 </tr>
                                                             ))}
@@ -1354,14 +1354,14 @@ export const AcademyPage: React.FC = () => {
                 ) : (
                     /* Create Form */
                     <div className="max-w-2xl mx-auto bg-bg-secondary p-8 rounded-xl border border-border mb-24">
-                        <h2 className="text-xl font-bold text-white mb-6">Crea Nuovo Corso</h2>
+                        <h2 className="text-xl font-bold text-text-primary mb-6">Crea Nuovo Corso</h2>
                         <form onSubmit={handleCreateCourse} className="space-y-6">
                             <div>
                                 <label className="block text-sm font-medium text-text-secondary mb-2">Titolo Corso</label>
                                 <input
                                     type="text"
                                     required
-                                    className="w-full bg-bg-tertiary border border-border rounded-lg px-4 py-3 text-white focus:ring-2 focus:ring-accent outline-none"
+                                    className="w-full bg-bg-tertiary border border-border rounded-lg px-4 py-3 text-text-primary focus:ring-2 focus:ring-accent outline-none"
                                     placeholder="es. Masterclass Realistico"
                                     value={newCourse.title}
                                     onChange={e => setNewCourse({ ...newCourse, title: e.target.value })}
@@ -1375,7 +1375,7 @@ export const AcademyPage: React.FC = () => {
                                         <input
                                             type="text"
                                             required
-                                            className="w-full bg-bg-tertiary border border-border rounded-lg pl-10 pr-4 py-3 text-white focus:ring-2 focus:ring-accent outline-none"
+                                            className="w-full bg-bg-tertiary border border-border rounded-lg pl-10 pr-4 py-3 text-text-primary focus:ring-2 focus:ring-accent outline-none"
                                             placeholder="es. 3 Mesi"
                                             value={newCourse.duration}
                                             onChange={e => setNewCourse({ ...newCourse, duration: e.target.value })}
@@ -1388,7 +1388,7 @@ export const AcademyPage: React.FC = () => {
                                     <div className="relative">
                                         <input
                                             type="number"
-                                            className="w-full bg-bg-tertiary border border-border rounded-lg pl-10 pr-4 py-3 text-white focus:ring-2 focus:ring-accent outline-none"
+                                            className="w-full bg-bg-tertiary border border-border rounded-lg pl-10 pr-4 py-3 text-text-primary focus:ring-2 focus:ring-accent outline-none"
                                             placeholder="0.00"
                                             value={newCourse.price || ''}
                                             onChange={e => setNewCourse({ ...newCourse, price: parseFloat(e.target.value) })}
@@ -1401,7 +1401,7 @@ export const AcademyPage: React.FC = () => {
                             <div>
                                 <label className="block text-sm font-medium text-text-secondary mb-2">Descrizione</label>
                                 <textarea
-                                    className="w-full bg-bg-tertiary border border-border rounded-lg px-4 py-3 text-white focus:ring-2 focus:ring-accent outline-none h-32 resize-none"
+                                    className="w-full bg-bg-tertiary border border-border rounded-lg px-4 py-3 text-text-primary focus:ring-2 focus:ring-accent outline-none h-32 resize-none"
                                     placeholder="Descrivi gli obiettivi e il programma del corso..."
                                     value={newCourse.description}
                                     onChange={e => setNewCourse({ ...newCourse, description: e.target.value })}
@@ -1417,7 +1417,7 @@ export const AcademyPage: React.FC = () => {
                                 <button
                                     type="button"
                                     onClick={() => setView('LIST')}
-                                    className="px-6 py-2 text-text-secondary hover:text-white transition-colors"
+                                    className="px-6 py-2 text-text-secondary hover:text-text-primary transition-colors"
                                 >
                                     Annulla
                                 </button>
@@ -1438,8 +1438,8 @@ export const AcademyPage: React.FC = () => {
                 <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
                     <div className="bg-bg-primary border border-border rounded-xl shadow-2xl w-full max-w-md overflow-hidden flex flex-col max-h-[80vh]">
                         <div className="flex items-center justify-between p-4 border-b border-border bg-bg-secondary">
-                            <h3 className="text-lg font-bold text-white">Seleziona Studente</h3>
-                            <button onClick={() => setIsAddStudentModalOpen(false)} className="text-text-muted hover:text-white">
+                            <h3 className="text-lg font-bold text-text-primary">Seleziona Studente</h3>
+                            <button onClick={() => setIsAddStudentModalOpen(false)} className="text-text-muted hover:text-text-primary">
                                 <X size={20} />
                             </button>
                         </div>
@@ -1457,7 +1457,7 @@ export const AcademyPage: React.FC = () => {
                                             {user.full_name?.substring(0, 2).toUpperCase() || 'ST'}
                                         </div>
                                         <div className="overflow-hidden">
-                                            <p className="text-white font-medium truncate">{user.full_name}</p>
+                                            <p className="text-text-primary font-medium truncate">{user.full_name}</p>
                                             <p className="text-sm text-text-muted truncate">{user.email}</p>
                                         </div>
                                         <Plus size={18} className="ml-auto text-accent" />
@@ -1491,8 +1491,8 @@ export const AcademyPage: React.FC = () => {
                     <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
                         <div className="bg-bg-primary border border-border rounded-xl shadow-2xl w-full max-w-md overflow-hidden flex flex-col max-h-[80vh]">
                             <div className="flex items-center justify-between p-4 border-b border-border bg-bg-secondary">
-                                <h3 className="text-lg font-bold text-white">Seleziona Studente</h3>
-                                <button onClick={() => setIsAddStudentModalOpen(false)} className="text-text-muted hover:text-white">
+                                <h3 className="text-lg font-bold text-text-primary">Seleziona Studente</h3>
+                                <button onClick={() => setIsAddStudentModalOpen(false)} className="text-text-muted hover:text-text-primary">
                                     <X size={20} />
                                 </button>
                             </div>
@@ -1510,7 +1510,7 @@ export const AcademyPage: React.FC = () => {
                                                 {user.full_name?.substring(0, 2).toUpperCase() || 'ST'}
                                             </div>
                                             <div className="overflow-hidden">
-                                                <p className="text-white font-medium truncate">{user.full_name}</p>
+                                                <p className="text-text-primary font-medium truncate">{user.full_name}</p>
                                                 <p className="text-sm text-text-muted truncate">{user.email}</p>
                                             </div>
                                             <Plus size={18} className="ml-auto text-accent" />
@@ -1532,13 +1532,13 @@ export const AcademyPage: React.FC = () => {
                 <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-[60] flex items-center justify-center p-4">
                     <div className="bg-bg-primary border border-border rounded-xl w-full max-w-2xl flex flex-col max-h-[90vh]">
                         <div className="p-6 border-b border-border flex items-center justify-between">
-                            <h2 className="text-xl font-bold text-white flex items-center gap-2">
+                            <h2 className="text-xl font-bold text-text-primary flex items-center gap-2">
                                 <FileText className="text-accent" />
                                 Modifica Termini e Condizioni
                             </h2>
                             <button
                                 onClick={() => setIsTermsModalOpen(false)}
-                                className="text-text-muted hover:text-white transition-colors"
+                                className="text-text-muted hover:text-text-primary transition-colors"
                             >
                                 <X size={24} />
                             </button>
@@ -1552,7 +1552,7 @@ export const AcademyPage: React.FC = () => {
                             <textarea
                                 value={termsText}
                                 onChange={(e) => setTermsText(e.target.value)}
-                                className="w-full h-96 bg-bg-secondary border border-border rounded-lg p-4 text-white placeholder-text-muted focus:outline-none focus:border-accent resize-none font-mono text-sm"
+                                className="w-full h-96 bg-bg-secondary border border-border rounded-lg p-4 text-text-primary placeholder-text-muted focus:outline-none focus:border-accent resize-none font-mono text-sm"
                                 placeholder="Inserisci qui i termini e condizioni..."
                             />
                         </div>
@@ -1560,7 +1560,7 @@ export const AcademyPage: React.FC = () => {
                         <div className="p-6 border-t border-border flex justify-end gap-3">
                             <button
                                 onClick={() => setIsTermsModalOpen(false)}
-                                className="px-4 py-2 rounded-lg font-bold text-text-muted hover:text-white transition-colors"
+                                className="px-4 py-2 rounded-lg font-bold text-text-muted hover:text-text-primary transition-colors"
                             >
                                 Annulla
                             </button>

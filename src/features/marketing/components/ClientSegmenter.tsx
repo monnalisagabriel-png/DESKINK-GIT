@@ -104,7 +104,7 @@ export const ClientSegmenter: React.FC<ClientSegmenterProps> = ({ data, onChange
                     <input
                         type="text"
                         placeholder="Nome, Telefono..."
-                        className="w-full bg-bg-primary border border-border rounded pl-9 pr-3 py-2 text-white focus:outline-none focus:ring-1 focus:ring-accent"
+                        className="w-full bg-bg-primary border border-border rounded pl-9 pr-3 py-2 text-text-primary focus:outline-none focus:ring-1 focus:ring-accent"
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
                     />
@@ -114,7 +114,7 @@ export const ClientSegmenter: React.FC<ClientSegmenterProps> = ({ data, onChange
                 <div className="w-full md:w-64">
                     <label className="block text-xs text-text-secondary mb-1">Stato Broadcast</label>
                     <select
-                        className="w-full bg-bg-primary border border-border rounded px-3 py-2 text-white focus:outline-none focus:ring-1 focus:ring-accent"
+                        className="w-full bg-bg-primary border border-border rounded px-3 py-2 text-text-primary focus:outline-none focus:ring-1 focus:ring-accent"
                         value={broadcastFilter}
                         onChange={(e) => setBroadcastFilter(e.target.value as any)}
                     >
@@ -127,7 +127,7 @@ export const ClientSegmenter: React.FC<ClientSegmenterProps> = ({ data, onChange
                 <div className="w-full md:w-64">
                     <label className="block text-xs text-text-secondary mb-1">Stile Tatuaggio</label>
                     <select
-                        className="w-full bg-bg-primary border border-border rounded px-3 py-2 text-white focus:outline-none focus:ring-1 focus:ring-accent"
+                        className="w-full bg-bg-primary border border-border rounded px-3 py-2 text-text-primary focus:outline-none focus:ring-1 focus:ring-accent"
                         value={styleFilter}
                         onChange={(e) => setStyleFilter(e.target.value)}
                     >
@@ -143,10 +143,10 @@ export const ClientSegmenter: React.FC<ClientSegmenterProps> = ({ data, onChange
             <div className="flex-1 bg-bg-secondary rounded-lg border border-border overflow-hidden flex flex-col">
                 <div className="p-4 border-b border-border flex justify-between items-center bg-bg-tertiary">
                     <div className="flex items-center gap-2">
-                        <button onClick={toggleAll} className="text-text-secondary hover:text-white">
+                        <button onClick={toggleAll} className="text-text-secondary hover:text-text-primary">
                             {selectedClients.size > 0 && selectedClients.size === filteredClients.length ? <CheckSquare size={20} /> : <Square size={20} />}
                         </button>
-                        <span className="text-sm font-medium text-white ml-2">
+                        <span className="text-sm font-medium text-text-primary ml-2">
                             {selectedClients.size} clienti selezionati su {filteredClients.length}
                         </span>
                     </div>
@@ -182,7 +182,7 @@ export const ClientSegmenter: React.FC<ClientSegmenterProps> = ({ data, onChange
                                         <tr
                                             key={client.id}
                                             className={clsx(
-                                                'hover:bg-white/5 transition-colors cursor-pointer',
+                                                'hover:bg-bg-primary transition-colors cursor-pointer',
                                                 isSelected && 'bg-accent/5'
                                             )}
                                             onClick={() => toggleClient(client.id)}
@@ -191,7 +191,7 @@ export const ClientSegmenter: React.FC<ClientSegmenterProps> = ({ data, onChange
                                                 {isSelected ? <CheckSquare size={18} className="text-accent" /> : <Square size={18} className="text-text-muted" />}
                                             </td>
                                             <td className="px-4 py-3">
-                                                <div className="text-sm text-white font-medium">{client.full_name}</div>
+                                                <div className="text-sm text-text-primary font-medium">{client.full_name}</div>
                                                 <div className="text-xs text-text-muted">{client.email}</div>
                                             </td>
                                             <td className="px-4 py-3 text-sm text-text-secondary">

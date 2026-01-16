@@ -184,12 +184,12 @@ export const ProfileSettings: React.FC = () => {
                         <div className="md:col-span-2 mt-4">
                             <div className="flex items-center gap-2 mb-2">
                                 <BookOpen size={18} className="text-accent" />
-                                <h4 className="text-lg font-bold text-white">Il Tuo Corso</h4>
+                                <h4 className="text-lg font-bold text-text-primary">Il Tuo Corso</h4>
                             </div>
 
                             <div className="bg-bg-tertiary rounded-xl border border-border overflow-hidden">
                                 <div className="p-4 border-b border-border bg-white/5 flex justify-between items-center">
-                                    <h3 className="font-bold text-white max-w-[70%] truncate">
+                                    <h3 className="font-bold text-text-primary max-w-[70%] truncate">
                                         {studentCourse.title}
                                     </h3>
                                     <span className="text-xs text-text-muted bg-black/20 px-2 py-1 rounded">
@@ -205,7 +205,7 @@ export const ProfileSettings: React.FC = () => {
                                         </h4>
                                         <div className="bg-bg-secondary p-3 rounded-lg border border-border">
                                             <div className="flex justify-between items-end mb-2">
-                                                <span className="text-2xl font-bold text-white">{studentEnrollment.attended_days}</span>
+                                                <span className="text-2xl font-bold text-text-primary">{studentEnrollment.attended_days}</span>
                                                 <span className="text-sm text-text-muted">/ {studentEnrollment.allowed_days} giorni</span>
                                             </div>
                                             <div className="w-full bg-black/40 h-2 rounded-full overflow-hidden mb-2">
@@ -235,7 +235,7 @@ export const ProfileSettings: React.FC = () => {
                                         <div className="bg-bg-secondary p-3 rounded-lg border border-border space-y-2">
                                             <div className="flex justify-between items-center text-sm">
                                                 <span className="text-text-muted">Costo Totale:</span>
-                                                <span className="text-white font-medium">€ {studentEnrollment.total_cost?.toFixed(2) || '0.00'}</span>
+                                                <span className="text-text-primary font-medium">€ {studentEnrollment.total_cost?.toFixed(2) || '0.00'}</span>
                                             </div>
                                             <div className="flex justify-between items-center text-sm">
                                                 <span className="text-text-muted">Versato:</span>

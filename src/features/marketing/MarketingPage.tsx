@@ -28,7 +28,7 @@ export const MarketingPage: React.FC = () => {
             {/* Header */}
             <div className="flex flex-col md:flex-row items-center justify-between gap-4 mb-6">
                 <div>
-                    <h1 className="text-2xl font-bold text-white">Marketing</h1>
+                    <h1 className="text-2xl font-bold text-text-primary">Marketing</h1>
                     <p className="text-text-muted">Crea campagne, segmenta i clienti e invia messaggi.</p>
                 </div>
             </div>
@@ -39,12 +39,12 @@ export const MarketingPage: React.FC = () => {
                     <select
                         value={activeTab}
                         onChange={(e) => handleTabChange(e.target.value as Tab)}
-                        className="w-full bg-transparent text-white font-medium outline-none appearance-none p-2"
+                        className="w-full bg-transparent text-text-primary font-medium outline-none appearance-none p-2"
                     >
-                        <option value="EDITOR" className="bg-bg-secondary text-white">✍️ Crea Messaggio</option>
-                        <option value="SEGMENTS" className="bg-bg-secondary text-white">👥 Seleziona Clienti</option>
-                        <option value="SUMMARY" className="bg-bg-secondary text-white">🚀 Riepilogo & Invio</option>
-                        <option value="HISTORY" className="bg-bg-secondary text-white">🕒 Storico</option>
+                        <option value="EDITOR" className="bg-bg-secondary text-text-primary">✍️ Crea Messaggio</option>
+                        <option value="SEGMENTS" className="bg-bg-secondary text-text-primary">👥 Seleziona Clienti</option>
+                        <option value="SUMMARY" className="bg-bg-secondary text-text-primary">🚀 Riepilogo & Invio</option>
+                        <option value="HISTORY" className="bg-bg-secondary text-text-primary">🕒 Storico</option>
                     </select>
                     <div className="absolute right-4 top-1/2 -translate-y-1/2 text-text-muted pointer-events-none">
                         <ChevronDown size={16} />
@@ -60,7 +60,7 @@ export const MarketingPage: React.FC = () => {
                         'flex items-center gap-2 px-6 py-3 border-b-2 font-medium transition-colors whitespace-nowrap',
                         activeTab === 'EDITOR'
                             ? 'border-accent text-accent'
-                            : 'border-transparent text-text-muted hover:text-white'
+                            : 'border-transparent text-text-muted hover:text-text-primary'
                     )}
                 >
                     <MessageSquare size={18} />
@@ -72,7 +72,7 @@ export const MarketingPage: React.FC = () => {
                         'flex items-center gap-2 px-6 py-3 border-b-2 font-medium transition-colors whitespace-nowrap',
                         activeTab === 'SEGMENTS'
                             ? 'border-accent text-accent'
-                            : 'border-transparent text-text-muted hover:text-white'
+                            : 'border-transparent text-text-muted hover:text-text-primary'
                     )}
                 >
                     <Users size={18} />
@@ -84,7 +84,7 @@ export const MarketingPage: React.FC = () => {
                         'flex items-center gap-2 px-6 py-3 border-b-2 font-medium transition-colors whitespace-nowrap',
                         activeTab === 'SUMMARY'
                             ? 'border-accent text-accent'
-                            : 'border-transparent text-text-muted hover:text-white'
+                            : 'border-transparent text-text-muted hover:text-text-primary'
                     )}
                 >
                     <Send size={18} />
@@ -96,7 +96,7 @@ export const MarketingPage: React.FC = () => {
                         'flex items-center gap-2 px-6 py-3 border-b-2 font-medium transition-colors whitespace-nowrap',
                         activeTab === 'HISTORY'
                             ? 'border-accent text-accent'
-                            : 'border-transparent text-text-muted hover:text-white'
+                            : 'border-transparent text-text-muted hover:text-text-primary'
                     )}
                 >
                     <Clock size={18} />

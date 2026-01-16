@@ -60,7 +60,7 @@ export const CalendarHeader: React.FC<CalendarHeaderProps> = ({
                             <ArrowLeft size={20} />
                         </button>
                     )}
-                    <h2 className="text-lg md:text-2xl font-bold text-white capitalize truncate whitespace-nowrap">
+                    <h2 className="text-lg md:text-2xl font-bold text-text-primary capitalize truncate whitespace-nowrap">
                         {format(currentDate, 'MMMM yyyy', { locale: it })}
                     </h2>
                     <div className="flex items-center bg-bg-secondary rounded-lg border border-border p-0.5 shrink-0">
@@ -76,14 +76,14 @@ export const CalendarHeader: React.FC<CalendarHeaderProps> = ({
                     <div className="relative flex items-center justify-center bg-bg-secondary rounded-lg border border-border w-8 h-8 md:w-auto md:h-auto md:px-3 md:py-2">
                         <Users size={16} className="text-text-muted md:mr-2" />
                         <select
-                            className="absolute inset-0 opacity-0 md:static md:opacity-100 bg-transparent text-white text-sm outline-none w-full appearance-none cursor-pointer"
+                            className="absolute inset-0 opacity-0 md:static md:opacity-100 bg-transparent text-text-primary text-sm outline-none w-full appearance-none cursor-pointer"
                             value={selectedArtistId || 'all'}
                             title="Filtra per artista"
                             onChange={(e) => onArtistChange(e.target.value === 'all' ? null : e.target.value)}
                         >
-                            <option value="all" className="bg-bg-secondary text-white">Tutti</option>
+                            <option value="all" className="bg-bg-secondary text-text-primary">Tutti</option>
                             {artists.map(artist => (
-                                <option key={artist.id} value={artist.id} className="bg-bg-secondary text-white">
+                                <option key={artist.id} value={artist.id} className="bg-bg-secondary text-text-primary">
                                     {artist.full_name}
                                 </option>
                             ))}

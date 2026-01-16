@@ -153,7 +153,7 @@ export const AppointmentDrawer: React.FC<AppointmentDrawerProps> = ({
                     <div className="flex items-center gap-3">
                         <button
                             onClick={onClose}
-                            className="p-1 -ml-2 text-text-muted hover:text-white md:hidden"
+                            className="p-1 -ml-2 text-text-muted hover:text-text-primary md:hidden"
                         >
                             <ArrowLeft size={24} />
                         </button>
@@ -176,7 +176,7 @@ export const AppointmentDrawer: React.FC<AppointmentDrawerProps> = ({
                     <div>
                         <label className="block text-sm font-medium text-text-secondary mb-2">Artista</label>
                         <select
-                            className="w-full bg-bg-primary border border-border rounded-lg px-4 py-2.5 text-white focus:ring-2 focus:ring-accent outline-none"
+                            className="w-full bg-bg-primary border border-border rounded-lg px-4 py-2.5 text-text-primary focus:ring-2 focus:ring-accent outline-none"
                             value={formData.artist_id}
                             onChange={(e) => setFormData({ ...formData, artist_id: e.target.value })}
                         >

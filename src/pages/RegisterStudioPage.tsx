@@ -67,16 +67,16 @@ export const RegisterStudioPage = () => {
     return (
         <div className="min-h-screen flex items-center justify-center bg-bg-primary p-4 text-center">
             <div className="max-w-md w-full bg-bg-secondary p-8 rounded-lg shadow-xl border border-border text-left">
-                <h1 className="text-2xl font-bold text-white mb-2">Benvenuto in InkFlow</h1>
+                <h1 className="text-2xl font-bold text-text-primary mb-2">Benvenuto in InkFlow</h1>
                 <p className="text-text-secondary mb-6">
-                    Ciao, <span className="text-white font-bold">{user?.full_name || user?.email}</span>! <br />
+                    Ciao, <span className="text-text-primary font-bold">{user?.full_name || user?.email}</span>! <br />
                     Al momento non sei collegato a nessuno studio.
                 </p>
 
                 {pendingInvites.length > 0 ? (
                     <div className="bg-accent/10 border border-accent p-4 rounded-lg mb-6 text-center animate-pulse">
                         <h3 className="text-accent font-bold mb-2">🎉 Hai un invito in sospeso!</h3>
-                        <p className="text-white text-sm mb-4">
+                        <p className="text-text-primary text-sm mb-4">
                             Sei stato invitato a unirti a <span className="font-bold">{pendingInvites[0].studio_name}</span>.
                         </p>
                         <button
@@ -110,7 +110,7 @@ export const RegisterStudioPage = () => {
                             type="text"
                             value={studioName}
                             onChange={(e) => setStudioName(e.target.value)}
-                            className="w-full bg-bg-tertiary border border-border rounded-lg px-3 py-2 text-white focus:ring-accent focus:border-accent"
+                            className="w-full bg-bg-tertiary border border-border rounded-lg px-3 py-2 text-text-primary focus:ring-accent focus:border-accent"
                             placeholder="Es. InkFlow Tattoo Milano"
                             required
                             minLength={3}

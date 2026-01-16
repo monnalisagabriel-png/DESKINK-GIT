@@ -156,7 +156,7 @@ export const PublicClientForm: React.FC = () => {
                     <div className="w-16 h-16 bg-green-500/10 rounded-full flex items-center justify-center mx-auto mb-6 text-green-500">
                         <CheckCircle size={32} />
                     </div>
-                    <h2 className="text-2xl font-bold text-white mb-2">Registrazione Completata!</h2>
+                    <h2 className="text-2xl font-bold text-text-primary mb-2">Registrazione Completata!</h2>
                     <p className="text-text-muted">
                         I tuoi dati sono stati inseriti correttamente nel nostro database.
                     </p>
@@ -171,14 +171,14 @@ export const PublicClientForm: React.FC = () => {
         <div className="min-h-screen bg-bg-primary py-12 px-4 sm:px-6 lg:px-8">
             <div className="max-w-2xl mx-auto">
                 <div className="text-center mb-10">
-                    <h1 className="text-3xl font-bold text-white mb-2">Registrazione Cliente</h1>
+                    <h1 className="text-3xl font-bold text-text-primary mb-2">Registrazione Cliente</h1>
                     <p className="text-text-muted">Compila il modulo per registrarti nel nostro studio.</p>
                 </div>
 
                 <form onSubmit={handleContinue} className="bg-bg-secondary p-8 rounded-2xl border border-border shadow-xl space-y-6">
                     {/* Anagrafica */}
                     <div className="space-y-4">
-                        <h3 className="text-lg font-semibold text-white border-b border-border pb-2">Dati Personali</h3>
+                        <h3 className="text-lg font-semibold text-text-primary border-b border-border pb-2">Dati Personali</h3>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div>
                                 <label className="block text-sm font-medium text-text-muted mb-1">Nome *</label>
@@ -187,7 +187,7 @@ export const PublicClientForm: React.FC = () => {
                                     type="text"
                                     value={formData.first_name}
                                     onChange={e => setFormData({ ...formData, first_name: e.target.value })}
-                                    className="w-full bg-bg-tertiary border border-border rounded-lg px-4 py-3 text-white focus:border-accent focus:outline-none"
+                                    className="w-full bg-bg-tertiary border border-border rounded-lg px-4 py-3 text-text-primary focus:border-accent focus:outline-none"
                                     placeholder="Mario"
                                 />
                             </div>
@@ -198,7 +198,7 @@ export const PublicClientForm: React.FC = () => {
                                     type="text"
                                     value={formData.last_name}
                                     onChange={e => setFormData({ ...formData, last_name: e.target.value })}
-                                    className="w-full bg-bg-tertiary border border-border rounded-lg px-4 py-3 text-white focus:border-accent focus:outline-none"
+                                    className="w-full bg-bg-tertiary border border-border rounded-lg px-4 py-3 text-text-primary focus:border-accent focus:outline-none"
                                     placeholder="Rossi"
                                 />
                             </div>
@@ -209,7 +209,7 @@ export const PublicClientForm: React.FC = () => {
                                     type="email"
                                     value={formData.email}
                                     onChange={e => setFormData({ ...formData, email: e.target.value })}
-                                    className="w-full bg-bg-tertiary border border-border rounded-lg px-4 py-3 text-white focus:border-accent focus:outline-none"
+                                    className="w-full bg-bg-tertiary border border-border rounded-lg px-4 py-3 text-text-primary focus:border-accent focus:outline-none"
                                     placeholder="mario@email.com"
                                 />
                             </div>
@@ -220,7 +220,7 @@ export const PublicClientForm: React.FC = () => {
                                     type="tel"
                                     value={formData.phone}
                                     onChange={e => setFormData({ ...formData, phone: e.target.value })}
-                                    className="w-full bg-bg-tertiary border border-border rounded-lg px-4 py-3 text-white focus:border-accent focus:outline-none"
+                                    className="w-full bg-bg-tertiary border border-border rounded-lg px-4 py-3 text-text-primary focus:border-accent focus:outline-none"
                                     placeholder="+39 333 0000000"
                                 />
                             </div>
@@ -231,7 +231,7 @@ export const PublicClientForm: React.FC = () => {
                                     type="text"
                                     value={formData.fiscal_code}
                                     onChange={e => setFormData({ ...formData, fiscal_code: e.target.value.toUpperCase() })}
-                                    className="w-full bg-bg-tertiary border border-border rounded-lg px-4 py-3 text-white focus:border-accent focus:outline-none uppercase"
+                                    className="w-full bg-bg-tertiary border border-border rounded-lg px-4 py-3 text-text-primary focus:border-accent focus:outline-none uppercase"
                                     placeholder="RSSMRA..."
                                 />
                             </div>
@@ -242,7 +242,7 @@ export const PublicClientForm: React.FC = () => {
                                     type="text"
                                     value={formData.address}
                                     onChange={e => setFormData({ ...formData, address: e.target.value })}
-                                    className="w-full bg-bg-tertiary border border-border rounded-lg px-4 py-3 text-white focus:border-accent focus:outline-none"
+                                    className="w-full bg-bg-tertiary border border-border rounded-lg px-4 py-3 text-text-primary focus:border-accent focus:outline-none"
                                     placeholder="Via Roma 1, Milano"
                                 />
                             </div>
@@ -255,7 +255,7 @@ export const PublicClientForm: React.FC = () => {
                                         type="text"
                                         value={formData.city}
                                         onChange={e => setFormData({ ...formData, city: e.target.value })}
-                                        className="w-full bg-bg-tertiary border border-border rounded-lg px-4 py-3 text-white focus:border-accent focus:outline-none"
+                                        className="w-full bg-bg-tertiary border border-border rounded-lg px-4 py-3 text-text-primary focus:border-accent focus:outline-none"
                                         placeholder="Milano"
                                     />
                                 </div>
@@ -266,7 +266,7 @@ export const PublicClientForm: React.FC = () => {
                                         type="text"
                                         value={formData.zip_code}
                                         onChange={e => setFormData({ ...formData, zip_code: e.target.value })}
-                                        className="w-full bg-bg-tertiary border border-border rounded-lg px-4 py-3 text-white focus:border-accent focus:outline-none"
+                                        className="w-full bg-bg-tertiary border border-border rounded-lg px-4 py-3 text-text-primary focus:border-accent focus:outline-none"
                                         placeholder="20100"
                                     />
                                 </div>
@@ -276,7 +276,7 @@ export const PublicClientForm: React.FC = () => {
 
                     {/* Tattoo Info (Optional for simpleregistration but kept as user asked 'like waitlist') */}
                     <div className="space-y-4">
-                        <h3 className="text-lg font-semibold text-white border-b border-border pb-2">Preferenze</h3>
+                        <h3 className="text-lg font-semibold text-text-primary border-b border-border pb-2">Preferenze</h3>
 
                         <div>
                             <label className="block text-sm font-medium text-text-muted mb-2">Stili Preferiti *</label>
@@ -304,7 +304,7 @@ export const PublicClientForm: React.FC = () => {
                             <textarea
                                 value={formData.description}
                                 onChange={e => setFormData({ ...formData, description: e.target.value })}
-                                className="w-full bg-bg-tertiary border border-border rounded-lg px-4 py-3 text-white focus:border-accent focus:outline-none min-h-[100px]"
+                                className="w-full bg-bg-tertiary border border-border rounded-lg px-4 py-3 text-text-primary focus:border-accent focus:outline-none min-h-[100px]"
                                 placeholder="Note aggiuntive..."
                             />
                         </div>
@@ -350,7 +350,7 @@ export const PublicClientForm: React.FC = () => {
                                 <CheckCircle className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 text-white opacity-0 peer-checked:opacity-100 pointer-events-none" size={14} />
                             </div>
                             <div className="text-sm text-text-muted group-hover:text-text-secondary transition-colors">
-                                <span className="font-bold text-white">Consenso Privacy e Trattamento Dati *</span>
+                                <span className="font-bold text-text-primary">Consenso Privacy e Trattamento Dati *</span>
                                 <p className="mt-1 leading-relaxed">
                                     Dichiaro di aver letto e compreso l'informativa sulla privacy e acconsento al trattamento dei miei dati personali per le finalità legate alla gestione del servizio e agli obblighi di legge.
                                 </p>

@@ -65,7 +65,7 @@ export const StudentProfileModal: React.FC<StudentProfileModalProps> = ({ studen
                             {student.full_name?.substring(0, 2).toUpperCase() || 'ST'}
                         </div>
                         <div>
-                            <h2 className="text-2xl font-bold text-white">{student.full_name}</h2>
+                            <h2 className="text-2xl font-bold text-text-primary">{student.full_name}</h2>
                             <p className="text-text-muted">{student.email}</p>
                             <div className="flex items-center gap-2 mt-1">
                                 <span className="px-2 py-0.5 rounded bg-white/5 text-xs text-text-secondary border border-white/10 capitalize">
@@ -77,7 +77,7 @@ export const StudentProfileModal: React.FC<StudentProfileModalProps> = ({ studen
                             </div>
                         </div>
                     </div>
-                    <button onClick={onClose} className="p-2 text-text-muted hover:text-white hover:bg-white/10 rounded-lg transition-colors">
+                    <button onClick={onClose} className="p-2 text-text-muted hover:text-text-primary hover:bg-bg-secondary rounded-lg transition-colors">
                         <X size={24} />
                     </button>
                 </div>
@@ -86,13 +86,13 @@ export const StudentProfileModal: React.FC<StudentProfileModalProps> = ({ studen
                 <div className="flex border-b border-border">
                     <button
                         onClick={() => setActiveTab('COURSES')}
-                        className={clsx("flex-1 py-3 text-sm font-bold transition-colors border-b-2", activeTab === 'COURSES' ? "border-accent text-accent bg-accent/5" : "border-transparent text-text-muted hover:text-white")}
+                        className={clsx("flex-1 py-3 text-sm font-bold transition-colors border-b-2", activeTab === 'COURSES' ? "border-accent text-accent bg-accent/5" : "border-transparent text-text-muted hover:text-text-primary")}
                     >
                         Corsi & Frequenza
                     </button>
                     <button
                         onClick={() => setActiveTab('PROFILE')}
-                        className={clsx("flex-1 py-3 text-sm font-bold transition-colors border-b-2", activeTab === 'PROFILE' ? "border-accent text-accent bg-accent/5" : "border-transparent text-text-muted hover:text-white")}
+                        className={clsx("flex-1 py-3 text-sm font-bold transition-colors border-b-2", activeTab === 'PROFILE' ? "border-accent text-accent bg-accent/5" : "border-transparent text-text-muted hover:text-text-primary")}
                     >
                         Anagrafica & Fatturazione
                     </button>
@@ -126,7 +126,7 @@ export const StudentProfileModal: React.FC<StudentProfileModalProps> = ({ studen
                                     return (
                                         <div key={course.id} className="bg-bg-tertiary rounded-xl border border-border overflow-hidden">
                                             <div className="p-4 border-b border-border bg-white/5 flex justify-between items-center">
-                                                <h3 className="font-bold text-white flex items-center gap-2">
+                                                <h3 className="font-bold text-text-primary flex items-center gap-2">
                                                     <BookOpen size={18} className="text-accent" />
                                                     {course.title}
                                                 </h3>
@@ -143,7 +143,7 @@ export const StudentProfileModal: React.FC<StudentProfileModalProps> = ({ studen
                                                     </h4>
                                                     <div className="bg-bg-secondary p-3 rounded-lg border border-border">
                                                         <div className="flex justify-between items-end mb-2">
-                                                            <span className="text-2xl font-bold text-white">{enrollment.attended_days}</span>
+                                                            <span className="text-2xl font-bold text-text-primary">{enrollment.attended_days}</span>
                                                             <span className="text-sm text-text-muted">/ {enrollment.allowed_days} giorni</span>
                                                         </div>
                                                         <div className="w-full bg-black/40 h-2 rounded-full overflow-hidden mb-2">
@@ -169,7 +169,7 @@ export const StudentProfileModal: React.FC<StudentProfileModalProps> = ({ studen
                                                     <div className="bg-bg-secondary p-3 rounded-lg border border-border space-y-2">
                                                         <div className="flex justify-between items-center text-sm">
                                                             <span className="text-text-muted">Costo Totale:</span>
-                                                            <span className="text-white font-medium">€ {enrollment.total_cost?.toFixed(2) || '0.00'}</span>
+                                                            <span className="text-text-primary font-medium">€ {enrollment.total_cost?.toFixed(2) || '0.00'}</span>
                                                         </div>
                                                         <div className="flex justify-between items-center text-sm">
                                                             <span className="text-text-muted">Versato:</span>
@@ -194,13 +194,13 @@ export const StudentProfileModal: React.FC<StudentProfileModalProps> = ({ studen
                         <div className="space-y-6 animate-in fade-in">
                             {/* Personal Info */}
                             <div className="space-y-4">
-                                <h3 className="text-lg font-bold text-white border-b border-border pb-2">Dati Anagrafici</h3>
+                                <h3 className="text-lg font-bold text-text-primary border-b border-border pb-2">Dati Anagrafici</h3>
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                     <div>
                                         <label className="block text-sm font-medium text-text-muted mb-1">Nome Completo</label>
                                         <input
                                             type="text"
-                                            className="w-full bg-bg-tertiary border border-border rounded-lg px-3 py-2 text-white"
+                                            className="w-full bg-bg-tertiary border border-border rounded-lg px-3 py-2 text-text-primary"
                                             value={editForm.full_name || ''}
                                             onChange={(e) => setEditForm(prev => ({ ...prev, full_name: e.target.value }))}
                                         />
@@ -209,7 +209,7 @@ export const StudentProfileModal: React.FC<StudentProfileModalProps> = ({ studen
                                         <label className="block text-sm font-medium text-text-muted mb-1">Telefono</label>
                                         <input
                                             type="text"
-                                            className="w-full bg-bg-tertiary border border-border rounded-lg px-3 py-2 text-white"
+                                            className="w-full bg-bg-tertiary border border-border rounded-lg px-3 py-2 text-text-primary"
                                             value={editForm.phone || ''}
                                             onChange={(e) => setEditForm(prev => ({ ...prev, phone: e.target.value }))}
                                         />
@@ -218,7 +218,7 @@ export const StudentProfileModal: React.FC<StudentProfileModalProps> = ({ studen
                                         <label className="block text-sm font-medium text-text-muted mb-1">Codice Fiscale</label>
                                         <input
                                             type="text"
-                                            className="w-full bg-bg-tertiary border border-border rounded-lg px-3 py-2 text-white"
+                                            className="w-full bg-bg-tertiary border border-border rounded-lg px-3 py-2 text-text-primary"
                                             value={editForm.fiscal_code || ''}
                                             onChange={(e) => setEditForm(prev => ({ ...prev, fiscal_code: e.target.value }))}
                                         />
@@ -227,7 +227,7 @@ export const StudentProfileModal: React.FC<StudentProfileModalProps> = ({ studen
                                         <label className="block text-sm font-medium text-text-muted mb-1">Città</label>
                                         <input
                                             type="text"
-                                            className="w-full bg-bg-tertiary border border-border rounded-lg px-3 py-2 text-white"
+                                            className="w-full bg-bg-tertiary border border-border rounded-lg px-3 py-2 text-text-primary"
                                             value={editForm.city || ''}
                                             onChange={(e) => setEditForm(prev => ({ ...prev, city: e.target.value }))}
                                         />
@@ -236,7 +236,7 @@ export const StudentProfileModal: React.FC<StudentProfileModalProps> = ({ studen
                                         <label className="block text-sm font-medium text-text-muted mb-1">Indirizzo</label>
                                         <input
                                             type="text"
-                                            className="w-full bg-bg-tertiary border border-border rounded-lg px-3 py-2 text-white"
+                                            className="w-full bg-bg-tertiary border border-border rounded-lg px-3 py-2 text-text-primary"
                                             value={editForm.address || ''}
                                             onChange={(e) => setEditForm(prev => ({ ...prev, address: e.target.value }))}
                                         />
@@ -245,7 +245,7 @@ export const StudentProfileModal: React.FC<StudentProfileModalProps> = ({ studen
                                         <label className="block text-sm font-medium text-text-muted mb-1">CAP</label>
                                         <input
                                             type="text"
-                                            className="w-full bg-bg-tertiary border border-border rounded-lg px-3 py-2 text-white"
+                                            className="w-full bg-bg-tertiary border border-border rounded-lg px-3 py-2 text-text-primary"
                                             value={editForm.zip_code || ''}
                                             onChange={(e) => setEditForm(prev => ({ ...prev, zip_code: e.target.value }))}
                                         />
@@ -254,7 +254,7 @@ export const StudentProfileModal: React.FC<StudentProfileModalProps> = ({ studen
                                         <label className="block text-sm font-medium text-text-muted mb-1">Nazione</label>
                                         <input
                                             type="text"
-                                            className="w-full bg-bg-tertiary border border-border rounded-lg px-3 py-2 text-white"
+                                            className="w-full bg-bg-tertiary border border-border rounded-lg px-3 py-2 text-text-primary"
                                             value={editForm.country || 'Italia'}
                                             onChange={(e) => setEditForm(prev => ({ ...prev, country: e.target.value }))}
                                         />
@@ -264,13 +264,13 @@ export const StudentProfileModal: React.FC<StudentProfileModalProps> = ({ studen
 
                             {/* Billing Info */}
                             <div className="space-y-4 pt-4">
-                                <h3 className="text-lg font-bold text-white border-b border-border pb-2">Dati di Fatturazione</h3>
+                                <h3 className="text-lg font-bold text-text-primary border-b border-border pb-2">Dati di Fatturazione</h3>
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                     <div>
                                         <label className="block text-sm font-medium text-text-muted mb-1">Intestazione Fattura / Ragione Sociale</label>
                                         <input
                                             type="text"
-                                            className="w-full bg-bg-tertiary border border-border rounded-lg px-3 py-2 text-white"
+                                            className="w-full bg-bg-tertiary border border-border rounded-lg px-3 py-2 text-text-primary"
                                             value={editForm.billing_name || ''}
                                             onChange={(e) => setEditForm(prev => ({ ...prev, billing_name: e.target.value }))}
                                             placeholder="Se diverso dal nome"
@@ -280,7 +280,7 @@ export const StudentProfileModal: React.FC<StudentProfileModalProps> = ({ studen
                                         <label className="block text-sm font-medium text-text-muted mb-1">Partita IVA</label>
                                         <input
                                             type="text"
-                                            className="w-full bg-bg-tertiary border border-border rounded-lg px-3 py-2 text-white"
+                                            className="w-full bg-bg-tertiary border border-border rounded-lg px-3 py-2 text-text-primary"
                                             value={editForm.vat_number || ''}
                                             onChange={(e) => setEditForm(prev => ({ ...prev, vat_number: e.target.value }))}
                                         />
@@ -289,7 +289,7 @@ export const StudentProfileModal: React.FC<StudentProfileModalProps> = ({ studen
                                         <label className="block text-sm font-medium text-text-muted mb-1">Codice SDI</label>
                                         <input
                                             type="text"
-                                            className="w-full bg-bg-tertiary border border-border rounded-lg px-3 py-2 text-white"
+                                            className="w-full bg-bg-tertiary border border-border rounded-lg px-3 py-2 text-text-primary"
                                             value={editForm.sdi_code || '0000000'}
                                             onChange={(e) => setEditForm(prev => ({ ...prev, sdi_code: e.target.value }))}
                                         />
@@ -298,7 +298,7 @@ export const StudentProfileModal: React.FC<StudentProfileModalProps> = ({ studen
                                         <label className="block text-sm font-medium text-text-muted mb-1">PEC</label>
                                         <input
                                             type="email"
-                                            className="w-full bg-bg-tertiary border border-border rounded-lg px-3 py-2 text-white"
+                                            className="w-full bg-bg-tertiary border border-border rounded-lg px-3 py-2 text-text-primary"
                                             value={editForm.pec || ''}
                                             onChange={(e) => setEditForm(prev => ({ ...prev, pec: e.target.value }))}
                                         />
@@ -321,7 +321,7 @@ export const StudentProfileModal: React.FC<StudentProfileModalProps> = ({ studen
                 <div className="p-4 border-t border-border bg-bg-tertiary/20 flex justify-end">
                     <button
                         onClick={onClose}
-                        className="px-6 py-2 bg-white/10 hover:bg-white/20 text-white rounded-lg font-medium transition-colors"
+                        className="px-6 py-2 bg-bg-secondary hover:bg-bg-primary text-text-primary border border-border rounded-lg font-medium transition-colors"
                     >
                         Chiudi
                     </button>

@@ -80,7 +80,7 @@ export const ClientsTab: React.FC<ClientsTabProps> = ({ onStartSignature }) => {
                     placeholder="Cerca cliente per nome..."
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
-                    className="w-full bg-bg-secondary border border-border rounded-lg pl-10 pr-4 py-3 text-white outline-none focus:ring-2 focus:ring-accent"
+                    className="w-full bg-bg-secondary border border-border rounded-lg pl-10 pr-4 py-3 text-text-primary outline-none focus:ring-2 focus:ring-accent"
                 />
                 <Search className="absolute left-3 top-3.5 text-text-muted" size={20} />
             </div>
@@ -107,7 +107,7 @@ export const ClientsTab: React.FC<ClientsTabProps> = ({ onStartSignature }) => {
                                 return (
                                     <tr key={client.id} className="hover:bg-white/5 transition-colors">
                                         <td className="p-4">
-                                            <div className="font-medium text-white">{client.full_name}</div>
+                                            <div className="font-medium text-text-primary">{client.full_name}</div>
                                             <div className="text-xs text-text-muted">CF: {client.fiscal_code || '-'}</div>
                                         </td>
                                         <td className="p-4 text-sm text-text-muted">
@@ -139,7 +139,7 @@ export const ClientsTab: React.FC<ClientsTabProps> = ({ onStartSignature }) => {
                                                     </button>
                                                     <button
                                                         onClick={() => onStartSignature(client)}
-                                                        className="bg-bg-tertiary hover:bg-white/10 text-white px-3 py-1 rounded-lg text-xs font-medium transition-colors border border-border flex items-center gap-1"
+                                                        className="bg-bg-tertiary hover:bg-white/10 text-text-primary px-3 py-1 rounded-lg text-xs font-medium transition-colors border border-border flex items-center gap-1"
                                                         title="Firma nuovamente"
                                                     >
                                                         <FileSignature size={14} />
@@ -177,7 +177,7 @@ export const ClientsTab: React.FC<ClientsTabProps> = ({ onStartSignature }) => {
                             <div key={client.id} className="bg-bg-secondary border border-border rounded-xl p-4 flex flex-col gap-4">
                                 <div className="flex justify-between items-start">
                                     <div>
-                                        <div className="font-bold text-white text-lg">{client.full_name}</div>
+                                        <div className="font-bold text-text-primary text-lg">{client.full_name}</div>
                                         <div className="text-xs text-text-muted">CF: {client.fiscal_code || '-'}</div>
                                     </div>
                                     {consent ? (
@@ -210,7 +210,7 @@ export const ClientsTab: React.FC<ClientsTabProps> = ({ onStartSignature }) => {
                                     {consent ? (
                                         <div className="flex gap-2">
                                             <button
-                                                className="text-xs bg-bg-tertiary hover:bg-white/10 text-white px-3 py-2 rounded-lg font-medium transition-colors border border-border"
+                                                className="text-xs bg-bg-tertiary hover:bg-white/10 text-text-primary px-3 py-2 rounded-lg font-medium transition-colors border border-border"
                                                 onClick={() => handleDownloadPDF(client, consent)}
                                                 disabled={downloading === client.id}
                                             >

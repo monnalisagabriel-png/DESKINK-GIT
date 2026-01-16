@@ -131,14 +131,14 @@ export const Calendar: React.FC = () => {
                             <div key={day.toString()} className={clsx("p-4 rounded-lg border border-border", isToday ? "bg-accent/5 border-accent/20" : "bg-bg-tertiary")}>
                                 <div className="flex justify-between items-center mb-3">
                                     <div>
-                                        <h4 className={clsx("font-bold capitalize", isToday ? "text-accent" : "text-white")}>{format(day, 'EEEE d MMMM', { locale: it })}</h4>
+                                        <h4 className={clsx("font-bold capitalize", isToday ? "text-accent" : "text-text-primary")}>{format(day, 'EEEE d MMMM', { locale: it })}</h4>
                                     </div>
                                     <button
                                         onClick={() => {
                                             setSelectedDate(day);
                                             setIsDrawerOpen(true);
                                         }}
-                                        className="text-xs bg-bg-primary hover:bg-white/10 text-text-muted hover:text-white px-2 py-1 rounded border border-border transition-colors"
+                                        className="text-xs bg-bg-primary hover:bg-white/10 text-text-muted hover:text-text-primary px-2 py-1 rounded border border-border transition-colors"
                                     >
                                         + Aggiungi
                                     </button>
@@ -161,7 +161,7 @@ export const Calendar: React.FC = () => {
                                                 >
                                                     <div className="text-xs font-bold w-12 text-center" style={{ color: color }}>{format(new Date(apt.start_time), 'HH:mm')}</div>
                                                     <div className="flex-1 min-w-0">
-                                                        <div className="text-sm font-medium text-white truncate">{apt.client?.full_name || 'Cliente Occasionale'}</div>
+                                                        <div className="text-sm font-medium text-text-primary truncate">{apt.client?.full_name || 'Cliente Occasionale'}</div>
                                                         <div className="text-xs text-text-muted truncate">
                                                             {artist ? (
                                                                 <span className="opacity-75 mr-1" style={{ color: color }}>[{artist.full_name.split(' ')[0]}]</span>
@@ -194,7 +194,7 @@ export const Calendar: React.FC = () => {
                             <button onClick={prev} className="p-1 hover:bg-white/10 rounded-full transition-colors">
                                 <ChevronRight className="rotate-180" size={24} />
                             </button>
-                            <h3 className="text-xl font-bold text-white capitalize">{format(currentDate, 'EEEE d MMMM yyyy', { locale: it })}</h3>
+                            <h3 className="text-xl font-bold text-text-primary capitalize">{format(currentDate, 'EEEE d MMMM yyyy', { locale: it })}</h3>
                             <button onClick={next} className="p-1 hover:bg-white/10 rounded-full transition-colors">
                                 <ChevronRight size={24} />
                             </button>
@@ -230,12 +230,12 @@ export const Calendar: React.FC = () => {
                                         <div className="flex flex-col items-center justify-center min-w-[60px] border-r border-border/50 pr-4">
                                             <span className="text-lg font-bold" style={{ color: color }}>{format(new Date(apt.start_time), 'HH:mm')}</span>
                                             <span className="text-xs text-text-muted">-</span>
-                                            <span className="text-lg font-bold text-white">{format(new Date(apt.end_time), 'HH:mm')}</span>
+                                            <span className="text-lg font-bold text-text-primary">{format(new Date(apt.end_time), 'HH:mm')}</span>
                                             <span className="text-xs text-text-muted mt-1">{duration} min</span>
                                         </div>
                                         <div className="flex-1">
                                             <div className="flex items-center gap-2 mb-1">
-                                                <h4 className="font-bold text-white text-lg">{apt.client?.full_name || 'Cliente'}</h4>
+                                                <h4 className="font-bold text-text-primary text-lg">{apt.client?.full_name || 'Cliente'}</h4>
                                                 {artist && (
                                                     <span className="text-xs px-2 py-0.5 rounded-full border" style={{ color: color, borderColor: color, backgroundColor: `${color}20` }}>
                                                         {artist.full_name}
@@ -282,7 +282,7 @@ export const Calendar: React.FC = () => {
                                 isCurrentMonth ? "border-accent" : "border-border hover:border-text-muted"
                             )}
                         >
-                            <h4 className={clsx("font-bold mb-4 capitalize text-center", isCurrentMonth ? "text-accent" : "text-white")}>
+                            <h4 className={clsx("font-bold mb-4 capitalize text-center", isCurrentMonth ? "text-accent" : "text-text-primary")}>
                                 {format(monthStart, 'MMMM', { locale: it })}
                             </h4>
                             {/* Mini Grid Placeholder - purely visual for now */}
@@ -308,7 +308,7 @@ export const Calendar: React.FC = () => {
             <div className="flex justify-end mb-2">
                 <button
                     onClick={toggleFullscreen}
-                    className="flex items-center gap-2 text-text-muted hover:text-white transition-colors text-sm"
+                    className="flex items-center gap-2 text-text-muted hover:text-text-primary transition-colors text-sm"
                 >
                     {isMobileFullscreen ? <Minimize2 size={16} /> : <Maximize2 size={16} />}
                     {isMobileFullscreen ? 'Riduci' : 'Schermo Intero'}

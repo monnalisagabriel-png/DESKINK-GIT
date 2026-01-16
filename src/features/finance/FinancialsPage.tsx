@@ -319,7 +319,7 @@ export const FinancialsPage: React.FC = () => {
             {/* Header */}
             <div className="flex flex-col md:flex-row items-center justify-between gap-4">
                 <div>
-                    <h1 className="text-2xl font-bold text-white">
+                    <h1 className="text-2xl font-bold text-text-primary">
                         {isOwner ? 'Finanze Studio' : 'Le Tue Finanze'}
                     </h1>
                     <p className="text-text-muted">
@@ -350,7 +350,7 @@ export const FinancialsPage: React.FC = () => {
                     )}
                     <button
                         onClick={handleExport}
-                        className="flex items-center gap-2 bg-white/10 hover:bg-white/20 text-white px-4 py-2 rounded-lg font-medium transition-colors border border-white/10"
+                        className="flex items-center gap-2 bg-bg-secondary hover:bg-bg-tertiary text-text-primary px-4 py-2 rounded-lg font-medium transition-colors border border-border"
                     >
                         <Download size={18} />
                         <span className="hidden lg:inline">Esporta Report</span>
@@ -368,7 +368,7 @@ export const FinancialsPage: React.FC = () => {
                                 type="date"
                                 value={format(dateRange.start, 'yyyy-MM-dd')}
                                 onChange={(e) => e.target.value && setDateRange(prev => ({ ...prev, start: new Date(e.target.value) }))}
-                                className="bg-bg-tertiary border border-border text-white text-sm rounded-lg p-2.5 outline-none focus:border-accent w-full"
+                                className="bg-bg-tertiary border border-border text-text-primary text-sm rounded-lg p-2.5 outline-none focus:border-accent w-full"
                             />
                         </div>
                         <div className="w-full md:w-auto">
@@ -377,7 +377,7 @@ export const FinancialsPage: React.FC = () => {
                                 type="date"
                                 value={format(dateRange.end, 'yyyy-MM-dd')}
                                 onChange={(e) => e.target.value && setDateRange(prev => ({ ...prev, end: new Date(e.target.value) }))}
-                                className="bg-bg-tertiary border border-border text-white text-sm rounded-lg p-2.5 outline-none focus:border-accent w-full"
+                                className="bg-bg-tertiary border border-border text-text-primary text-sm rounded-lg p-2.5 outline-none focus:border-accent w-full"
                             />
                         </div>
                         <div className="w-full md:w-auto">
@@ -400,7 +400,7 @@ export const FinancialsPage: React.FC = () => {
                         {isOwner ? 'Fatturato Lordo' : 'I Tuoi Guadagni'}
                     </p>
                     <div className="flex items-end justify-between">
-                        <h3 className="text-2xl font-bold text-white">{stats ? formatCurrency(stats.revenue) : '-'}</h3>
+                        <h3 className="text-2xl font-bold text-text-primary">{stats ? formatCurrency(stats.revenue) : '-'}</h3>
                         <div className="p-2 bg-green-500/10 text-green-500 rounded-lg"><TrendingUp size={20} /></div>
                     </div>
                 </div>
@@ -411,7 +411,7 @@ export const FinancialsPage: React.FC = () => {
                         {isOwner ? 'Uscite Totali' : 'Spese Delegate'}
                     </p>
                     <div className="flex items-end justify-between">
-                        <h3 className="text-2xl font-bold text-white">{stats ? formatCurrency(stats.expenses) : '-'}</h3>
+                        <h3 className="text-2xl font-bold text-text-primary">{stats ? formatCurrency(stats.expenses) : '-'}</h3>
                         <div className="p-2 bg-red-500/10 text-red-500 rounded-lg"><TrendingDown size={20} /></div>
                     </div>
                 </div>
@@ -440,7 +440,7 @@ export const FinancialsPage: React.FC = () => {
                     <div className="lg:col-span-1 bg-bg-secondary rounded-lg border border-border flex flex-col">
                         <div className="p-4 border-b border-border flex items-center gap-2">
                             <Users size={18} className="text-accent" />
-                            <h3 className="font-bold text-white">Dettaglio Produzione</h3>
+                            <h3 className="font-bold text-text-primary">Dettaglio Produzione</h3>
                         </div>
                         <div className="p-4 flex-1 overflow-y-auto space-y-4 max-h-[400px]">
                             {producerStats.length === 0 ? (
@@ -449,7 +449,7 @@ export const FinancialsPage: React.FC = () => {
                                 producerStats.map((p, idx) => (
                                     <div key={idx} className="flex flex-col gap-1 p-3 bg-bg-tertiary rounded-lg border border-border/50">
                                         <div className="flex justify-between items-center">
-                                            <span className="font-medium text-white">{p.name}</span>
+                                            <span className="font-medium text-text-primary">{p.name}</span>
                                             <span className="text-xs text-text-muted bg-white/5 px-2 py-0.5 rounded">
                                                 {formatCurrency(p.gross)} Lordi
                                             </span>
@@ -470,7 +470,7 @@ export const FinancialsPage: React.FC = () => {
 
                 {/* Yearly Trend Chart - Right Side (Takes more space) */}
                 <div className={clsx("bg-bg-secondary p-6 rounded-lg border border-border", isOwner ? "lg:col-span-2" : "lg:col-span-3")}>
-                    <h3 className="text-lg font-bold text-white mb-6">Andamento Entrate (Anno Corrente)</h3>
+                    <h3 className="text-lg font-bold text-text-primary mb-6">Andamento Entrate (Anno Corrente)</h3>
                     <div className="h-64 flex items-end justify-between gap-2 px-2">
                         {monthStats.map((val, i) => {
                             const maxVal = Math.max(...monthStats, 1);
@@ -497,7 +497,7 @@ export const FinancialsPage: React.FC = () => {
             {/* Transactions Table */}
             <div className="bg-bg-secondary rounded-lg border border-border overflow-hidden">
                 <div className="p-6 border-b border-border">
-                    <h3 className="text-lg font-bold text-white">Transazioni (Periodo Selezionato)</h3>
+                    <h3 className="text-lg font-bold text-text-primary">Transazioni (Periodo Selezionato)</h3>
                 </div>
                 <div className="overflow-x-auto">
                     <table className="w-full text-left border-collapse">
@@ -522,7 +522,7 @@ export const FinancialsPage: React.FC = () => {
                                             {format(new Date(tx.date), 'dd MMM yyyy', { locale: it })}
                                         </td>
                                         <td className="px-6 py-4">
-                                            <div className="font-medium text-white">{tx.category}</div>
+                                            <div className="font-medium text-text-primary">{tx.category}</div>
                                             {tx.description && <div className="text-xs text-text-muted">{tx.description}</div>}
                                         </td>
                                         <td className="px-6 py-4 text-sm text-text-secondary">
@@ -566,8 +566,8 @@ export const FinancialsPage: React.FC = () => {
                 <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4 backdrop-blur-sm animate-in fade-in">
                     <div className="bg-bg-secondary rounded-xl border border-border w-full max-w-lg overflow-hidden flex flex-col max-h-[90vh]">
                         <div className="p-4 border-b border-border flex justify-between items-center">
-                            <h3 className="text-xl font-bold text-white">Gestione Spese</h3>
-                            <button onClick={() => setIsExpenseModalOpen(false)} className="text-text-muted hover:text-white">
+                            <h3 className="text-xl font-bold text-text-primary">Gestione Spese</h3>
+                            <button onClick={() => setIsExpenseModalOpen(false)} className="text-text-muted hover:text-text-primary">
                                 <X size={24} />
                             </button>
                         </div>
@@ -613,13 +613,13 @@ const ExpenseForm = ({ onSave, recurringExpenses, onDeleteRecurring, onGenerateR
             <div className="flex gap-2 p-1 bg-bg-tertiary rounded-lg">
                 <button
                     onClick={() => setTab('new')}
-                    className={clsx("flex-1 py-2 text-sm font-medium rounded-md transition-colors", tab === 'new' ? "bg-accent text-white" : "text-text-muted hover:text-white")}
+                    className={clsx("flex-1 py-2 text-sm font-medium rounded-md transition-colors", tab === 'new' ? "bg-accent text-white" : "text-text-muted hover:text-text-primary")}
                 >
                     Nuova Spesa
                 </button>
                 <button
                     onClick={() => setTab('recurring')}
-                    className={clsx("flex-1 py-2 text-sm font-medium rounded-md transition-colors", tab === 'recurring' ? "bg-accent text-white" : "text-text-muted hover:text-white")}
+                    className={clsx("flex-1 py-2 text-sm font-medium rounded-md transition-colors", tab === 'recurring' ? "bg-accent text-white" : "text-text-muted hover:text-text-primary")}
                 >
                     Spese Fisse ({recurringExpenses.length})
                 </button>
@@ -635,7 +635,7 @@ const ExpenseForm = ({ onSave, recurringExpenses, onDeleteRecurring, onGenerateR
                             required
                             value={formData.amount}
                             onChange={e => setFormData({ ...formData, amount: e.target.value })}
-                            className="w-full bg-bg-tertiary border border-border rounded-lg p-3 text-white focus:border-accent outline-none"
+                            className="w-full bg-bg-tertiary border border-border rounded-lg p-3 text-text-primary focus:border-accent outline-none"
                             placeholder="0.00"
                         />
                     </div>
@@ -647,7 +647,7 @@ const ExpenseForm = ({ onSave, recurringExpenses, onDeleteRecurring, onGenerateR
                                 required
                                 value={formData.date}
                                 onChange={e => setFormData({ ...formData, date: e.target.value })}
-                                className="w-full bg-bg-tertiary border border-border rounded-lg p-3 text-white focus:border-accent outline-none"
+                                className="w-full bg-bg-tertiary border border-border rounded-lg p-3 text-text-primary focus:border-accent outline-none"
                             />
                         </div>
                         <div>
@@ -655,7 +655,7 @@ const ExpenseForm = ({ onSave, recurringExpenses, onDeleteRecurring, onGenerateR
                             <select
                                 value={formData.category}
                                 onChange={e => setFormData({ ...formData, category: e.target.value })}
-                                className="w-full bg-bg-tertiary border border-border rounded-lg p-3 text-white focus:border-accent outline-none"
+                                className="w-full bg-bg-tertiary border border-border rounded-lg p-3 text-text-primary focus:border-accent outline-none"
                             >
                                 {categories.map(c => <option key={c} value={c}>{c}</option>)}
                             </select>
@@ -667,7 +667,7 @@ const ExpenseForm = ({ onSave, recurringExpenses, onDeleteRecurring, onGenerateR
                             type="text"
                             value={formData.description}
                             onChange={e => setFormData({ ...formData, description: e.target.value })}
-                            className="w-full bg-bg-tertiary border border-border rounded-lg p-3 text-white focus:border-accent outline-none"
+                            className="w-full bg-bg-tertiary border border-border rounded-lg p-3 text-text-primary focus:border-accent outline-none"
                             placeholder="Es. Bolletta Luce"
                         />
                     </div>
@@ -680,7 +680,7 @@ const ExpenseForm = ({ onSave, recurringExpenses, onDeleteRecurring, onGenerateR
                             className="w-5 h-5 accent-accent"
                         />
                         <div className="flex-1">
-                            <div className="text-sm font-medium text-white">Rendi spesa fissa mensile</div>
+                            <div className="text-sm font-medium text-text-primary">Rendi spesa fissa mensile</div>
                             <div className="text-xs text-text-muted">Creerà automaticamente una voce tra le spese fisse.</div>
                         </div>
                     </div>
@@ -691,7 +691,7 @@ const ExpenseForm = ({ onSave, recurringExpenses, onDeleteRecurring, onGenerateR
                             <select
                                 value={formData.dayOfMonth}
                                 onChange={e => setFormData({ ...formData, dayOfMonth: e.target.value })}
-                                className="w-full bg-bg-tertiary border border-border rounded-lg p-3 text-white focus:border-accent outline-none"
+                                className="w-full bg-bg-tertiary border border-border rounded-lg p-3 text-text-primary focus:border-accent outline-none"
                             >
                                 {[...Array(28)].map((_, i) => (
                                     <option key={i + 1} value={i + 1}>{i + 1}° del mese</option>
@@ -710,7 +710,7 @@ const ExpenseForm = ({ onSave, recurringExpenses, onDeleteRecurring, onGenerateR
                 <div className="space-y-4">
                     <div className="bg-bg-tertiary p-4 rounded-lg border border-border">
                         <div className="flex justify-between items-center mb-2">
-                            <h4 className="font-bold text-white">Generazione Automatica</h4>
+                            <h4 className="font-bold text-text-primary">Generazione Automatica</h4>
                             <button
                                 onClick={onGenerateRecurring}
                                 className="text-xs bg-accent hover:bg-accent/80 text-white px-3 py-1.5 rounded flex items-center gap-1"
@@ -730,7 +730,7 @@ const ExpenseForm = ({ onSave, recurringExpenses, onDeleteRecurring, onGenerateR
                             recurringExpenses.map((rec: any) => (
                                 <div key={rec.id} className="flex justify-between items-center p-3 bg-bg-tertiary rounded-lg border border-border group">
                                     <div>
-                                        <div className="font-medium text-white">{rec.name}</div>
+                                        <div className="font-medium text-text-primary">{rec.name}</div>
                                         <div className="text-xs text-text-muted">
                                             {new Intl.NumberFormat('it-IT', { style: 'currency', currency: 'EUR' }).format(rec.amount)}
                                             • {rec.category} • Ogni {rec.day_of_month}° del mese

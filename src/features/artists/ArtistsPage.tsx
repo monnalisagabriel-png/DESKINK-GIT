@@ -52,7 +52,7 @@ export const ArtistsPage: React.FC = () => {
             <div className="max-w-7xl mx-auto space-y-6">
                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                     <div>
-                        <h1 className="text-3xl font-bold text-white mb-2">Artisti</h1>
+                        <h1 className="text-3xl font-bold text-text-primary mb-2">Artisti</h1>
                         <p className="text-text-muted">Gestisci gli artisti del tuo studio e i loro contratti.</p>
                     </div>
                 </div>
@@ -64,7 +64,7 @@ export const ArtistsPage: React.FC = () => {
                         placeholder="Cerca per nome o email..."
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
-                        className="bg-transparent border-none focus:ring-0 text-white placeholder-text-muted flex-1"
+                        className="bg-transparent border-none focus:ring-0 text-text-primary placeholder-text-muted flex-1"
                     />
                     <button className="p-2 hover:bg-white/5 rounded-lg text-text-muted transition-colors">
                         <Filter size={20} />
@@ -90,7 +90,7 @@ export const ArtistsPage: React.FC = () => {
                                             )}
                                         </div>
                                         <div>
-                                            <h3 className="font-semibold text-white group-hover:text-accent transition-colors">
+                                            <h3 className="font-semibold text-text-primary group-hover:text-accent transition-colors">
                                                 {artist.full_name}
                                             </h3>
                                             <p className="text-sm text-text-muted">{artist.email}</p>
@@ -128,14 +128,14 @@ export const ArtistsPage: React.FC = () => {
                                         {contract && (
                                             <div className="text-right hidden sm:block">
                                                 <p className="text-xs text-text-muted uppercase tracking-wider mb-1">Commissione</p>
-                                                <span className="text-white font-mono">{contract.commission_rate}%</span>
+                                                <span className="text-text-primary font-mono">{contract.commission_rate}%</span>
                                             </div>
                                         )}
 
                                         {contract?.rent_type === 'PRESENCES' && (
                                             <div className="text-right hidden sm:block">
                                                 <p className="text-xs text-text-muted uppercase tracking-wider mb-1">Presences</p>
-                                                <span className="text-white font-mono">
+                                                <span className="text-text-primary font-mono">
                                                     {contract.used_presences} / {contract.presence_package_limit || '∞'}
                                                 </span>
                                             </div>

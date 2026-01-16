@@ -274,7 +274,7 @@ export const Dashboard: React.FC = () => {
                                 <BookOpen size={24} />
                             </div>
                             <div>
-                                <h3 className="text-lg font-bold text-white">Il Tuo Corso</h3>
+                                <h3 className="text-lg font-bold text-text-primary">Il Tuo Corso</h3>
                                 <p className="text-sm text-text-muted">{studentCourse.title}</p>
                             </div>
                         </div>
@@ -289,14 +289,14 @@ export const Dashboard: React.FC = () => {
                 </div>
 
                 <div className="bg-bg-secondary p-6 rounded-xl border border-border">
-                    <h3 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
+                    <h3 className="text-lg font-bold text-text-primary mb-4 flex items-center gap-2">
                         <UserCheck size={20} className="text-green-400" /> Le Tue Presenze
                     </h3>
 
                     {studentEnrollment ? (
                         <>
                             <div className="mb-2 flex justify-between items-end">
-                                <span className="text-3xl font-bold text-white">{studentEnrollment.attended_days}</span>
+                                <span className="text-3xl font-bold text-text-primary">{studentEnrollment.attended_days}</span>
                                 <span className="text-sm text-text-muted mb-1">su {studentEnrollment.allowed_days} giorni totali</span>
                             </div>
                             <div className="w-full bg-bg-tertiary h-3 rounded-full overflow-hidden mb-4">
@@ -321,7 +321,7 @@ export const Dashboard: React.FC = () => {
                     <div className="mt-4 pt-4 border-t border-border flex justify-center">
                         <button
                             onClick={() => setIsTermsViewOpen(true)}
-                            className="text-xs text-text-muted hover:text-white underline flex items-center gap-1 transition-colors"
+                            className="text-xs text-text-muted hover:text-text-primary underline flex items-center gap-1 transition-colors"
                         >
                             <FileText size={12} />
                             Vedi Termini e Condizioni Accettati
@@ -330,7 +330,7 @@ export const Dashboard: React.FC = () => {
                 </div>
 
                 <div className="bg-bg-secondary p-6 rounded-xl border border-border flex flex-col justify-between">
-                    <h3 className="text-lg font-bold text-white mb-4">Materiale Didattico</h3>
+                    <h3 className="text-lg font-bold text-text-primary mb-4">Materiale Didattico</h3>
                     <div className="space-y-3 mb-4 flex-1 overflow-y-auto max-h-[300px]">
                         {(studentCourse.materials || []).map((mat, i) => (
                             <div
@@ -341,11 +341,11 @@ export const Dashboard: React.FC = () => {
                                 }}
                                 className="flex items-center gap-3 p-3 rounded bg-bg-tertiary/30 hover:bg-bg-tertiary transition-colors cursor-pointer group border border-transparent hover:border-border"
                             >
-                                <div className="text-accent group-hover:text-white transition-colors p-2 bg-white/5 rounded-lg">
+                                <div className="text-accent group-hover:text-text-primary transition-colors p-2 bg-white/5 rounded-lg">
                                     {mat.type === 'VIDEO' ? <PlayCircle size={18} /> : <FileText size={18} />}
                                 </div>
                                 <div className="flex-1 min-w-0">
-                                    <p className="text-sm font-medium text-text-secondary group-hover:text-white truncate transition-colors">{mat.title}</p>
+                                    <p className="text-sm font-medium text-text-secondary group-hover:text-text-primary truncate transition-colors">{mat.title}</p>
                                     <p className="text-xs text-text-muted">{mat.type}</p>
                                 </div>
                                 <ChevronRight size={16} className="text-text-muted opacity-0 group-hover:opacity-100 transition-opacity" />
@@ -364,28 +364,28 @@ export const Dashboard: React.FC = () => {
     };
 
     return (
-        <div className="h-full overflow-y-auto overflow-x-hidden p-4 md:p-8 pt-20 md:pt-8 text-white">
+        <div className="h-full overflow-y-auto overflow-x-hidden p-4 md:p-8 pt-20 md:pt-8 text-text-primary">
             <div className="max-w-7xl mx-auto">
                 <header className="mb-8 flex justify-between items-start">
                     <div>
-                        <h1 className="text-2xl md:text-3xl font-bold text-white mb-2 truncate">
+                        <h1 className="text-2xl md:text-3xl font-bold text-text-primary mb-2 truncate">
                             {studio?.name || 'InkFlow CRM'}
                         </h1>
                         <p className="text-text-muted text-sm md:text-base">
-                            Bentornato, <span className="text-white font-medium">{user.full_name || user.email?.split('@')[0] || 'User'}</span>
+                            Bentornato, <span className="text-text-primary font-medium">{user.full_name || user.email?.split('@')[0] || 'User'}</span>
                         </p>
                     </div>
                     <div className="flex gap-2 md:hidden">
                         <button
                             onClick={() => setIsShareOpen(true)}
-                            className="p-2 bg-bg-secondary border border-border rounded-full text-text-muted hover:text-white transition-colors"
+                            className="p-2 bg-bg-secondary border border-border rounded-full text-text-muted hover:text-text-primary transition-colors"
                             title="Condividi App"
                         >
                             <Share2 size={20} />
                         </button>
                         <button
                             onClick={togglePrivacyMode}
-                            className="p-2 bg-bg-secondary border border-border rounded-full text-text-muted hover:text-white transition-colors"
+                            className="p-2 bg-bg-secondary border border-border rounded-full text-text-muted hover:text-text-primary transition-colors"
                             title={isPrivacyMode ? 'Mostra Valori' : 'Nascondi Valori'}
                         >
                             {isPrivacyMode ? <EyeOff size={20} /> : <Eye size={20} />}
@@ -399,7 +399,7 @@ export const Dashboard: React.FC = () => {
                 {user.role !== 'STUDENT' && user.role !== 'student' && (
                     <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-20">
                         <div className="lg:col-span-2 bg-bg-secondary border border-border rounded-lg p-6 min-h-[300px]">
-                            <h3 className="text-lg font-bold text-white mb-4">
+                            <h3 className="text-lg font-bold text-text-primary mb-4">
                                 {user.role === 'ARTIST' ? 'Programma di Oggi' : 'Appuntamenti Recenti'}
                             </h3>
 
@@ -423,7 +423,7 @@ export const Dashboard: React.FC = () => {
                                                                     <Calendar size={18} />
                                                                 </div>
                                                                 <div className="min-w-0 flex-1">
-                                                                    <p className="font-medium text-white text-sm truncate">
+                                                                    <p className="font-medium text-text-primary text-sm truncate">
                                                                         {format(parseISO(appt.start_time), 'EEEE d MMMM', { locale: it })} - {format(parseISO(appt.start_time), 'HH:mm')}
                                                                     </p>
                                                                     <p className="text-xs text-text-muted truncate">
@@ -465,7 +465,7 @@ export const Dashboard: React.FC = () => {
                                                                     <Calendar size={18} />
                                                                 </div>
                                                                 <div className="min-w-0 flex-1">
-                                                                    <p className="font-medium text-white text-sm truncate">
+                                                                    <p className="font-medium text-text-primary text-sm truncate">
                                                                         {format(parseISO(appt.start_time), 'EEEE d MMMM', { locale: it })} - {format(parseISO(appt.start_time), 'HH:mm')}
                                                                     </p>
                                                                     <p className="text-xs text-text-muted truncate">
@@ -507,7 +507,7 @@ export const Dashboard: React.FC = () => {
 
                         <div className="space-y-6">
                             <div className="bg-bg-secondary border border-border rounded-lg p-6">
-                                <h3 className="text-lg font-bold text-white mb-4">Azioni Rapide</h3>
+                                <h3 className="text-lg font-bold text-text-primary mb-4">Azioni Rapide</h3>
                                 <div className="space-y-3">
                                     <button
                                         onClick={() => navigate('/calendar')}
@@ -573,7 +573,7 @@ export const Dashboard: React.FC = () => {
                             </h2>
                             <button
                                 onClick={() => setIsTermsViewOpen(false)}
-                                className="text-text-muted hover:text-white transition-colors"
+                                className="text-text-muted hover:text-text-primary transition-colors"
                             >
                                 <X size={24} />
                             </button>

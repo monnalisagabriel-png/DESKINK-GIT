@@ -71,14 +71,14 @@ export const MessageEditor: React.FC<MessageEditorProps> = ({ data, onChange, on
             {/* Left: Editor */}
             <div className="space-y-6">
                 <div className="bg-bg-secondary p-6 rounded-lg border border-border">
-                    <h2 className="text-lg font-bold text-white mb-4">Componi Messaggio</h2>
+                    <h2 className="text-lg font-bold text-text-primary mb-4">Componi Messaggio</h2>
 
                     <div className="space-y-4">
                         <div>
                             <label className="block text-sm font-medium text-text-secondary mb-1">Titolo Campagna</label>
                             <input
                                 type="text"
-                                className="w-full bg-bg-primary border border-border rounded-lg px-4 py-2 text-white focus:ring-2 focus:ring-accent outline-none"
+                                className="w-full bg-bg-primary border border-border rounded-lg px-4 py-2 text-text-primary focus:ring-2 focus:ring-accent outline-none"
                                 placeholder="Es: Promo Natale 2024"
                                 value={data.title || ''}
                                 onChange={(e) => onChange({ ...data, title: e.target.value })}
@@ -96,7 +96,7 @@ export const MessageEditor: React.FC<MessageEditorProps> = ({ data, onChange, on
                                         onChange={() => onChange({ ...data, channel: 'WHATSAPP' })}
                                         className="text-accent focus:ring-accent"
                                     />
-                                    <span className="text-white">WhatsApp</span>
+                                    <span className="text-text-primary">WhatsApp</span>
                                 </label>
                                 <label className="flex items-center gap-2 opacity-50 cursor-not-allowed">
                                     <input type="radio" name="channel" disabled />
@@ -112,7 +112,7 @@ export const MessageEditor: React.FC<MessageEditorProps> = ({ data, onChange, on
                         <div>
                             <label className="block text-sm font-medium text-text-secondary mb-1">Messaggio</label>
                             <textarea
-                                className="w-full h-48 bg-bg-primary border border-border rounded-lg p-4 text-white focus:ring-2 focus:ring-accent outline-none resize-none"
+                                className="w-full h-48 bg-bg-primary border border-border rounded-lg p-4 text-text-primary focus:ring-2 focus:ring-accent outline-none resize-none"
                                 placeholder="Scrivi il tuo messaggio qui..."
                                 value={data.message_text || ''}
                                 onChange={(e) => onChange({ ...data, message_text: e.target.value })}
@@ -136,7 +136,7 @@ export const MessageEditor: React.FC<MessageEditorProps> = ({ data, onChange, on
                 </div>
 
                 <div className="flex justify-end gap-3">
-                    <button className="flex items-center gap-2 px-4 py-2 rounded-lg border border-border text-text-muted hover:text-white hover:bg-bg-tertiary transition-colors">
+                    <button className="flex items-center gap-2 px-4 py-2 rounded-lg border border-border text-text-muted hover:text-text-primary hover:bg-bg-tertiary transition-colors">
                         <Save size={18} />
                         Salva Bozza
                     </button>
@@ -154,7 +154,7 @@ export const MessageEditor: React.FC<MessageEditorProps> = ({ data, onChange, on
             <div className="bg-bg-secondary p-4 md:p-6 rounded-lg border border-border flex flex-col overflow-hidden">
                 <div className="flex items-center gap-2 mb-6">
                     <Sparkles className="text-accent shrink-0" size={24} />
-                    <h2 className="text-lg font-bold text-white truncate">AI Assistant</h2>
+                    <h2 className="text-lg font-bold text-text-primary truncate">AI Assistant</h2>
                 </div>
 
                 <div className="space-y-4 mb-6">
@@ -175,7 +175,7 @@ export const MessageEditor: React.FC<MessageEditorProps> = ({ data, onChange, on
                                 <input
                                     type="password"
                                     placeholder="Tua API Key (Opzionale)"
-                                    className="flex-1 bg-bg-primary border border-border rounded px-3 py-1.5 text-sm text-white focus:outline-none w-full"
+                                    className="flex-1 bg-bg-primary border border-border rounded px-3 py-1.5 text-sm text-text-primary focus:outline-none w-full"
                                     value={apiKey}
                                     onChange={(e) => setApiKey(e.target.value)}
                                 />
@@ -190,7 +190,7 @@ export const MessageEditor: React.FC<MessageEditorProps> = ({ data, onChange, on
                         <div>
                             <label className="block text-xs text-text-secondary mb-1">Obiettivo</label>
                             <select
-                                className="w-full bg-bg-primary border border-border rounded px-3 py-2 text-white text-sm focus:outline-none"
+                                className="w-full bg-bg-primary border border-border rounded px-3 py-2 text-text-primary text-sm focus:outline-none"
                                 value={aiPrompt.goal}
                                 onChange={(e) => setAiPrompt({ ...aiPrompt, goal: e.target.value })}
                             >
@@ -203,7 +203,7 @@ export const MessageEditor: React.FC<MessageEditorProps> = ({ data, onChange, on
                         <div>
                             <label className="block text-xs text-text-secondary mb-1">Tono</label>
                             <select
-                                className="w-full bg-bg-primary border border-border rounded px-3 py-2 text-white text-sm focus:outline-none"
+                                className="w-full bg-bg-primary border border-border rounded px-3 py-2 text-text-primary text-sm focus:outline-none"
                                 value={aiPrompt.tone}
                                 onChange={(e) => setAiPrompt({ ...aiPrompt, tone: e.target.value })}
                             >
@@ -217,7 +217,7 @@ export const MessageEditor: React.FC<MessageEditorProps> = ({ data, onChange, on
                         <div className="mt-4">
                             <label className="block text-xs text-text-secondary mb-1">Istruzioni Personalizzate (Opzionale)</label>
                             <textarea
-                                className="w-full bg-bg-primary border border-border rounded px-3 py-2 text-white text-sm focus:outline-none h-24 resize-none"
+                                className="w-full bg-bg-primary border border-border rounded px-3 py-2 text-text-primary text-sm focus:outline-none h-24 resize-none"
                                 placeholder="Es: Offerta speciale per San Valentino, sconto 20% su tutti i tatuaggi realistici..."
                                 value={aiPrompt.customContext}
                                 onChange={(e) => setAiPrompt({ ...aiPrompt, customContext: e.target.value })}
@@ -228,7 +228,7 @@ export const MessageEditor: React.FC<MessageEditorProps> = ({ data, onChange, on
                     <button
                         onClick={handleGenerateAI}
                         disabled={generating}
-                        className="w-full flex items-center justify-center gap-2 bg-white/5 hover:bg-white/10 text-white py-3 rounded-lg border border-dashed border-border transition-all"
+                        className="w-full flex items-center justify-center gap-2 bg-bg-tertiary hover:bg-bg-primary text-text-primary py-3 rounded-lg border border-dashed border-border transition-all"
                     >
                         {generating ? (
                             <span className="animate-pulse">Generazione in corso...</span>
