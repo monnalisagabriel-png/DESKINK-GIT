@@ -40,8 +40,11 @@ export const StudioSettings: React.FC = () => {
         setSaving(true);
         try {
             await api.settings.updateStudio(user.studio_id, studio);
+            // Optionally add success feedback here
+            alert("Modifiche salvate con successo!");
         } catch (err) {
             console.error(err);
+            alert("Errore durante il salvataggio. Assicurati di aver eseguito la migrazione del database per il campo 'report_url'.");
         } finally {
             setSaving(false);
         }
