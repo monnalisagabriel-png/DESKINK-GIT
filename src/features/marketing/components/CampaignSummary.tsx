@@ -110,7 +110,7 @@ export const CampaignSummary: React.FC<CampaignSummaryProps> = ({ data, recipien
                                 const waLink = `https://wa.me/${client.phone.replace(/\s+/g, '')}?text=${encodedMessage}`;
 
                                 return (
-                                    <div key={client.id} className="p-4 border-b border-border last:border-0 flex items-center justify-between hover:bg-white/5 transition-colors">
+                                    <div key={client.id} className="p-4 border-b border-border last:border-0 flex items-center justify-between hover:bg-bg-primary transition-colors">
                                         <div>
                                             <div className="font-medium text-text-primary">{client.full_name}</div>
                                             <div className="text-xs text-text-secondary">{client.phone}</div>

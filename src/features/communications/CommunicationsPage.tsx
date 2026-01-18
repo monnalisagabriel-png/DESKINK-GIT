@@ -227,7 +227,7 @@ export const CommunicationsPage: React.FC = () => {
                                                 setReplyingTo(null);
                                                 setReplyContent('');
                                             }}
-                                            className="bg-bg-tertiary hover:bg-white/10 text-white p-2 rounded-lg transition-colors"
+                                            className="bg-bg-tertiary hover:bg-bg-primary text-text-primary p-2 rounded-lg transition-colors border border-border"
                                         >
                                             <Trash2 size={18} />
                                         </button>

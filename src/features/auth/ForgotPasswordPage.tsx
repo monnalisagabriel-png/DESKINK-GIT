@@ -64,7 +64,7 @@ export const ForgotPasswordPage: React.FC = () => {
                                 type="email"
                                 value={email}
                                 onChange={(e) => setEmail(e.target.value)}
-                                className="w-full bg-bg-tertiary border border-border rounded-lg px-3 py-2 text-white focus:ring-accent focus:border-accent"
+                                className="w-full bg-bg-tertiary border border-border rounded-lg px-3 py-2 text-text-primary focus:ring-accent focus:border-accent"
                                 placeholder="nome@esempio.com"
                                 required
                             />
@@ -78,7 +78,7 @@ export const ForgotPasswordPage: React.FC = () => {
                         </button>
 
                         <div className="pt-4 text-center">
-                            <Link to="/login" className="text-sm text-text-muted hover:text-white flex items-center justify-center gap-1 transition-colors">
+                            <Link to="/login" className="text-sm text-text-muted hover:text-text-primary flex items-center justify-center gap-1 transition-colors">
                                 <ArrowLeft size={14} /> Torna al Login
                             </Link>
                         </div>

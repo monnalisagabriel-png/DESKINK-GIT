@@ -16,6 +16,11 @@ export function ReviewRequestModal({ isOpen, onClose, clientName, clientPhone, s
     const [studioName, setStudioName] = useState<string>('DESKINK Studio');
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
+    const [phone, setPhone] = useState(clientPhone || '');
+
+    useEffect(() => {
+        setPhone(clientPhone || '');
+    }, [clientPhone, isOpen]);
 
     useEffect(() => {
         if (isOpen && studioId) {
@@ -23,18 +28,24 @@ export function ReviewRequestModal({ isOpen, onClose, clientName, clientPhone, s
             setError(null);
             api.settings.getStudio(studioId)
                 .then(studio => {
+                    console.log('[ReviewModal] Fetched studio:', studio);
                     if (studio) {
                         setStudioName(studio.name || 'DESKINK Studio');
                         if (studio.google_review_url) {
+                            console.log('[ReviewModal] Found Google Review URL:', studio.google_review_url);
                             setReviewUrl(studio.google_review_url);
                         } else {
+                            console.warn('[ReviewModal] google_review_url is missing in studio data');
                             setReviewUrl(null);
                             setError('Link recensione Google non configurato nelle Impostazioni Studio');
                         }
+                    } else {
+                        console.error('[ReviewModal] Studio data is null');
+                        setError('Dati studio non trovati');
                     }
                 })
                 .catch(err => {
-                    console.error('Failed to fetch studio settings', err);
+                    console.error('[ReviewModal] Failed to fetch studio settings', err);
                     setError('Errore nel recupero delle impostazioni dello studio');
                 })
                 .finally(() => setLoading(false));
@@ -54,24 +65,55 @@ Ti basterà mostrarci la recensione pubblicata al link: ${reviewUrl || '[LINK RE
 Grazie per aver scelto il ${studioName} e per il tuo supporto!`;
 
     const handleSendWhatsapp = () => {
-        if (!reviewUrl) return;
-
-        const encodedMessage = encodeURIComponent(message);
-        // If phone is provided, target it, otherwise generic link (user picks contact)
-        // Ideally we should use the client's phone number if available. 
-        // Assuming clientPhone format is clean or needs sanitization.
-        // For simplicity, we'll try to use the phone if valid, else just open wa.me to pick contact? 
-        // Actually wa.me/number?text=... requires a number. 
-
-        let url = `https://wa.me/?text=${encodedMessage}`;
-        if (clientPhone) {
-            const cleanPhone = clientPhone.replace(/\D/g, '');
-            if (cleanPhone.length >= 10) {
-                url = `https://wa.me/${cleanPhone}?text=${encodedMessage}`;
-            }
+        if (!reviewUrl) {
+            console.error('[ReviewModal] Review URL is missing, cannot send.');
+            return;
         }
 
-        window.open(url, '_blank');
+        console.log('[ReviewModal] Sending WhatsApp. Client:', clientName, 'Phone:', phone, 'URL:', reviewUrl);
+
+        const encodedMessage = encodeURIComponent(message);
+
+        let url = `https://api.whatsapp.com/send?text=${encodedMessage}`;
+
+        if (phone) {
+            // 1. Remove everything except digits
+            let cleanPhone = phone.replace(/\D/g, '');
+
+            // 2. Handle Italian prefix (Special Case)
+            // If it's 10 digits (e.g. 3331234567), assume IT mobile and prepend 39.
+            // If it's already 12 digits starting with 39 (e.g. 393331234567), leave it.
+            if (cleanPhone.length === 10) {
+                cleanPhone = '39' + cleanPhone;
+                console.log('[ReviewModal] Prepended 39 prefix:', cleanPhone);
+            }
+
+            // 3. Construct URL using robust API
+            if (cleanPhone.length >= 8) {
+                // Using api.whatsapp.com/send is more consistent than wa.me often
+                url = `https://api.whatsapp.com/send?phone=${cleanPhone}&text=${encodedMessage}`;
+            } else {
+                console.warn('[ReviewModal] Phone number too short after cleaning:', cleanPhone);
+                // Fallback to generic link
+            }
+        } else {
+            console.log('[ReviewModal] No phone provided, using generic link.');
+        }
+
+        console.log('[ReviewModal] Opening URL:', url);
+
+        // Use a try-catch for window.open just in case, though unlikely to throw synchronously
+        try {
+            const newWindow = window.open(url, '_blank');
+            if (!newWindow || newWindow.closed || typeof newWindow.closed == 'undefined') {
+                // Popup blocked?
+                console.warn('[ReviewModal] Window might have been blocked.');
+            }
+        } catch (e) {
+            console.error('[ReviewModal] Failed to open window:', e);
+            alert('Impossibile aprire il link di WhatsApp. Controlla le impostazioni del browser.');
+        }
+
         onClose();
     };
 
@@ -91,6 +133,8 @@ Grazie per aver scelto il ${studioName} e per il tuo supporto!`;
                     <p className="text-gray-600 dark:text-gray-300 text-center">
                         Vuoi inviare un messaggio WhatsApp a <b>{clientName}</b> per chiedere una recensione su Google?
                     </p>
+
+
 
                     {loading ? (
                         <div className="text-center text-sm text-gray-500">Caricamento link...</div>

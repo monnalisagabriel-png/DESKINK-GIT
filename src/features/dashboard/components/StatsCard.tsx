@@ -26,7 +26,7 @@ export const StatsCard: React.FC<StatsCardProps> = ({
                     <p className="text-text-muted text-sm font-medium mb-1">{title}</p>
                     <h3 className="text-2xl font-bold text-text-primary">{value}</h3>
                 </div>
-                <div className={clsx("p-3 rounded-lg bg-opacity-10 text-white", color)}>
+                <div className={clsx("p-3 rounded-lg bg-opacity-10 text-text-primary", color)}>
                     <Icon size={24} className="opacity-90" />
                 </div>
             </div>

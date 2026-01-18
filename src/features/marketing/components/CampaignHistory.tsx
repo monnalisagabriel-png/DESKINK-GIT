@@ -41,7 +41,7 @@ export const CampaignHistory: React.FC = () => {
                 <div key={camp.id} className="bg-bg-secondary p-4 rounded-lg border border-border flex flex-col md:flex-row gap-4 items-start md:items-center justify-between hover:border-accent/50 transition-colors">
                     <div className="flex-1">
                         <div className="flex items-center gap-3 mb-1">
-                            <h3 className="font-bold text-white">{camp.title}</h3>
+                            <h3 className="font-bold text-text-primary">{camp.title}</h3>
                             <span className={clsx(
                                 "text-[10px] px-2 py-0.5 rounded font-bold uppercase",
                                 camp.status === 'SENT' ? "bg-green-500/10 text-green-500" : "bg-yellow-500/10 text-yellow-500"

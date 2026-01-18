@@ -421,7 +421,7 @@ export function GoogleSheetsSyncModal({ isOpen, onClose, onSyncSuccess, initialT
             <div className="flex-1 overflow-y-auto p-6">
                 {isLoading && (
                     <div className="flex flex-col items-center justify-center py-12 space-y-4">
-                        <Loader2 className="w-8 h-8 text-primary animate-spin" />
+                        <Loader2 className="w-8 h-8 text-accent animate-spin" />
                         <p className="text-sm text-gray-500">Elaborazione in corso...</p>
                     </div>
                 )}
@@ -639,7 +639,7 @@ export function GoogleSheetsSyncModal({ isOpen, onClose, onSyncSuccess, initialT
                         )}
 
                         <div className="mt-8">
-                            <button onClick={() => { onSyncSuccess(); onClose(); }} className="px-6 py-2 bg-primary text-white rounded-lg hover:bg-primary-hover">
+                            <button onClick={() => { onSyncSuccess(); onClose(); }} className="px-6 py-2 bg-accent text-white rounded-lg hover:bg-accent-hover">
                                 Chiudi
                             </button>
                         </div>
@@ -713,7 +713,7 @@ export function GoogleSheetsSyncModal({ isOpen, onClose, onSyncSuccess, initialT
                     <button onClick={onClose} className="px-4 py-2 text-gray-600 hover:text-gray-900 font-medium">Annulla</button>
                     <button
                         onClick={handleImport}
-                        className="px-6 py-2 bg-primary text-white rounded-lg hover:bg-primary-hover flex items-center gap-2"
+                        className="px-6 py-2 bg-accent text-white rounded-lg hover:bg-accent-hover flex items-center gap-2"
                     >
                         <Download className="w-4 h-4" />
                         Avvia Importazione

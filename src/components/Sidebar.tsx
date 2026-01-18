@@ -125,7 +125,7 @@ export const Sidebar = () => {
 
     return (
         <>
-            <aside className="hidden md:flex flex-col w-64 h-screen bg-bg-secondary border-r border-border sticky top-0">
+            <aside className="hidden md:flex flex-col w-64 h-[100dvh] bg-bg-secondary border-r border-border sticky top-0">
                 <div className="p-6 flex flex-col items-center gap-3 border-b border-border/50 mb-2">
                     {studio?.logo_url ? (
                         <img

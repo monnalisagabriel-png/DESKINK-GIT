@@ -258,6 +258,7 @@ export interface IRepository {
   };
   appointments: {
     list(start: Date, end: Date, artistId?: string, studioId?: string): Promise<Appointment[]>;
+    get(id: string): Promise<Appointment | null>;
     create(data: Omit<Appointment, 'id'>): Promise<Appointment>;
     update(id: string, data: Partial<Appointment>): Promise<Appointment>;
     delete(id: string): Promise<void>;
@@ -456,6 +457,7 @@ export interface Studio {
   company_name?: string;
   sdi_code?: string;
   pec?: string;
+  report_url?: string;
   google_review_url?: string;
   google_sheets_config?: {
     spreadsheet_id?: string;

@@ -71,7 +71,7 @@ export const IntegrationsTab: React.FC<IntegrationsTabProps> = ({ artist, onUpda
 
     return (
         <div className="space-y-6">
-            <h3 className="text-xl font-bold text-white mb-6">Integrazioni Esterne</h3>
+            <h3 className="text-xl font-bold text-text-primary mb-6">Integrazioni Esterne</h3>
 
             {/* Google Calendar Card - Keep existing code ... */}
             <div className="bg-bg-tertiary p-6 rounded-xl border border-border flex flex-col md:flex-row gap-6 items-start md:items-center justify-between">
@@ -84,7 +84,7 @@ export const IntegrationsTab: React.FC<IntegrationsTabProps> = ({ artist, onUpda
                         <Calendar size={24} />
                     </div>
                     <div>
-                        <h4 className="text-lg font-bold text-white flex items-center gap-2">
+                        <h4 className="text-lg font-bold text-text-primary flex items-center gap-2">
                             Google Calendar
                             {gcal?.is_connected && <CheckCircle size={16} className="text-green-500" />}
                         </h4>
@@ -121,7 +121,7 @@ export const IntegrationsTab: React.FC<IntegrationsTabProps> = ({ artist, onUpda
                                 onClick={handleSyncNow}
                                 disabled={syncing}
                                 type="button"
-                                className="flex items-center justify-center gap-2 bg-bg-secondary hover:bg-white/10 text-white border border-border px-4 py-2 rounded-lg font-medium transition-colors"
+                                className="flex items-center justify-center gap-2 bg-bg-secondary hover:bg-bg-primary text-text-primary border border-border px-4 py-2 rounded-lg font-medium transition-colors"
                             >
                                 <RefreshCw size={18} className={clsx(syncing && "animate-spin")} />
                                 {syncing ? 'Sync...' : 'Importa Ora'}

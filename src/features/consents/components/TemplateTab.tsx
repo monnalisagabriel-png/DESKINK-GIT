@@ -94,7 +94,7 @@ export const TemplateTab: React.FC = () => {
                             type="text"
                             value={title}
                             onChange={(e) => setTitle(e.target.value)}
-                            className="w-full bg-bg-tertiary border border-border rounded px-3 py-2 text-white focus:outline-none focus:border-accent"
+                            className="w-full bg-bg-tertiary border border-border rounded px-3 py-2 text-text-primary focus:outline-none focus:border-accent"
                         />
                     </div>
 
@@ -119,11 +119,11 @@ export const TemplateTab: React.FC = () => {
 
             <div className="space-y-6">
                 <div className="bg-bg-secondary border border-border rounded-lg p-6">
-                    <h3 className="text-lg font-semibold text-white mb-4">Impostazioni</h3>
+                    <h3 className="text-lg font-semibold text-text-primary mb-4">Impostazioni</h3>
 
                     <div className="flex items-center justify-between mb-6">
                         <div>
-                            <p className="text-white font-medium">Versione Corrente</p>
+                            <p className="text-text-primary font-medium">Versione Corrente</p>
                             <p className="text-sm text-text-muted">Ultima modifica: {template?.updated_at ? new Date(template.updated_at).toLocaleDateString() : 'Mai'}</p>
                         </div>
                         <span className="bg-accent/20 text-accent px-3 py-1 rounded text-sm font-bold">
@@ -141,7 +141,7 @@ export const TemplateTab: React.FC = () => {
                                     onChange={(e) => setRequiredResign(e.target.checked)}
                                     className="rounded border-border bg-bg-tertiary text-accent focus:ring-accent"
                                 />
-                                <span className="text-sm text-white font-medium">Richiedi nuova firma</span>
+                                <span className="text-sm text-text-primary font-medium">Richiedi nuova firma</span>
                             </label>
                             <p className="text-xs text-text-muted">
                                 Se attivo, tutti i clienti dovranno firmare nuovamente questo documento alla prossima visita.
@@ -160,17 +160,17 @@ export const TemplateTab: React.FC = () => {
                 </div>
 
                 <div className="bg-bg-secondary border border-border rounded-lg p-6">
-                    <h3 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
+                    <h3 className="text-lg font-semibold text-text-primary mb-4 flex items-center gap-2">
                         <History size={18} />
                         Storico Versioni
                     </h3>
                     <div className="space-y-3">
                         <div className="flex justify-between items-center text-sm py-2 border-b border-border/50">
-                            <span className="text-white">v{template?.version} (Attuale)</span>
+                            <span className="text-text-primary">v{template?.version} (Attuale)</span>
                             <span className="text-text-muted">Oggi</span>
                         </div>
                         <div className="flex justify-between items-center text-sm py-2 border-b border-border/50 opacity-50">
-                            <span className="text-white">v{(template?.version || 1) - 1}</span>
+                            <span className="text-text-primary">v{(template?.version || 1) - 1}</span>
                             <span className="text-text-muted">--</span>
                         </div>
                     </div>

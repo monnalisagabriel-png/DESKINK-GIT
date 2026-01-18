@@ -181,7 +181,7 @@ export const ArtistProfilePage: React.FC = () => {
 
     return (
         <div className="p-4 md:p-8 max-w-7xl mx-auto space-y-6 overflow-x-hidden">
-            <button onClick={() => navigate('/artists')} className="flex items-center gap-2 text-text-muted hover:text-white transition-colors mb-4">
+            <button onClick={() => navigate('/artists')} className="flex items-center gap-2 text-text-muted hover:text-text-primary transition-colors mb-4">
                 <ArrowLeft size={20} /> Torna alla Lista
             </button>
 
@@ -229,7 +229,7 @@ export const ArtistProfilePage: React.FC = () => {
                     }}
                 />
                 <div>
-                    <h1 className="text-3xl font-bold text-white">{artist.full_name}</h1>
+                    <h1 className="text-3xl font-bold text-text-primary">{artist.full_name}</h1>
                     <div className="flex items-center gap-3">
                         <p className="text-text-muted">{artist.email}</p>
                         {artist.phone && (
@@ -274,7 +274,7 @@ export const ArtistProfilePage: React.FC = () => {
                             onClick={() => setActiveTab(tab)}
                             className={clsx(
                                 'px-6 py-3 text-sm font-medium transition-colors relative whitespace-nowrap',
-                                activeTab === tab ? 'text-accent' : 'text-text-muted hover:text-white'
+                                activeTab === tab ? 'text-accent' : 'text-text-muted hover:text-text-primary'
                             )}
                         >
                             {tab === 'DETAILS' && 'DETTAGLI'}
@@ -300,7 +300,7 @@ export const ArtistProfilePage: React.FC = () => {
             <div className="bg-bg-secondary p-6 rounded-xl border border-border">
                 {activeTab === 'DETAILS' && (
                     <div className="space-y-4">
-                        <h2 className="text-xl font-bold text-white mb-4">Informazioni Personali</h2>
+                        <h2 className="text-xl font-bold text-text-primary mb-4">Informazioni Personali</h2>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                             <div>
                                 <label className="block text-sm font-medium text-text-muted mb-1">Nome Completo</label>
@@ -308,13 +308,13 @@ export const ArtistProfilePage: React.FC = () => {
                                     type="text"
                                     value={profileForm.full_name}
                                     onChange={(e) => setProfileForm({ ...profileForm, full_name: e.target.value })}
-                                    className="w-full bg-bg-tertiary border border-border rounded-lg px-4 py-2 text-white focus:border-accent focus:outline-none"
+                                    className="w-full bg-bg-tertiary border border-border rounded-lg px-4 py-2 text-text-primary focus:border-accent focus:outline-none"
                                     placeholder="Nome e Cognome"
                                 />
                             </div>
                             <div>
                                 <label className="block text-sm font-medium text-text-muted mb-1">Email</label>
-                                <div className="p-3 bg-bg-tertiary rounded-lg text-white">{artist.email}</div>
+                                <div className="p-3 bg-bg-tertiary rounded-lg text-text-primary">{artist.email}</div>
                             </div>
                             <div>
                                 <label className="block text-sm font-medium text-text-muted mb-1">Telefono</label>
@@ -323,14 +323,14 @@ export const ArtistProfilePage: React.FC = () => {
                                         type="tel"
                                         value={profileForm.phone}
                                         onChange={(e) => setProfileForm({ ...profileForm, phone: e.target.value })}
-                                        className="w-full bg-bg-tertiary border border-border rounded-lg px-4 py-2 text-white focus:border-accent focus:outline-none"
+                                        className="w-full bg-bg-tertiary border border-border rounded-lg px-4 py-2 text-text-primary focus:border-accent focus:outline-none"
                                         placeholder="+39 ..."
                                     />
                                 </div>
                             </div>
                             <div>
                                 <label className="block text-sm font-medium text-text-muted mb-1">Ruolo</label>
-                                <div className="p-3 bg-bg-tertiary rounded-lg text-white capitalize">{artist.role.toLowerCase()}</div>
+                                <div className="p-3 bg-bg-tertiary rounded-lg text-text-primary capitalize">{artist.role.toLowerCase()}</div>
                             </div>
                             <div>
                                 <label className="block text-sm font-medium text-text-muted mb-1">Colore Calendario</label>
@@ -349,7 +349,7 @@ export const ArtistProfilePage: React.FC = () => {
                             <button
                                 onClick={handleSaveProfile}
                                 disabled={saving}
-                                className="flex items-center gap-2 bg-white/5 hover:bg-white/10 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors border border-white/10"
+                                className="flex items-center gap-2 bg-bg-tertiary hover:bg-bg-primary text-text-primary px-4 py-2 rounded-lg text-sm font-medium transition-colors border border-border"
                             >
                                 <Save size={16} />
                                 {saving ? 'Salvataggio...' : 'Salva Profilo'}
@@ -358,7 +358,7 @@ export const ArtistProfilePage: React.FC = () => {
 
                         {/* Extended Details Form */}
                         <div className="pt-6 border-t border-border mt-6">
-                            <h3 className="text-lg font-bold text-white mb-4">Dati Fiscali e Residenza</h3>
+                            <h3 className="text-lg font-bold text-text-primary mb-4">Dati Fiscali e Residenza</h3>
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                 <div>
                                     <label className="block text-sm font-medium text-text-muted mb-1">Codice Fiscale</label>
@@ -366,7 +366,7 @@ export const ArtistProfilePage: React.FC = () => {
                                         type="text"
                                         value={formData.fiscal_code || ''}
                                         onChange={(e) => setFormData({ ...formData, fiscal_code: e.target.value })}
-                                        className="w-full bg-bg-tertiary border border-border rounded-lg px-4 py-2 text-white"
+                                        className="w-full bg-bg-tertiary border border-border rounded-lg px-4 py-2 text-text-primary"
                                         placeholder="Codice Fiscale"
                                     />
                                 </div>
@@ -376,7 +376,7 @@ export const ArtistProfilePage: React.FC = () => {
                                         type="text"
                                         value={formData.vat_number || ''}
                                         onChange={(e) => setFormData({ ...formData, vat_number: e.target.value })}
-                                        className="w-full bg-bg-tertiary border border-border rounded-lg px-4 py-2 text-white"
+                                        className="w-full bg-bg-tertiary border border-border rounded-lg px-4 py-2 text-text-primary"
                                         placeholder="P.IVA (Opzionale)"
                                     />
                                 </div>
@@ -386,7 +386,7 @@ export const ArtistProfilePage: React.FC = () => {
                                         type="text"
                                         value={formData.address || ''}
                                         onChange={(e) => setFormData({ ...formData, address: e.target.value })}
-                                        className="w-full bg-bg-tertiary border border-border rounded-lg px-4 py-2 text-white"
+                                        className="w-full bg-bg-tertiary border border-border rounded-lg px-4 py-2 text-text-primary"
                                         placeholder="Via, Città, CAP"
                                     />
                                 </div>
@@ -396,7 +396,7 @@ export const ArtistProfilePage: React.FC = () => {
                                         type="text"
                                         value={formData.iban || ''}
                                         onChange={(e) => setFormData({ ...formData, iban: e.target.value })}
-                                        className="w-full bg-bg-tertiary border border-border rounded-lg px-4 py-2 text-white"
+                                        className="w-full bg-bg-tertiary border border-border rounded-lg px-4 py-2 text-text-primary"
                                         placeholder="IBAN per pagamenti"
                                     />
                                 </div>
@@ -418,7 +418,7 @@ export const ArtistProfilePage: React.FC = () => {
                 {activeTab === 'CONTRACT' && (
                     <div className="space-y-8">
                         <div>
-                            <h3 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
+                            <h3 className="text-lg font-semibold text-text-primary mb-4 flex items-center gap-2">
                                 <span className="w-1 h-6 bg-accent rounded-full" /> Commissione
                             </h3>
                             <div className="max-w-md">
@@ -429,13 +429,13 @@ export const ArtistProfilePage: React.FC = () => {
                                     max="100"
                                     value={formData.commission_rate}
                                     onChange={(e) => setFormData({ ...formData, commission_rate: Number(e.target.value) })}
-                                    className="w-full bg-bg-tertiary border border-border rounded-lg px-4 py-2 text-white focus:border-accent focus:outline-none"
+                                    className="w-full bg-bg-tertiary border border-border rounded-lg px-4 py-2 text-text-primary focus:border-accent focus:outline-none"
                                 />
                             </div>
                         </div>
 
                         <div>
-                            <h3 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
+                            <h3 className="text-lg font-semibold text-text-primary mb-4 flex items-center gap-2">
                                 <span className="w-1 h-6 bg-accent rounded-full" /> Configurazione Affitto
                             </h3>
 
@@ -469,7 +469,7 @@ export const ArtistProfilePage: React.FC = () => {
                                             type={isPrivacyMode ? "password" : "number"}
                                             value={formData.rent_fixed_amount || ''}
                                             onChange={(e) => setFormData({ ...formData, rent_fixed_amount: Number(e.target.value) })}
-                                            className="w-full bg-bg-tertiary border border-border rounded-lg px-4 py-2 text-white"
+                                            className="w-full bg-bg-tertiary border border-border rounded-lg px-4 py-2 text-text-primary"
                                         />
                                     </div>
                                 )}
@@ -481,7 +481,7 @@ export const ArtistProfilePage: React.FC = () => {
                                             type={isPrivacyMode ? "password" : "number"}
                                             value={formData.rent_percent_rate || ''}
                                             onChange={(e) => setFormData({ ...formData, rent_percent_rate: Number(e.target.value) })}
-                                            className="w-full bg-bg-tertiary border border-border rounded-lg px-4 py-2 text-white"
+                                            className="w-full bg-bg-tertiary border border-border rounded-lg px-4 py-2 text-text-primary"
                                         />
                                     </div>
                                 )}
@@ -494,7 +494,7 @@ export const ArtistProfilePage: React.FC = () => {
                                                 type="number"
                                                 value={formData.presence_package_limit || ''}
                                                 onChange={(e) => setFormData({ ...formData, presence_package_limit: Number(e.target.value) })}
-                                                className="w-full bg-bg-tertiary border border-border rounded-lg px-4 py-2 text-white"
+                                                className="w-full bg-bg-tertiary border border-border rounded-lg px-4 py-2 text-text-primary"
                                             />
                                         </div>
                                         <div>
@@ -503,7 +503,7 @@ export const ArtistProfilePage: React.FC = () => {
                                                 type={isPrivacyMode ? "password" : "number"}
                                                 value={formData.presence_price || ''}
                                                 onChange={(e) => setFormData({ ...formData, presence_price: Number(e.target.value) })}
-                                                className="w-full bg-bg-tertiary border border-border rounded-lg px-4 py-2 text-white"
+                                                className="w-full bg-bg-tertiary border border-border rounded-lg px-4 py-2 text-text-primary"
                                             />
                                         </div>
                                     </>
@@ -529,7 +529,7 @@ export const ArtistProfilePage: React.FC = () => {
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                             <div className="bg-bg-tertiary p-6 rounded-xl border border-border">
                                 <p className="text-text-muted text-sm mb-1">Presenze Usate</p>
-                                <p className="text-4xl font-bold text-white">{contract.used_presences}</p>
+                                <p className="text-4xl font-bold text-text-primary">{contract.used_presences}</p>
                             </div>
                             <div className="bg-bg-tertiary p-6 rounded-xl border border-border">
                                 <p className="text-text-muted text-sm mb-1">Limite Totale</p>
@@ -555,14 +555,14 @@ export const ArtistProfilePage: React.FC = () => {
                             </button>
                             <button
                                 onClick={handleResetPresences}
-                                className="flex-1 flex items-center justify-center gap-2 bg-bg-tertiary hover:bg-white/10 text-white p-4 rounded-xl font-bold transition-colors border border-border"
+                                className="flex-1 flex items-center justify-center gap-2 bg-bg-tertiary hover:bg-white/10 text-text-primary p-4 rounded-xl font-bold transition-colors border border-border"
                             >
                                 <RefreshCw size={24} /> Rinnova Ciclo
                             </button>
                         </div>
 
                         <div>
-                            <h3 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
+                            <h3 className="text-lg font-bold text-text-primary mb-4 flex items-center gap-2">
                                 <Clock size={20} className="text-accent" /> Storico Attività
                             </h3>
                             <div className="space-y-4">
@@ -574,7 +574,7 @@ export const ArtistProfilePage: React.FC = () => {
                                                 log.action === 'ADD' ? 'bg-green-500' : 'bg-blue-500'
                                             )} />
                                             <div>
-                                                <p className="font-medium text-white">
+                                                <p className="font-medium text-text-primary">
                                                     {log.action === 'ADD' ? 'Presenza Aggiunta' : 'Ciclo Rinnovato'}
                                                 </p>
                                                 <p className="text-xs text-text-muted">{log.note || 'Nessuna nota'}</p>
@@ -601,7 +601,7 @@ export const ArtistProfilePage: React.FC = () => {
                 {activeTab === 'DOCUMENTS' && (
                     <div>
                         <div className="flex justify-between items-center mb-6">
-                            <h3 className="text-lg font-bold text-white">Documenti & Certificati</h3>
+                            <h3 className="text-lg font-bold text-text-primary">Documenti & Certificati</h3>
                             <button className="flex items-center gap-2 bg-accent hover:bg-accent-hover text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors">
                                 <Upload size={16} /> Carica Documento
                             </button>
@@ -618,7 +618,7 @@ export const ArtistProfilePage: React.FC = () => {
                                             <Trash2 size={16} />
                                         </button>
                                     </div>
-                                    <h4 className="text-white font-medium truncate mb-1">{doc.name}</h4>
+                                    <h4 className="text-text-primary font-medium truncate mb-1">{doc.name}</h4>
                                     <p className="text-xs text-text-muted mb-4">
                                         Caricato il {new Date(doc.uploaded_at).toLocaleDateString()}
                                     </p>
@@ -627,7 +627,7 @@ export const ArtistProfilePage: React.FC = () => {
                                         href={doc.url}
                                         target="_blank"
                                         rel="noopener noreferrer"
-                                        className="block w-full text-center py-2 bg-white/5 hover:bg-white/10 text-white rounded-lg text-sm font-medium transition-colors cursor-pointer"
+                                        className="block w-full text-center py-2 bg-bg-primary hover:bg-bg-tertiary text-text-primary rounded-lg text-sm font-medium transition-colors cursor-pointer"
                                     >
                                         Visualizza / Scarica
                                     </a>
@@ -644,14 +644,14 @@ export const ArtistProfilePage: React.FC = () => {
                                         <Trash2 size={16} />
                                     </button>
                                 </div>
-                                <h4 className="text-white font-medium truncate mb-1">Attestato Igiene.pdf</h4>
+                                <h4 className="text-text-primary font-medium truncate mb-1">Attestato Igiene.pdf</h4>
                                 <p className="text-xs text-text-muted mb-4">
                                     Caricato il 12/10/2024
                                 </p>
 
                                 <button
                                     onClick={() => window.open('https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf', '_blank')}
-                                    className="block w-full text-center py-2 bg-white/5 hover:bg-white/10 text-white rounded-lg text-sm font-medium transition-colors cursor-pointer"
+                                    className="block w-full text-center py-2 bg-bg-primary hover:bg-bg-tertiary text-text-primary rounded-lg text-sm font-medium transition-colors cursor-pointer"
                                 >
                                     Visualizza / Scarica
                                 </button>
