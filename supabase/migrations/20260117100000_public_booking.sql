@@ -1,3 +1,5 @@
+DELETE FROM supabase_migrations.schema_migrations WHERE version = '20260117100000';
+
 -- Create services table
 CREATE TABLE IF NOT EXISTS public.services (
     id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
@@ -15,11 +17,13 @@ CREATE TABLE IF NOT EXISTS public.services (
 ALTER TABLE public.services ENABLE ROW LEVEL SECURITY;
 
 -- RLS Policies for services
+DROP POLICY IF EXISTS "Studio members can view services" ON public.services;
 CREATE POLICY "Studio members can view services" ON public.services
     FOR SELECT USING (auth.uid() IN (
         SELECT user_id FROM public.studio_memberships WHERE studio_id = services.studio_id
     ));
 
+DROP POLICY IF EXISTS "Owners and Managers can manage services" ON public.services;
 CREATE POLICY "Owners and Managers can manage services" ON public.services
     FOR ALL USING (auth.uid() IN (
         SELECT user_id FROM public.studio_memberships 
@@ -30,12 +34,13 @@ CREATE POLICY "Owners and Managers can manage services" ON public.services
 -- For now, let's allow unauthenticated select if we want public booking to query directly, 
 -- but usually better to wrap in an edge function or restrictive policy. 
 -- Let's allow public read for now as getting a token for guest is complex without anon)
+DROP POLICY IF EXISTS "Public can view active services" ON public.services;
 CREATE POLICY "Public can view active services" ON public.services
     FOR SELECT USING (is_active = true);
 
 
 -- Update users table
-ALTER TABLE auth.users ADD COLUMN IF NOT EXISTS is_public_booking_enabled BOOLEAN DEFAULT false;
+-- ALTER TABLE auth.users ADD COLUMN IF NOT EXISTS is_public_booking_enabled BOOLEAN DEFAULT false;
 
 -- Since we cannot easily alter auth.users from client migrations sometimes, 
 -- we might duplicate this flag to public.users or public.profiles if they existed. 

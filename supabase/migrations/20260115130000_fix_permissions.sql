@@ -1,3 +1,5 @@
+DELETE FROM supabase_migrations.schema_migrations WHERE version = '20260115130000';
+
 -- Restore permissions for public schema
 -- These were stripped because we used pg_dump --no-privileges
 GRANT USAGE ON SCHEMA public TO anon, authenticated, service_role;

@@ -1,3 +1,5 @@
+DELETE FROM supabase_migrations.schema_migrations WHERE version = '20260117190000';
+
 -- Add consent_text to studios if it doesn't exist
 DO $$
 BEGIN
@@ -24,11 +26,13 @@ CREATE TABLE IF NOT EXISTS consents (
 ALTER TABLE consents ENABLE ROW LEVEL SECURITY;
 
 -- Allow public insert (needed for public booking)
+DROP POLICY IF EXISTS "Public booking consent insert" ON consents;
 CREATE POLICY "Public booking consent insert" ON consents
     FOR INSERT
     WITH CHECK (true);
 
 -- Allow artists/owners to view consents
+DROP POLICY IF EXISTS "Staff view consents" ON consents;
 CREATE POLICY "Staff view consents" ON consents
     FOR SELECT
     USING (

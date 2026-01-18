@@ -1,3 +1,5 @@
+DELETE FROM supabase_migrations.schema_migrations WHERE version = '20260117113000';
+
 -- FORCE FIX: Portfolio Uploads
 -- This script creates a dedicated, explicit policy for portfolio uploads.
 
@@ -19,6 +21,7 @@ WITH CHECK (
 
 -- 3. Re-create Avatar Policy (standard)
 -- Path structure: avatars/{user_id}/{filename} (as used in ProfileSettings)
+DROP POLICY IF EXISTS "Auth Upload Avatars Standard" ON storage.objects;
 CREATE POLICY "Auth Upload Avatars Standard" ON storage.objects
 FOR INSERT
 TO authenticated
@@ -29,6 +32,7 @@ WITH CHECK (
 );
 
 -- 4. Ensure Update/Delete permissions for both
+DROP POLICY IF EXISTS "Auth Manage Avatars & Portfolio" ON storage.objects;
 CREATE POLICY "Auth Manage Avatars & Portfolio" ON storage.objects
 FOR ALL
 TO authenticated

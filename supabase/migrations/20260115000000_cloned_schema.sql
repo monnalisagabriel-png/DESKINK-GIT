@@ -1,6 +1,8 @@
 --
 -- PostgreSQL database dump
 --
+DELETE FROM supabase_migrations.schema_migrations WHERE version = '20260115000000';
+
 
 
 -- Dumped from database version 17.6
@@ -99,6 +101,7 @@ DROP TABLE IF EXISTS "public"."academy_daily_attendance" CASCADE;
 DROP TABLE IF EXISTS "public"."academy_courses" CASCADE;
 DROP TABLE IF EXISTS "public"."academy_attendance_logs" CASCADE;
 DROP FUNCTION IF EXISTS "public"."recover_orphaned_owner"();
+DROP TRIGGER IF EXISTS on_auth_user_created ON auth.users;
 DROP FUNCTION IF EXISTS "public"."handle_new_user"();
 DROP FUNCTION IF EXISTS "public"."get_my_pending_invitations"();
 DROP FUNCTION IF EXISTS "public"."get_invitation_by_token_v2"("token_input" "text");
@@ -108,12 +111,12 @@ DROP FUNCTION IF EXISTS "public"."delete_team_member"("target_user_id" "uuid", "
 DROP FUNCTION IF EXISTS "public"."create_waitlist_entry_public"("p_studio_id" "uuid", "p_client_id" "uuid", "p_client_name" "text", "p_email" "text", "p_phone" "text", "p_styles" "text"[], "p_interest_type" "text", "p_description" "text", "p_artist_pref_id" "uuid", "p_images" "text"[]);
 DROP FUNCTION IF EXISTS "public"."create_client_public"("p_studio_id" "uuid", "p_full_name" "text", "p_email" "text", "p_phone" "text", "p_fiscal_code" "text", "p_address" "text", "p_city" "text", "p_zip_code" "text", "p_preferred_styles" "text"[], "p_whatsapp_broadcast_opt_in" boolean);
 DROP TYPE IF EXISTS "public"."user_role";
-DROP SCHEMA IF EXISTS "public";
+-- DROP SCHEMA IF EXISTS "public";
 --
 -- Name: public; Type: SCHEMA; Schema: -; Owner: -
 --
 
-CREATE SCHEMA "public";
+-- CREATE SCHEMA "public";
 
 
 --
@@ -400,6 +403,10 @@ begin
   return new;
 end;
 $$;
+
+CREATE TRIGGER on_auth_user_created
+  AFTER INSERT ON auth.users
+  FOR EACH ROW EXECUTE FUNCTION public.handle_new_user();
 
 
 --

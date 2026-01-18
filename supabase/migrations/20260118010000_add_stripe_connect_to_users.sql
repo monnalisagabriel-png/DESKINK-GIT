@@ -1,3 +1,5 @@
+DELETE FROM supabase_migrations.schema_migrations WHERE version = '20260118010000';
+
 -- Add Stripe Connect fields to public.users to allow Artists to receive payments
 ALTER TABLE public.users 
 ADD COLUMN IF NOT EXISTS stripe_account_id text,
