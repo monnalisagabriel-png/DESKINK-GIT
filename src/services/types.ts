@@ -9,6 +9,12 @@ export interface User {
   studio_id?: string; // If user belongs to a specific studio (Artist/Manager)
   phone?: string;
   calendar_color?: string; // Color for calendar events
+  is_public_booking_enabled?: boolean;
+  // Artist Portfolio
+  bio?: string;
+  styles?: string[]; // Array of style names
+  portfolio_photos?: string[]; // Array of image URLs (max 3)
+  excluded_styles?: string[]; // Styles/Tattoos not performed
   integrations?: {
     google_calendar?: {
       is_connected: boolean;
@@ -19,6 +25,10 @@ export interface User {
       calendar_mapping?: Record<string, string>;
       two_way_sync?: boolean;
     };
+  };
+  availability?: {
+    default_slots: string[];
+    days_off: number[];
   };
   // Personal & Billing
   fiscal_code?: string;
@@ -32,11 +42,37 @@ export interface User {
   pec?: string;
   academy_terms_accepted_at?: string;
   academy_terms_accepted_version?: number;
+  // Stripe Connect
+  stripe_account_id?: string;
+  stripe_account_status?: 'pending' | 'active' | 'restricted';
+  stripe_onboarding_completed?: boolean;
 }
 
 export interface AuthSession {
   user: User | null;
   token: string | null;
+}
+
+export interface SaasPlan {
+  id: string;
+  name: string;
+  price_monthly: number;
+  currency: string;
+  max_artists: number;
+  max_managers: number;
+  features: any;
+}
+
+export interface SaasSubscription {
+  id: string;
+  studio_id: string;
+  plan_id: string;
+  stripe_subscription_id?: string;
+  stripe_customer_id?: string;
+  status: string;
+  subscription_status?: string; // Mapped from DB
+  current_period_end?: string;
+  plan?: SaasPlan;
 }
 
 export interface ClientImage {
@@ -67,7 +103,7 @@ export interface Client {
   consent_status?: 'SIGNED' | 'PENDING' | 'EXPIRED' | 'NONE';
 }
 
-export type AppointmentStatus = 'CONFIRMED' | 'PENDING' | 'COMPLETED' | 'NO_SHOW';
+export type AppointmentStatus = 'CONFIRMED' | 'PENDING' | 'COMPLETED' | 'NO_SHOW' | 'CANCELLED' | 'REJECTED' | 'DECLINED';
 
 export interface Appointment {
   id: string;
@@ -84,6 +120,7 @@ export interface Appointment {
   price?: number; // Preventivo
   deposit?: number; // Acconto
   google_event_id?: string; // ID Google Calendar synced event
+  stripe_payment_intent_id?: string; // For refunds
 }
 
 
@@ -273,7 +310,7 @@ export interface IRepository {
     listTeamMembers(studioId: string): Promise<User[]>;
     inviteMember(email: string, role: UserRole, studioId: string): Promise<User>;
     getMyPendingInvitations(): Promise<{ token: string; studio_name: string; role: string; created_at: string }[]>;
-    recoverOrphanedOwner(): Promise<string | null>;
+    recoverOrphanedOwner(): Promise<{ id: string; name: string; status: string; tier: string } | null>;
     removeMember(userId: string, studioId: string): Promise<void>;
     getStudio(studioId: string): Promise<Studio | null>;
     updateStudio(studioId: string, data: Partial<Studio>): Promise<Studio>;
@@ -320,6 +357,12 @@ export interface IRepository {
   storage: {
     upload(bucket: string, path: string, file: File): Promise<string>; // Returns public URL
     delete(bucket: string, path: string): Promise<void>;
+  };
+  subscription: {
+    getSubscription(): Promise<SaasSubscription | null>;
+    createCheckoutSession(planId: string, successUrl: string, cancelUrl: string, extraSeats?: number): Promise<string>;
+    createPortalSession(returnUrl: string): Promise<string>;
+    restoreSubscription(): Promise<{ success: boolean; message?: string; tier?: string }>;
   };
 }
 
@@ -411,6 +454,8 @@ export interface Studio {
   vat_number?: string;
   fiscal_code?: string;
   company_name?: string;
+  sdi_code?: string;
+  pec?: string;
   google_review_url?: string;
   google_sheets_config?: {
     spreadsheet_id?: string;
@@ -423,4 +468,20 @@ export interface Studio {
   };
   academy_terms?: string;
   academy_terms_version?: number;
+  public_booking_settings?: {
+    enabled: boolean;
+    deposit_currency: string;
+    stripe_enabled: boolean;
+  };
+  consent_text?: string;
+}
+
+export interface Service {
+  id: string;
+  studio_id: string;
+  name: string;
+  duration: number; // minutes
+  price: number;
+  deposit_amount: number;
+  is_active: boolean;
 }

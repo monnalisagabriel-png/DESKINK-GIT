@@ -20,7 +20,8 @@ import {
     MessageCircle,
     FileSignature,
     Building,
-    UserCog
+    UserCog,
+    BookOpen
 } from 'lucide-react';
 import clsx from 'clsx';
 import { useLayoutStore } from '../stores/layoutStore';
@@ -60,6 +61,12 @@ export const NAV_ITEMS: NavItem[] = [
 
     // Academy - Owner + STUDIO_ADMIN (Students removed as they see it in Dashboard)
     { label: 'Academy', path: '/academy', icon: GraduationCap, allowedRoles: ['owner', 'STUDIO_ADMIN'] },
+
+    // Tutorials - Owner + Management + Artist
+    { label: 'Tutorial', path: '/tutorials', icon: BookOpen, allowedRoles: ['owner', 'STUDIO_ADMIN', 'MANAGER', 'ARTIST', 'artist'] },
+
+    // Public Booking - Artist Shortcut (Owners access via Studio)
+    { label: 'Prenotazioni', path: '/settings?tab=booking', icon: QrCode, allowedRoles: ['ARTIST', 'artist'] },
 
     // Settings - All roles
     { label: 'Impostazioni', path: '/settings?tab=appearance', icon: Settings, allowedRoles: ['owner', 'STUDIO_ADMIN', 'MANAGER', 'ARTIST', 'STUDENT'] },
@@ -114,7 +121,7 @@ export const Sidebar = () => {
 
     // Current App URL for sharing
     // Current App URL for sharing (Hardcoded as requested)
-    const appUrl = "https://inflow-natale25.vercel.app/login";
+    const appUrl = "https://deskink.it/login";
 
     return (
         <>
@@ -127,12 +134,14 @@ export const Sidebar = () => {
                             className="w-20 h-20 rounded-full object-cover shadow-lg"
                         />
                     ) : (
-                        <div className="w-16 h-16 rounded-full bg-accent/20 flex items-center justify-center border border-accent/30">
-                            <span className="text-2xl font-bold text-accent">IF</span>
-                        </div>
+                        <img
+                            src="/deskink_logo.jpg"
+                            alt="DeskInk Logo"
+                            className="w-20 h-20 rounded-full object-cover shadow-lg"
+                        />
                     )}
                     <div className="text-center">
-                        <h1 className="text-lg font-bold bg-gradient-to-r from-accent to-red-500 bg-clip-text text-transparent">
+                        <h1 className="text-lg font-bold text-accent">
                             {studio?.name || 'DESKINK'}
                         </h1>
                         <p className="text-xs text-text-muted capitalize">

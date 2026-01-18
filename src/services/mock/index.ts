@@ -687,7 +687,7 @@ export class MockRepository implements IRepository {
             await new Promise(resolve => setTimeout(resolve, 300));
             return []; // Default empty for mock
         },
-        recoverOrphanedOwner: async () => {
+        recoverOrphanedOwner: async (): Promise<{ id: string; name: string; status: string; tier: string } | null> => {
             await new Promise(resolve => setTimeout(resolve, 300));
             return null;
         },
@@ -1097,6 +1097,42 @@ export class MockRepository implements IRepository {
             return MOCK_WAITLIST[idx];
         }
     };
+
+
+
+
+
+    // Subscription
+    subscription = {
+        getSubscription: async (): Promise<any> => {
+            await new Promise(resolve => setTimeout(resolve, 300));
+            // Return a default active 'starter' plan for mock purposes
+            return {
+                id: 'sub-mock-123',
+                status: 'active',
+                current_period_end: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
+                plan: {
+                    id: 'starter',
+                    name: 'DeskInk Basic',
+                    price_monthly: 20,
+                    currency: 'EUR',
+                    max_artists: 1,
+                    max_managers: 1,
+                    features: ['1 Studio', '1 Manager', '1 Artist']
+                }
+            };
+        },
+        createCheckoutSession: async (_planId: string, _successUrl: string, _cancelUrl: string, _extraSeats?: number): Promise<string> => {
+            await new Promise(resolve => setTimeout(resolve, 500));
+            return 'https://checkout.stripe.com/test-mock-url';
+        },
+        createPortalSession: async (_returnUrl: string): Promise<string> => {
+            await new Promise(resolve => setTimeout(resolve, 500));
+            return 'https://billing.stripe.com/p/session/test';
+        },
+        restoreSubscription: async (): Promise<{ success: boolean; message?: string; tier?: string }> => {
+            await new Promise(resolve => setTimeout(resolve, 1000));
+            return { success: true, message: 'Subscription restored (mock)', tier: 'pro' };
+        }
+    };
 }
-
-

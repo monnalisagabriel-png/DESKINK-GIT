@@ -1,4 +1,5 @@
 import { create } from 'zustand';
+import { persist } from 'zustand/middleware';
 
 interface LayoutState {
     isSidebarVisible: boolean;
@@ -10,16 +11,32 @@ interface LayoutState {
     toggleMobileFullscreen: () => void;
     theme: 'dark' | 'light';
     setTheme: (theme: 'dark' | 'light') => void;
+    accentColor: string;
+    setAccentColor: (color: string) => void;
 }
 
-export const useLayoutStore = create<LayoutState>((set) => ({
-    isSidebarVisible: true,
-    setSidebarVisible: (visible) => set({ isSidebarVisible: visible }),
-    toggleSidebar: () => set((state) => ({ isSidebarVisible: !state.isSidebarVisible })),
-    isPrivacyMode: false,
-    togglePrivacyMode: () => set((state) => ({ isPrivacyMode: !state.isPrivacyMode })),
-    isMobileFullscreen: false,
-    toggleMobileFullscreen: () => set((state) => ({ isMobileFullscreen: !state.isMobileFullscreen })),
-    theme: 'dark',
-    setTheme: (theme) => set({ theme }),
-}));
+export const useLayoutStore = create<LayoutState>()(
+    persist(
+        (set) => ({
+            isSidebarVisible: true,
+            setSidebarVisible: (visible) => set({ isSidebarVisible: visible }),
+            toggleSidebar: () => set((state) => ({ isSidebarVisible: !state.isSidebarVisible })),
+            isPrivacyMode: false,
+            togglePrivacyMode: () => set((state) => ({ isPrivacyMode: !state.isPrivacyMode })),
+            isMobileFullscreen: false,
+            toggleMobileFullscreen: () => set((state) => ({ isMobileFullscreen: !state.isMobileFullscreen })),
+            theme: 'dark',
+            setTheme: (theme) => set({ theme }),
+            accentColor: '#EC4899', // Default Pink
+            setAccentColor: (color) => set({ accentColor: color }),
+        }),
+        {
+            name: 'layout-storage',
+            partialize: (state) => ({
+                theme: state.theme,
+                accentColor: state.accentColor,
+                isPrivacyMode: state.isPrivacyMode
+            }), // Only persist visual preferences
+        }
+    )
+);

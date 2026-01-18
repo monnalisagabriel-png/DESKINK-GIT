@@ -105,12 +105,12 @@ export const MobileNav: React.FC = () => {
                             className="h-10 w-10 rounded-full object-cover border-2 border-accent shadow-sm cursor-pointer"
                         />
                     ) : (
-                        <div
+                        <img
+                            src="/deskink_logo.jpg"
+                            alt="DeskInk Logo"
                             onClick={() => window.location.href = '/'}
-                            className="w-8 h-8 rounded-full bg-accent flex items-center justify-center text-white font-bold text-xs shadow-lg cursor-pointer border-2 border-bg-primary"
-                        >
-                            {studio?.name?.substring(0, 2).toUpperCase() || 'IF'}
-                        </div>
+                            className="h-10 w-10 rounded-full object-cover border-2 border-accent shadow-sm cursor-pointer"
+                        />
                     )}
                     <span className="font-bold text-lg text-text-primary truncate max-w-[200px]">
                         {studio?.name || 'DESKINK'}
@@ -309,6 +309,18 @@ export const MobileNav: React.FC = () => {
                                 <LogOut size={20} />
                                 <span>Disconnetti</span>
                             </button>
+
+                            {/* Mobile Footer / Legal */}
+                            <div className="pt-4 mt-2 border-t border-white/5 text-center">
+                                <div className="flex justify-center gap-4 text-xs text-text-muted mb-2">
+                                    <a href="/legal/privacy" className="hover:text-text-primary">Privacy</a>
+                                    <a href="/legal/terms" className="hover:text-text-primary">Termini</a>
+                                    <a href="/legal/cookie" className="hover:text-text-primary">Cookie</a>
+                                </div>
+                                <p className="text-[10px] text-text-muted/50">
+                                    © {new Date().getFullYear()} Powered by <span className="text-accent font-bold">DESKINK</span>
+                                </p>
+                            </div>
                         </div>
                     </div>
                 </>

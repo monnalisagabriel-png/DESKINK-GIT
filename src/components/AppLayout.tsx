@@ -3,6 +3,8 @@ import { Outlet } from 'react-router-dom';
 import { Sidebar } from './Sidebar';
 import { MobileNav } from './MobileNav';
 import { TermsGuard } from './TermsGuard';
+import { Footer } from './Footer';
+import { CookieBanner } from './CookieBanner';
 
 export const AppLayout: React.FC = () => {
     return (
@@ -13,9 +15,11 @@ export const AppLayout: React.FC = () => {
                     <TermsGuard>
                         <Outlet />
                     </TermsGuard>
+                    <Footer />
                 </div>
             </main>
             <MobileNav />
+            <CookieBanner />
         </div>
     );
 };

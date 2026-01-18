@@ -8,12 +8,14 @@ interface AuthContextType {
     isAuthenticated: boolean;
     isLoading: boolean;
     hasStudio: boolean | null; // null = checking
+    subscriptionStatus: string | null;
     signIn: (email: string, password?: string) => Promise<void>;
     signUp: (email: string, password: string) => Promise<boolean>;
     signOut: () => Promise<void>;
     resetPassword: (email: string) => Promise<void>;
     updatePassword: (password: string) => Promise<void>;
     refreshProfile: () => Promise<void>;
+    refreshSubscription: () => Promise<void>; // Added refreshSubscription
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -21,6 +23,7 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export function AuthProvider({ children }: { children: React.ReactNode }) {
     const [user, setUser] = useState<User | null>(null);
     const [hasStudio, setHasStudio] = useState<boolean | null>(null);
+    const [subscriptionStatus, setSubscriptionStatus] = useState<string | null>(null);
     const [isLoading, setIsLoading] = useState(true);
 
     useEffect(() => {
@@ -123,11 +126,25 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
                 setUser(currentUser);
 
+                // Check membership AND subscription status
                 const membership = await api.settings.checkMembership(currentUser.id);
                 setHasStudio(membership);
+
+                if (membership) {
+                    try {
+                        const sub = await api.subscription.getSubscription();
+                        setSubscriptionStatus(sub?.subscription_status || 'none');
+                    } catch (e) {
+                        console.error('Failed to fetch subscription status', e);
+                        setSubscriptionStatus('none');
+                    }
+                } else {
+                    setSubscriptionStatus(null);
+                }
             } else {
                 setUser(null);
                 setHasStudio(false);
+                setSubscriptionStatus(null);
             }
         } catch (error) {
             console.error('Failed to restore session:', error);
@@ -209,12 +226,19 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             isAuthenticated: !!user,
             isLoading,
             hasStudio,
+            subscriptionStatus,
             signIn,
             signUp,
             signOut,
             resetPassword,
             updatePassword,
-            refreshProfile: checkUser // Expose checkUser
+            refreshProfile: checkUser, // Expose checkUser
+            refreshSubscription: async () => {
+                if (user) {
+                    const sub = await api.subscription.getSubscription();
+                    setSubscriptionStatus(sub?.subscription_status || 'none');
+                }
+            }
         }}>
             {children}
         </AuthContext.Provider>

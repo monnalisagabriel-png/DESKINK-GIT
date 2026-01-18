@@ -11,6 +11,8 @@
     "demo": "VITE_USE_MOCK=true vite"
   },
   "dependencies": {
+    "@stripe/react-stripe-js": "^5.4.1",
+    "@stripe/stripe-js": "^8.6.1",
     "@supabase/supabase-js": "^2.89.0",
     "@tanstack/react-query": "^5.90.16",
     "clsx": "^2.1.1",
@@ -18,7 +20,10 @@
     "html2canvas": "^1.4.1",
     "jspdf": "^3.0.4",
     "lucide-react": "^0.562.0",
+    "prop-types": "^15.8.1",
+    "qrcode.react": "^4.2.0",
     "react": "^19.2.0",
+    "react-datepicker": "^9.1.0",
     "react-dom": "^19.2.0",
     "react-quill-new": "^3.7.0",
     "react-router-dom": "^7.11.0",

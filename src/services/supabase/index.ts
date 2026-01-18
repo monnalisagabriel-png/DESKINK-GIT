@@ -123,11 +123,33 @@ export class SupabaseRepository implements IRepository {
             }
 
             // Fallback if public.users record is missing (but Auth exists)
-            console.log('[REPO] getCurrentUser: Fallback user (missing profile).');
+            // Fallback if public.users record is missing (but Auth exists)
+            console.log('[REPO] getCurrentUser: Fallback user (missing profile). Attempting Self-Repair...');
+
+            try {
+                // Attempt to insert the missing profile
+                // This relies on the 'Users can insert their own profile' policy
+                const { error: repairError } = await supabase.from('users').insert({
+                    id: data.session.user.id,
+                    email: data.session.user.email!,
+                    full_name: data.session.user.user_metadata?.full_name || 'User',
+                    role: 'student' // Default role
+                });
+
+                if (repairError) {
+                    console.error('[REPO] Self-Repair failed:', repairError);
+                } else {
+                    console.log('[REPO] Self-Repair SUCCESS! Profile created.');
+                    // Optionally re-fetch, but returning constructed object is fine for this render
+                }
+            } catch (err) {
+                console.error('[REPO] Self-Repair exception:', err);
+            }
+
             return {
                 id: data.session.user.id,
                 email: data.session.user.email!,
-                full_name: 'User',
+                full_name: data.session.user.user_metadata?.full_name || 'User',
                 role: (membership?.role as UserRole) || 'STUDENT',
                 studio_id: membership?.studio_id || 'default'
             };
@@ -876,7 +898,14 @@ export class SupabaseRepository implements IRepository {
                 return null;
             }
             if (data && data.length > 0) {
-                return data[0].recovered_studio_name;
+                // Map the returned row to a simplified object
+                const row = data[0];
+                return {
+                    id: row.studio_id,
+                    name: row.name,
+                    status: row.subscription_status,
+                    tier: row.subscription_tier
+                };
             }
             return null;
         },
@@ -1720,6 +1749,117 @@ Formatta la risposta ESCLUSIVAMENTE come un JSON array di stringhe, esempio: ["C
             // Simplified approximation or query clients first.
             // For now return dummy or 0
             return { signed_count: 0, pending_count: 0 };
+        }
+    };
+
+    subscription = {
+        getSubscription: async (): Promise<any> => {
+            const { data: { user } } = await supabase.auth.getUser();
+            if (!user) return null;
+
+            // Get studio_id
+            const { data: membership } = await supabase
+                .from('studio_memberships')
+                .select('studio_id')
+                .eq('user_id', user.id)
+                .maybeSingle();
+
+            if (!membership?.studio_id) return null;
+
+            // Fetch studio subscription info directly
+            const { data: studio, error: studioError } = await supabase
+                .from('studios')
+                .select('subscription_tier, subscription_status, stripe_subscription_id')
+                .eq('id', membership.studio_id)
+                .single();
+
+            if (studioError) {
+                console.error('Error fetching studio subscription:', studioError);
+                return null;
+            }
+
+            // Map studio tier (basic, pro, plus) to plan ID (starter, pro, plus)
+            const planId = studio.subscription_tier === 'basic' ? 'starter' : studio.subscription_tier;
+
+            const { data: plan } = await supabase
+                .from('saas_plans')
+                .select('*')
+                .eq('id', planId)
+                .maybeSingle();
+
+            return {
+                id: studio.stripe_subscription_id,
+                status: studio.subscription_status || 'none',
+                current_period_end: null, // Not currently stored in studios table
+                plan: plan
+            };
+        },
+        createCheckoutSession: async (planId: string, successUrl: string, cancelUrl: string, extraSeats: number = 0): Promise<string> => {
+            const { data: { session } } = await supabase.auth.getSession();
+
+            // Map 'starter' to 'basic' as expected by the edge function
+            const tier = planId === 'starter' ? 'basic' : planId;
+
+            const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/create-checkout-session`, {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${session?.access_token}`,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    tier,
+                    success_url: successUrl,
+                    cancel_url: cancelUrl,
+                    extra_seats: extraSeats
+                })
+            });
+
+            if (!response.ok) {
+                const err = await response.json();
+                throw new Error(err.error || 'Failed to create checkout session');
+            }
+
+            const data = await response.json();
+            return data.url;
+        },
+        createPortalSession: async (returnUrl: string): Promise<string> => {
+            const { data: { session } } = await supabase.auth.getSession();
+
+            const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/create-portal-session`, {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${session?.access_token}`,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ return_url: returnUrl })
+            });
+
+            if (!response.ok) {
+                const err = await response.json();
+                throw new Error(err.error || 'Failed to create portal session');
+            }
+
+            const data = await response.json();
+            return data.url;
+        },
+        restoreSubscription: async (): Promise<{ success: boolean; message?: string; tier?: string }> => {
+            const { data: { session } } = await supabase.auth.getSession();
+
+            const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/restore-subscription`, {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${session?.access_token}`,
+                    'Content-Type': 'application/json'
+                }
+            });
+
+            if (!response.ok) {
+                const err = await response.json();
+                console.error("Restore Error Response:", err);
+                throw new Error(err.error || 'Failed to restore subscription');
+            }
+
+            return await response.json();
         }
     };
 }

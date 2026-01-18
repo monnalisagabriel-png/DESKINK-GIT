@@ -1,10 +1,12 @@
 import React, { useState } from 'react';
 import { useAuth } from '../auth/AuthContext';
+import { useSubscription } from '../subscription/hooks/useSubscription';
 import { api } from '../../services/api';
 import { Users, Copy, Check, Mail, Shield, Trash2 } from 'lucide-react';
 
 export const TeamPage: React.FC = () => {
     const { user } = useAuth();
+    const { data: subscription } = useSubscription();
     const [email, setEmail] = useState('');
     const [role, setRole] = useState<'manager' | 'artist' | 'student'>('artist');
     const [loading, setLoading] = useState(false);
@@ -26,6 +28,31 @@ export const TeamPage: React.FC = () => {
         setInviteLink(null);
 
         try {
+            // Check limits
+            if (subscription && subscription.plan) {
+                const members = await api.settings.listTeamMembers(user.studio_id);
+
+                if (role === 'artist') {
+                    const artistCount = members.filter(m => m.role === 'artist').length;
+                    const limit = subscription.plan.max_artists;
+                    if (limit !== -1 && artistCount >= limit) {
+                        setError(`Hai raggiunto il limite di ${limit} artisti per il piano ${subscription.plan.name}. Passa al piano superiore per aggiungerne altri.`);
+                        setLoading(false);
+                        return;
+                    }
+                }
+
+                if (role === 'manager') {
+                    const managerCount = members.filter(m => m.role === 'manager').length;
+                    const limit = subscription.plan.max_managers;
+                    if (limit !== -1 && managerCount >= limit) {
+                        setError(`Hai raggiunto il limite di ${limit} manager per il piano ${subscription.plan.name}. Passa al piano superiore per aggiungerne altri.`);
+                        setLoading(false);
+                        return;
+                    }
+                }
+            }
+
             // Generate random token (simple implementation)
             const token = crypto.randomUUID();
 
@@ -222,8 +249,12 @@ const TeamList: React.FC<{ studioId?: string }> = ({ studioId }) => {
             {members.map(member => (
                 <div key={member.id} className="flex items-center justify-between p-4 bg-bg-tertiary rounded-lg border border-border group">
                     <div className="flex items-center gap-4">
-                        <div className="w-10 h-10 rounded-full bg-bg-primary flex items-center justify-center font-bold text-lg text-text-primary">
-                            {member.full_name?.charAt(0).toUpperCase()}
+                        <div className="w-10 h-10 rounded-full bg-bg-primary overflow-hidden flex items-center justify-center font-bold text-lg text-text-primary border border-border">
+                            {member.avatar_url ? (
+                                <img src={member.avatar_url} alt={member.full_name} className="w-full h-full object-cover" />
+                            ) : (
+                                <span>{member.full_name?.charAt(0).toUpperCase()}</span>
+                            )}
                         </div>
                         <div>
                             <div className="font-bold text-text-primary">{member.full_name}</div>

@@ -1,16 +1,21 @@
 import React, { useState, useEffect } from 'react';
-import { Building, Globe, MapPin, Save, Trash2, UploadCloud } from 'lucide-react';
+import { Building, Globe, MapPin, Save, Trash2, UploadCloud, CreditCard, Users, Star, Paintbrush, Calendar, LogOut, Shield, ChevronRight } from 'lucide-react';
 import { api } from '../../../services/api';
 import { useAuth } from '../../auth/AuthContext';
 import { DragDropUpload } from '../../../components/DragDropUpload';
+import { useSubscription } from '../../subscription/hooks/useSubscription';
+import { SubscriptionPlans } from '../../subscription/components/SubscriptionPlans';
 import type { Studio } from '../../../services/types';
 
 export const StudioSettings: React.FC = () => {
     const { user } = useAuth();
+    const { data: subscription, isLoading: subLoading } = useSubscription();
     const [studio, setStudio] = useState<Studio | null>(null);
     const [loading, setLoading] = useState(false);
     const [saving, setSaving] = useState(false);
     const [uploading, setUploading] = useState(false);
+    const [showPlans, setShowPlans] = useState(false);
+    const [restoring, setRestoring] = useState(false);
 
     useEffect(() => {
         const loadStudio = async () => {
@@ -51,7 +56,7 @@ export const StudioSettings: React.FC = () => {
         if (!user?.studio_id || !studio) return;
         setUploading(true);
         try {
-            const path = `logos/${user.studio_id}/${Date.now()}_${file.name}`;
+            const path = `logos / ${user.studio_id}/${Date.now()}_${file.name}`;
             const url = await api.storage.upload('studios', path, file);
             setStudio({ ...studio, logo_url: url });
         } catch (err) {
@@ -205,7 +210,7 @@ export const StudioSettings: React.FC = () => {
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-4 border-t border-border">
                         <div className="md:col-span-2">
-                            <h3 className="text-text-primary font-medium mb-4">Dati Fiscali</h3>
+                            <h3 className="text-text-primary font-medium mb-4">Dati Fiscali (Fatturazione Elettronica)</h3>
                         </div>
                         <div className="md:col-span-2">
                             <label className="block text-sm font-medium text-text-muted mb-1">Ragione Sociale</label>
@@ -235,6 +240,125 @@ export const StudioSettings: React.FC = () => {
                                 className="w-full bg-bg-tertiary border border-border rounded-lg px-4 py-2 text-text-primary focus:border-accent focus:outline-none"
                             />
                         </div>
+                        <div>
+                            <label className="block text-sm font-medium text-text-muted mb-1">Codice Destinatario (SDI)</label>
+                            <input
+                                type="text"
+                                value={studio.sdi_code || ''}
+                                onChange={e => setStudio({ ...studio, sdi_code: e.target.value })}
+                                className="w-full bg-bg-tertiary border border-border rounded-lg px-4 py-2 text-text-primary focus:border-accent focus:outline-none"
+                                placeholder="0000000"
+                                maxLength={7}
+                            />
+                        </div>
+                        <div>
+                            <label className="block text-sm font-medium text-text-muted mb-1">PEC</label>
+                            <input
+                                type="email"
+                                value={studio.pec || ''}
+                                onChange={e => setStudio({ ...studio, pec: e.target.value })}
+                                className="w-full bg-bg-tertiary border border-border rounded-lg px-4 py-2 text-text-primary focus:border-accent focus:outline-none"
+                                placeholder="azienda@pec.it"
+                            />
+                        </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-4 border-t border-border">
+                        <div className="md:col-span-2">
+                            <h3 className="text-text-primary font-medium mb-4 flex items-center gap-2">
+                                <CreditCard className="text-accent" size={20} />
+                                Abbonamento & Piano
+                            </h3>
+                        </div>
+                        {subLoading ? (
+                            <div className="text-text-muted md:col-span-2">Caricamento piano...</div>
+                        ) : subscription && subscription.id && subscription.status !== 'none' ? (
+                            <div className="md:col-span-2 bg-bg-primary rounded-xl p-6 border border-border">
+                                <div className="flex justify-between items-start mb-4">
+                                    <div>
+                                        <h4 className="text-lg font-bold text-text-primary capitalize">{subscription.plan?.name || 'Piano sconosciuto'}</h4>
+                                        <p className="text-text-muted text-sm">
+                                            {subscription.status === 'active' ? 'Abbonamento Attivo' : 'Stato: ' + subscription.status}
+                                        </p>
+                                    </div>
+                                    <div className="text-right">
+                                        <p className="text-xl font-bold text-accent">€{subscription.plan?.price_monthly || '-'}<span className="text-sm text-text-muted font-normal">/mese</span></p>
+                                        <p className="text-xs text-text-muted">Prossimo rinnovo: {subscription.current_period_end ? new Date(subscription.current_period_end).toLocaleDateString() : '-'}</p>
+                                    </div>
+                                </div>
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-4">
+                                    <div className="p-3 bg-bg-tertiary rounded-lg border border-border/50">
+                                        <p className="text-xs text-text-muted mb-1">Limite Tatuatori</p>
+                                        <p className="font-medium text-text-primary">
+                                            {subscription.plan?.max_artists === -1 ? 'Illimitati' : subscription.plan?.max_artists}
+                                        </p>
+                                    </div>
+                                    <div className="p-3 bg-bg-tertiary rounded-lg border border-border/50">
+                                        <p className="text-xs text-text-muted mb-1">Limite Manager</p>
+                                        <p className="font-medium text-text-primary">
+                                            {subscription.plan?.max_managers === -1 ? 'Illimitati' : subscription.plan?.max_managers}
+                                        </p>
+                                    </div>
+                                </div>
+                                <div className="mt-6 flex justify-end">
+                                    <button
+                                        type="button"
+                                        onClick={async () => {
+                                            try {
+                                                const url = await api.subscription.createPortalSession(window.location.href);
+                                                window.location.href = url;
+                                            } catch (error) {
+                                                console.error('Error opening billing portal:', error);
+                                                alert('Impossibile aprire il portale abbonamenti. Riprova.');
+                                            }
+                                        }}
+                                        className="text-sm text-accent hover:text-accent-hover underline transition-colors"
+                                    >
+                                        Gestisci Abbonamento
+                                    </button>
+                                </div>
+                            </div>
+                        ) : (
+                            <div className="md:col-span-2 text-yellow-500 flex flex-col items-start gap-4">
+                                <p>Nessun piano attivo trovato o pagamento non completato.</p>
+                                <div className="flex gap-4">
+                                    <button
+                                        type="button"
+                                        onClick={() => setShowPlans(true)}
+                                        className="px-4 py-2 bg-accent text-white rounded-lg hover:bg-accent-hover transition-colors"
+                                    >
+                                        Attiva un piano
+                                    </button>
+                                    <button
+                                        type="button"
+                                        onClick={async () => {
+                                            if (confirm('Hai già pagato ma non vedi il piano attivo? Clicca OK per recuperare l\'abbonamento.')) {
+                                                try {
+                                                    setRestoring(true);
+                                                    const res = await api.subscription.restoreSubscription();
+                                                    if (res.success) {
+                                                        alert('Abbonamento recuperato con successo! La pagina verrà ricaricata.');
+                                                        window.location.reload();
+                                                    } else {
+                                                        alert('Impossibile recuperare l\'abbonamento. Assicurati di aver pagato con questa email.');
+                                                    }
+                                                } catch (err: any) {
+                                                    console.error(err);
+                                                    alert('Errore durante il recupero: ' + (err.message || 'Errore sconosciuto'));
+                                                } finally {
+                                                    setRestoring(false);
+                                                }
+                                            }
+                                        }}
+                                        disabled={restoring}
+                                        className={`px-4 py-2 bg-bg-tertiary text-text-muted hover:text-text-primary border border-border rounded-lg transition-colors flex items-center gap-2 ${restoring ? 'opacity-50 cursor-not-allowed' : ''}`}
+                                    >
+                                        <Save size={16} className={`rotate-0 ${restoring ? 'animate-spin' : ''}`} />
+                                        {restoring ? 'Recupero...' : 'Recupera Acquisto'}
+                                    </button>
+                                </div>
+                            </div>
+                        )}
                     </div>
 
                     <div className="flex justify-end pt-4">

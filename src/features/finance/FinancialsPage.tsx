@@ -503,11 +503,11 @@ export const FinancialsPage: React.FC = () => {
                     <table className="w-full text-left border-collapse">
                         <thead className="bg-bg-tertiary">
                             <tr className="text-sm text-text-muted font-medium border-b border-border">
-                                <th className="px-6 py-3">Data</th>
-                                <th className="px-6 py-3">Descrizione</th>
-                                <th className="px-6 py-3">Produttore</th>
-                                <th className="px-6 py-3">Tipo</th>
-                                <th className="px-6 py-3 text-right">Importo</th>
+                                <th className="px-3 md:px-6 py-3">Data</th>
+                                <th className="px-3 md:px-6 py-3">Descrizione</th>
+                                <th className="hidden md:table-cell px-6 py-3">Produttore</th>
+                                <th className="hidden md:table-cell px-6 py-3">Tipo</th>
+                                <th className="px-3 md:px-6 py-3 text-right">Importo</th>
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-border">
@@ -518,18 +518,18 @@ export const FinancialsPage: React.FC = () => {
                             ) : (
                                 transactions.map(tx => (
                                     <tr key={tx.id} className="hover:bg-white/5 transition-colors">
-                                        <td className="px-6 py-4 text-sm text-text-secondary">
-                                            {format(new Date(tx.date), 'dd MMM yyyy', { locale: it })}
+                                        <td className="px-3 md:px-6 py-4 text-sm text-text-secondary">
+                                            {format(new Date(tx.date), 'dd MMM', { locale: it })}
                                         </td>
-                                        <td className="px-6 py-4">
-                                            <div className="font-medium text-text-primary">{tx.category}</div>
-                                            {tx.description && <div className="text-xs text-text-muted">{tx.description}</div>}
+                                        <td className="px-3 md:px-6 py-4">
+                                            <div className="font-medium text-text-primary text-sm">{tx.category}</div>
+                                            {tx.description && <div className="text-[10px] md:text-xs text-text-muted truncate max-w-[100px] md:max-w-none">{tx.description}</div>}
                                         </td>
-                                        <td className="px-6 py-4 text-sm text-text-secondary">
+                                        <td className="hidden md:table-cell px-6 py-4 text-sm text-text-secondary">
                                             {/* Try to resolve artist name from team array */}
                                             {tx.artist_id ? (team.find(m => m.id === tx.artist_id)?.full_name || 'Artista') : 'Studio'}
                                         </td>
-                                        <td className="px-6 py-4">
+                                        <td className="hidden md:table-cell px-6 py-4">
                                             <span className={clsx(
                                                 "text-xs px-2 py-1 rounded font-medium",
                                                 tx.type === 'INCOME' ? "bg-green-500/10 text-green-500" : "bg-red-500/10 text-red-500"
@@ -538,12 +538,12 @@ export const FinancialsPage: React.FC = () => {
                                             </span>
                                         </td>
                                         <td className={clsx(
-                                            "px-6 py-4 text-right font-medium",
+                                            "px-3 md:px-6 py-4 text-right font-medium text-sm",
                                             tx.type === 'INCOME' ? "text-green-500" : "text-text-primary"
                                         )}>
                                             <div className="flex items-center justify-end gap-3">
                                                 <span>{tx.type === 'EXPENSE' ? '-' : '+'}{formatCurrency(tx.amount)}</span>
-                                                {isOwner && (
+                                                {(isOwner || user?.role?.toLowerCase() === 'artist') && (
                                                     <button
                                                         onClick={() => handleDeleteTransaction(tx.id)}
                                                         className="p-1.5 text-text-muted hover:text-red-500 hover:bg-red-500/10 rounded transition-colors"

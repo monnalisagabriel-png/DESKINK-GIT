@@ -21,9 +21,10 @@ import {
 } from 'lucide-react';
 import { api } from '../../services/api';
 import type { ArtistContract, Appointment, Studio, Course, CourseEnrollment } from '../../services/types';
-import { format, addWeeks, startOfDay, endOfWeek, parseISO, isSameWeek } from 'date-fns';
+import { format, addWeeks, startOfDay, endOfWeek, parseISO, isSameWeek, startOfMonth, endOfMonth } from 'date-fns';
 import { it } from 'date-fns/locale';
 import { useLayoutStore } from '../../stores/layoutStore';
+import { BookingRequests } from './components/BookingRequests';
 import clsx from 'clsx';
 
 export const Dashboard: React.FC = () => {
@@ -44,88 +45,7 @@ export const Dashboard: React.FC = () => {
     const [viewTermsContent, setViewTermsContent] = useState('');
 
     const [loading, setLoading] = React.useState(true);
-
-    if (!user) return <div className="p-8 text-center text-white">Caricamento utente...</div>;
-
-    React.useEffect(() => {
-        const loadDashboardData = async () => {
-            try {
-
-
-                if (user.role === 'STUDENT' || user.role === 'student') {
-                    // Fetch student course
-                    const courses = await api.academy.listCourses();
-                    const enrolledCourse = courses.find(c => c.student_ids.includes(user.id));
-
-                    if (enrolledCourse) {
-                        setStudentCourse(enrolledCourse);
-                        const enroll = await api.academy.getEnrollment(enrolledCourse.id, user.id);
-                        setStudentEnrollment(enroll);
-                    }
-                }
-
-                if (user.studio_id) {
-                    const s = await api.settings.getStudio(user.studio_id);
-                    setStudio(s);
-                    // Pre-load terms if student for the view modal
-                    if (s && (user.role === 'STUDENT' || user.role === 'student') && s.academy_terms) {
-                        setViewTermsContent(s.academy_terms);
-                    }
-                }
-
-                const today = startOfDay(new Date());
-                const endNextWeek = endOfWeek(addWeeks(today, 1), { weekStartsOn: 1 });
-
-                // Pass user.studio_id to filter by studio
-                // If user is ARTIST, also pass user.id as artistId (3rd arg) to filter their appointments
-                const isArtist = user.role === 'ARTIST' || user.role === 'artist';
-                if (isArtist) {
-                    const c = await api.artists.getContract(user.id);
-                    setContract(c);
-                }
-
-                const artistIdFilter = isArtist ? user.id : undefined;
-                const appts = await api.appointments.list(today, endNextWeek, artistIdFilter, user.studio_id);
-
-                const enhancedAppts = await Promise.all(appts.map(async (appt) => {
-                    if (appt.client) return appt;
-                    const client = await api.clients.getById(appt.client_id);
-                    return { ...appt, client: client || undefined };
-                }));
-
-                enhancedAppts.sort((a, b) => new Date(a.start_time).getTime() - new Date(b.start_time).getTime());
-                setAppointments(enhancedAppts);
-            } catch (error) {
-                console.error('Error loading dashboard data:', error);
-            } finally {
-                setLoading(false);
-            }
-        };
-
-        loadDashboardData();
-    }, [user.id, user.role, user.studio_id]);
-
-    const sendWhatsAppReminder = (appt: Appointment, type: 'WEEK_NOTICE' | 'CONFIRMATION') => {
-        if (!appt.client?.phone) {
-            alert('Numero di telefono non disponibile per questo cliente.');
-            return;
-        }
-
-        const dateStr = format(parseISO(appt.start_time), "d MMMM", { locale: it });
-        const timeStr = format(parseISO(appt.start_time), "HH:mm");
-        const studioName = studio?.name || "DESKINK Studio";
-        const location = studio ? `${studio.address}, ${studio.city}` : "Via Loreto Balatelle, 208, Acireale";
-
-        let message = '';
-        if (type === 'WEEK_NOTICE') {
-            message = `Ciao ${appt.client.full_name},\nti ricordiamo il tuo appuntamento per il ${dateStr} ${timeStr} presso ${studioName} (${location}).\nTi invitiamo a rispondere a questo messaggio per confermare, altrimenti il tuo appuntamento potrebbe subire variazioni o cancellazioni.\nA presto!`;
-        } else {
-            message = `Ciao ${appt.client.full_name},\nti ricordiamo il tuo appuntamento per il ${dateStr} ${timeStr} presso ${studioName} (${location}).\nTi invitiamo a rispondere a questo messaggio per confermare, altrimenti il tuo appuntamento potrebbe subire variazioni o cancellazioni.\nA presto!`;
-        }
-
-        const encodedMessage = encodeURIComponent(message);
-        window.open(`https://wa.me/${appt.client.phone.replace(/[^0-9]/g, '')}?text=${encodedMessage}`, '_blank');
-    };
+    const [artistRealEarnings, setArtistRealEarnings] = React.useState(0);
 
     const [stats, setStats] = React.useState({
         revenue_today: 0,
@@ -135,8 +55,97 @@ export const Dashboard: React.FC = () => {
         staff_total: 0
     });
 
+    const loadDashboardData = async () => {
+        if (!user) return;
+        try {
+            if (user.role === 'STUDENT' || user.role === 'student') {
+                // Fetch student course
+                const courses = await api.academy.listCourses();
+                const enrolledCourse = courses.find(c => c.student_ids.includes(user.id));
+
+                if (enrolledCourse) {
+                    setStudentCourse(enrolledCourse);
+                    const enroll = await api.academy.getEnrollment(enrolledCourse.id, user.id);
+                    setStudentEnrollment(enroll);
+                }
+            }
+
+            if (user.studio_id) {
+                const s = await api.settings.getStudio(user.studio_id);
+                setStudio(s);
+                // Pre-load terms if student for the view modal
+                if (s && (user.role === 'STUDENT' || user.role === 'student') && s.academy_terms) {
+                    setViewTermsContent(s.academy_terms);
+                }
+            }
+
+            const today = startOfDay(new Date());
+            const endNextWeek = endOfWeek(addWeeks(today, 1), { weekStartsOn: 1 });
+
+            // Pass user.studio_id to filter by studio
+            // If user is ARTIST, also pass user.id as artistId (3rd arg) to filter their appointments
+            const isArtist = user.role === 'ARTIST' || user.role === 'artist';
+            if (isArtist) {
+                const c = await api.artists.getContract(user.id);
+                setContract(c);
+            }
+
+            const artistIdFilter = isArtist ? user.id : undefined;
+            const appts = await api.appointments.list(today, endNextWeek, artistIdFilter, user.studio_id);
+
+            // Filter out cancelled/rejected appointments
+            const validAppts = appts.filter(a => !['CANCELLED', 'REJECTED', 'DECLINED'].includes(a.status));
+
+            const enhancedAppts = await Promise.all(validAppts.map(async (appt) => {
+                if (appt.client) return appt;
+                const client = await api.clients.getById(appt.client_id);
+                return { ...appt, client: client || undefined };
+            }));
+
+            enhancedAppts.sort((a, b) => new Date(a.start_time).getTime() - new Date(b.start_time).getTime());
+            setAppointments(enhancedAppts);
+
+            // Fetch Real Earnings from Transactions (Artist Only)
+            if (isArtist) {
+                const startMonth = startOfMonth(today);
+                const endMonth = endOfMonth(today);
+                // Fetch transactions for current month
+                const txs = await api.financials.listTransactions(startMonth, endMonth, user.studio_id);
+
+                // Filter own income
+                const myTxs = txs.filter(t => t.artist_id === user.id && t.type === 'INCOME');
+                const gross = myTxs.reduce((sum, t) => sum + Number(t.amount), 0);
+
+                // Calculate Net based on comm
+                // Note: Contract is set in state but might not be updated yet if setContract was just called? 
+                // Wait, setContract is async state update. Better to use the fetched 'c' variable if available or fetch again.
+                // We fetched 'c' above (line 88). 
+                // Let's reuse 'c' logic. 
+                // But 'c' is scoped in if(isArtist).
+                // I will duplicate logic or move 'c' out.
+                // Actually I can just re-fetch contract or access it if I refactor.
+                // Refactoring slightly:
+
+                const contract = await api.artists.getContract(user.id);
+                const rate = contract?.commission_rate || 50;
+                const net = (gross * rate) / 100;
+
+                setArtistRealEarnings(net);
+            }
+        } catch (error) {
+            console.error('Error loading dashboard data:', error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    React.useEffect(() => {
+        if (user && user.id) loadDashboardData();
+    }, [user, user?.id, user?.role, user?.studio_id]);
+
     React.useEffect(() => {
         const loadStats = async () => {
+            if (!user) return;
             if (user.role === 'owner' || user.role === 'STUDIO_ADMIN' || user.role === 'MANAGER') {
                 try {
                     const fStats = await api.financials.getStats(new Date(), user.studio_id);
@@ -168,14 +177,38 @@ export const Dashboard: React.FC = () => {
             }
         };
         loadStats();
-    }, [user.role, user.studio_id]);
+    }, [user?.role, user?.studio_id]);
+
+    const sendWhatsAppReminder = (appt: Appointment, type: 'WEEK_NOTICE' | 'CONFIRMATION') => {
+        if (!appt.client?.phone) {
+            alert('Numero di telefono non disponibile per questo cliente.');
+            return;
+        }
+
+        const dateStr = format(parseISO(appt.start_time), "d MMMM", { locale: it });
+        const timeStr = format(parseISO(appt.start_time), "HH:mm");
+        const studioName = studio?.name || "DESKINK Studio";
+        const location = studio ? `${studio.address}, ${studio.city}` : "Via Loreto Balatelle, 208, Acireale";
+
+        let message = '';
+        if (type === 'WEEK_NOTICE') {
+            message = `Ciao ${appt.client.full_name},\nti ricordiamo il tuo appuntamento per il ${dateStr} ${timeStr} presso ${studioName} (${location}).\nTi invitiamo a rispondere a questo messaggio per confermare, altrimenti il tuo appuntamento potrebbe subire variazioni o cancellazioni.\nA presto!`;
+        } else {
+            message = `Ciao ${appt.client.full_name},\nti ricordiamo il tuo appuntamento per il ${dateStr} ${timeStr} presso ${studioName} (${location}).\nTi invitiamo a rispondere a questo messaggio per confermare, altrimenti il tuo appuntamento potrebbe subire variazioni o cancellazioni.\nA presto!`;
+        }
+
+        const encodedMessage = encodeURIComponent(message);
+        window.open(`https://wa.me/${appt.client.phone.replace(/[^0-9]/g, '')}?text=${encodedMessage}`, '_blank');
+    };
+
+    if (!user) return <div className="p-8 text-center text-white">Caricamento utente...</div>;
 
     const renderAdminWidgets = () => (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
             <StatsCard
                 title="Incasso Oggi"
                 value={isPrivacyMode ? '••••' : `€${stats.revenue_today.toLocaleString()}`}
-                change={isPrivacyMode ? undefined : "0%"} // Calculate change if needed
+                change={isPrivacyMode ? undefined : "0%"}
                 isPositive={true}
                 icon={DollarSign}
                 color="bg-green-500"
@@ -204,10 +237,11 @@ export const Dashboard: React.FC = () => {
     );
 
     const renderArtistWidgets = () => {
-        const commissionRate = contract?.commission_rate || 50;
-        const netEarnings = isPrivacyMode ? '••••' : `€${((4200 * commissionRate) / 100).toLocaleString()}`; // TODO: Calculate real earnings
+        // Calculate dynamic earnings from TRANSACTIONS (Real Earnings)
+        // const monthlyEarnings ... (removed)
 
-        // Real data calculation
+        const netEarnings = isPrivacyMode ? '••••' : `€${artistRealEarnings.toLocaleString('it-IT', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+
         const myApptsCount = appointments.length;
 
         const now = new Date();
@@ -225,35 +259,43 @@ export const Dashboard: React.FC = () => {
         }
 
         return (
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-                <StatsCard
-                    title="I Miei Appuntamenti"
-                    value={myApptsCount.toString()}
-                    icon={Calendar}
-                    color="bg-accent"
-                />
-                {contract?.rent_type === 'PRESENCES' && (
+            <div className="space-y-8 mb-8">
+                <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
                     <StatsCard
-                        title="Presenze Rimanenti"
-                        value={isPrivacyMode ? '••••' : `${(contract.presence_package_limit || 0) - contract.used_presences}/${contract.presence_package_limit}`}
-                        icon={Users}
-                        color={(contract.presence_package_limit || 0) - contract.used_presences <= 2 ? "bg-red-500" : "bg-green-500"}
+                        title="I Miei Appuntamenti"
+                        value={myApptsCount.toString()}
+                        icon={Calendar}
+                        color="bg-accent"
                     />
-                )}
-                <StatsCard
-                    title="Prossimo Cliente"
-                    value={nextApptText}
-                    icon={Clock}
-                    color="bg-blue-500"
-                />
-                <StatsCard
-                    title="I Tuoi Guadagni (Netto)"
-                    value={netEarnings}
-                    change={isPrivacyMode ? undefined : "8%"} // Placeholder change
-                    isPositive={true}
-                    icon={TrendingUp}
-                    color="bg-green-500"
-                />
+                    {contract?.rent_type === 'PRESENCES' && (
+                        <StatsCard
+                            title="Presenze Rimanenti"
+                            value={isPrivacyMode ? '••••' : `${(contract.presence_package_limit || 0) - contract.used_presences}/${contract.presence_package_limit}`}
+                            icon={Users}
+                            color={(contract.presence_package_limit || 0) - contract.used_presences <= 2 ? "bg-red-500" : "bg-green-500"}
+                        />
+                    )}
+                    <StatsCard
+                        title="Prossimo Cliente"
+                        value={nextApptText}
+                        icon={Clock}
+                        color="bg-blue-500"
+                    />
+                    <StatsCard
+                        title="Guadagno Reale (Mese)"
+                        value={netEarnings}
+                        change={isPrivacyMode ? undefined : "0%"}
+                        isPositive={true}
+                        icon={TrendingUp}
+                        color="bg-green-500"
+                    />
+                </div>
+
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    <div className="lg:col-span-3">
+                        <BookingRequests appointments={appointments} onUpdate={loadDashboardData} />
+                    </div>
+                </div>
             </div>
         );
     };
@@ -317,7 +359,6 @@ export const Dashboard: React.FC = () => {
                     )}
 
 
-                    {/* View Terms Button */}
                     <div className="mt-4 pt-4 border-t border-border flex justify-center">
                         <button
                             onClick={() => setIsTermsViewOpen(true)}
@@ -393,14 +434,14 @@ export const Dashboard: React.FC = () => {
                     </div>
                 </header>
 
-                {(user.role === 'owner' || user.role === 'STUDIO_ADMIN' || user.role === 'MANAGER') && renderAdminWidgets()}
-                {user.role === 'ARTIST' && renderArtistWidgets()}
+                {(user.role === 'owner' || user.role === 'STUDIO_ADMIN' || user.role === 'studio_admin' || user.role === 'MANAGER' || user.role === 'manager') && renderAdminWidgets()}
+                {(user.role === 'ARTIST' || user.role === 'artist') && renderArtistWidgets()}
                 {(user.role === 'STUDENT' || user.role === 'student') && renderStudentWidgets()}
                 {user.role !== 'STUDENT' && user.role !== 'student' && (
                     <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-20">
                         <div className="lg:col-span-2 bg-bg-secondary border border-border rounded-lg p-6 min-h-[300px]">
                             <h3 className="text-lg font-bold text-text-primary mb-4">
-                                {user.role === 'ARTIST' ? 'Programma di Oggi' : 'Appuntamenti Recenti'}
+                                {(user.role === 'ARTIST' || user.role === 'artist') ? 'Programma di Oggi' : 'Appuntamenti Recenti'}
                             </h3>
 
                             {loading ? (

@@ -2,7 +2,7 @@
 import React, { useState } from 'react';
 import { useAuth } from './AuthContext';
 import { useNavigate, useLocation, Link } from 'react-router-dom';
-import { Eye, EyeOff } from 'lucide-react';
+import { Eye, EyeOff, Check, Shield, Star, Zap } from 'lucide-react';
 
 export const LoginPage: React.FC = () => {
     const { signIn, signUp } = useAuth();
@@ -10,6 +10,8 @@ export const LoginPage: React.FC = () => {
     const location = useLocation();
 
     const [activeTab, setActiveTab] = useState<'login' | 'signup'>('login');
+    const [signupStep, setSignupStep] = useState<1 | 2>(1); // 1: Plans, 2: Form
+    const [selectedPlan, setSelectedPlan] = useState<'starter' | 'pro' | 'plus'>('starter');
     const [loading, setLoading] = useState(false);
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
@@ -27,6 +29,14 @@ export const LoginPage: React.FC = () => {
 
         try {
             if (activeTab === 'signup') {
+                if (signupStep === 1) {
+                    setSignupStep(2);
+                    setLoading(false);
+                    return;
+                }
+                // Store selected plan for next step (RegisterStudio)
+                localStorage.setItem('pendingPlanPreference', selectedPlan);
+
                 const autoLogin = await signUp(email, password);
                 if (autoLogin) {
                     navigate(from, { replace: true });
@@ -59,7 +69,7 @@ export const LoginPage: React.FC = () => {
                 <div className="text-center mb-6">
                     <div className="flex justify-center mb-4">
                         <img
-                            src="/logo.png"
+                            src="/deskink_logo.jpg"
                             alt="DESKINK CRM"
                             className="w-24 h-24 rounded-full object-cover shadow-xl"
                         />
@@ -79,7 +89,7 @@ export const LoginPage: React.FC = () => {
                         Ho già un account
                     </button>
                     <button
-                        onClick={() => { setActiveTab('signup'); setError(null); setMessage(null); }}
+                        onClick={() => { setActiveTab('signup'); setSignupStep(1); setError(null); setMessage(null); }}
                         className={`flex-1 py-2 text-sm font-medium rounded-md transition-all ${activeTab === 'signup' ? 'bg-bg-primary text-text-primary shadow-sm' : 'text-text-muted hover:text-text-primary'}`}
                     >
                         Crea nuovo account
@@ -99,52 +109,170 @@ export const LoginPage: React.FC = () => {
                 )}
 
                 <form onSubmit={handleSubmit} className="space-y-4">
-                    <div>
-                        <label className="block text-sm font-medium text-text-secondary mb-1">Email</label>
-                        <input
-                            type="email"
-                            value={email}
-                            onChange={(e) => setEmail(e.target.value)}
-                            className="w-full bg-bg-tertiary border border-border rounded-lg px-3 py-2 text-text-primary focus:ring-accent focus:border-accent transition-all"
-                            placeholder="nome@esempio.com"
-                            required
-                        />
-                    </div>
-                    <div>
-                        <label className="block text-sm font-medium text-text-secondary mb-1">Password</label>
-                        <div className="relative">
-                            <input
-                                type={showPassword ? "text" : "password"}
-                                value={password}
-                                onChange={(e) => setPassword(e.target.value)}
-                                className="w-full bg-bg-tertiary border border-border rounded-lg px-3 py-2 text-text-primary focus:ring-accent focus:border-accent pr-10 transition-all"
-                                placeholder="Inserisci la password"
-                                required
-                                minLength={6}
-                            />
+                    {activeTab === 'login' && (
+                        <>
+                            <div>
+                                <label className="block text-sm font-medium text-text-secondary mb-1">Email</label>
+                                <input
+                                    type="email"
+                                    value={email}
+                                    onChange={(e) => setEmail(e.target.value)}
+                                    className="w-full bg-bg-tertiary border border-border rounded-lg px-3 py-2 text-text-primary focus:ring-accent focus:border-accent transition-all"
+                                    placeholder="nome@esempio.com"
+                                    required
+                                />
+                            </div>
+                            <div>
+                                <label className="block text-sm font-medium text-text-secondary mb-1">Password</label>
+                                <div className="relative">
+                                    <input
+                                        type={showPassword ? "text" : "password"}
+                                        value={password}
+                                        onChange={(e) => setPassword(e.target.value)}
+                                        className="w-full bg-bg-tertiary border border-border rounded-lg px-3 py-2 text-text-primary focus:ring-accent focus:border-accent pr-10 transition-all"
+                                        placeholder="Inserisci la password"
+                                        required
+                                        minLength={6}
+                                    />
+                                    <button
+                                        type="button"
+                                        onClick={() => setShowPassword(!showPassword)}
+                                        className="absolute right-3 top-1/2 -translate-y-1/2 text-text-muted hover:text-text-primary transition-colors"
+                                    >
+                                        {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                                    </button>
+                                </div>
+                                <div className="flex justify-end mt-1">
+                                    <Link to="/forgot-password" className="text-xs text-accent hover:text-accent-hover transition-colors">
+                                        Password dimenticata?
+                                    </Link>
+                                </div>
+                            </div>
                             <button
-                                type="button"
-                                onClick={() => setShowPassword(!showPassword)}
-                                className="absolute right-3 top-1/2 -translate-y-1/2 text-text-muted hover:text-text-primary transition-colors"
+                                type="submit"
+                                disabled={loading}
+                                className="w-full py-2 bg-accent hover:bg-accent-hover text-white rounded-lg font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed mt-2"
                             >
-                                {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                                {loading ? 'Elaborazione...' : 'Accedi'}
+                            </button>
+                        </>
+                    )}
+
+                    {activeTab === 'signup' && signupStep === 1 && (
+                        <div className="space-y-4 animate-in fade-in slide-in-from-right-4">
+                            <h3 className="text-lg font-bold text-center text-text-primary">Scegli il tuo piano ideale</h3>
+                            <div className="grid grid-cols-1 gap-3 max-h-[400px] overflow-y-auto pr-1">
+                                {/* Starter Plan */}
+                                <div
+                                    onClick={() => setSelectedPlan('starter')}
+                                    className={`p-3 rounded-xl border-2 transition-all cursor-pointer relative ${selectedPlan === 'starter' ? 'border-accent bg-accent/5' : 'border-border bg-bg-tertiary hover:border-accent/50'}`}
+                                >
+                                    <div className="flex justify-between items-center mb-1">
+                                        <div className="flex items-center gap-2">
+                                            <div className="p-1.5 bg-blue-500/10 rounded-lg text-blue-500"><Shield size={16} /></div>
+                                            <h3 className="font-bold text-text-primary text-sm">DeskInk Basic</h3>
+                                        </div>
+                                        <span className="text-lg font-bold text-text-primary">20€<span className="text-xs font-normal text-text-muted">/mese</span></span>
+                                    </div>
+                                    <ul className="text-xs text-text-muted space-y-1">
+                                        <li className="flex items-center gap-1"><Check size={12} className="text-green-500" /> 1 Tatuatore</li>
+                                        <li className="flex items-center gap-1"><Check size={12} className="text-green-500" /> 1 Manager</li>
+                                    </ul>
+                                </div>
+
+                                {/* Pro Plan */}
+                                <div
+                                    onClick={() => setSelectedPlan('pro')}
+                                    className={`p-3 rounded-xl border-2 transition-all cursor-pointer relative ${selectedPlan === 'pro' ? 'border-accent bg-accent/5' : 'border-border bg-bg-tertiary hover:border-accent/50'}`}
+                                >
+                                    {selectedPlan === 'pro' && <div className="absolute -top-2 right-4 bg-accent text-white text-[10px] px-2 py-0.5 rounded-full font-bold">TOP</div>}
+                                    <div className="flex justify-between items-center mb-1">
+                                        <div className="flex items-center gap-2">
+                                            <div className="p-1.5 bg-purple-500/10 rounded-lg text-purple-500"><Star size={16} /></div>
+                                            <h3 className="font-bold text-text-primary text-sm">DeskInk Pro</h3>
+                                        </div>
+                                        <span className="text-lg font-bold text-text-primary">40€<span className="text-xs font-normal text-text-muted">/mese</span></span>
+                                    </div>
+                                    <ul className="text-xs text-text-muted space-y-1">
+                                        <li className="flex items-center gap-1"><Check size={12} className="text-green-500" /> 2 Tatuatori</li>
+                                        <li className="flex items-center gap-1"><Check size={12} className="text-green-500" /> 2 Manager</li>
+                                    </ul>
+                                </div>
+
+                                {/* Plus Plan */}
+                                <div
+                                    onClick={() => setSelectedPlan('plus')}
+                                    className={`p-3 rounded-xl border-2 transition-all cursor-pointer relative ${selectedPlan === 'plus' ? 'border-accent bg-accent/5' : 'border-border bg-bg-tertiary hover:border-accent/50'}`}
+                                >
+                                    <div className="flex justify-between items-center mb-1">
+                                        <div className="flex items-center gap-2">
+                                            <div className="p-1.5 bg-orange-500/10 rounded-lg text-orange-500"><Zap size={16} /></div>
+                                            <h3 className="font-bold text-text-primary text-sm">DeskInk Plus</h3>
+                                        </div>
+                                        <span className="text-lg font-bold text-text-primary">70€<span className="text-xs font-normal text-text-muted">/mese</span></span>
+                                    </div>
+                                    <ul className="text-xs text-text-muted space-y-1">
+                                        <li className="flex items-center gap-1"><Check size={12} className="text-green-500" /> 4 Tatuatori (+extra)</li>
+                                        <li className="flex items-center gap-1"><Check size={12} className="text-green-500" /> 4 Manager</li>
+                                    </ul>
+                                </div>
+                            </div>
+                            <button
+                                type="submit"
+                                className="w-full py-2 bg-accent hover:bg-accent-hover text-white rounded-lg font-medium transition-colors"
+                            >
+                                Seleziona {selectedPlan.charAt(0).toUpperCase() + selectedPlan.slice(1)} e Continua
                             </button>
                         </div>
-                        {activeTab === 'login' && (
-                            <div className="flex justify-end mt-1">
-                                <Link to="/forgot-password" className="text-xs text-accent hover:text-accent-hover transition-colors">
-                                    Password dimenticata?
-                                </Link>
+                    )}
+
+                    {activeTab === 'signup' && signupStep === 2 && (
+                        <div className="space-y-4 animate-in fade-in slide-in-from-right-4">
+                            <div className="text-center mb-4">
+                                <span className="text-sm text-text-muted">Hai scelto il piano <span className="text-accent font-bold capitalize">{selectedPlan}</span></span>
+                                <button type="button" onClick={() => setSignupStep(1)} className="text-xs text-accent hover:underline block mx-auto mt-1">Modifica</button>
                             </div>
-                        )}
-                    </div>
-                    <button
-                        type="submit"
-                        disabled={loading}
-                        className="w-full py-2 bg-accent hover:bg-accent-hover text-white rounded-lg font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed mt-2"
-                    >
-                        {loading ? 'Elaborazione...' : (activeTab === 'login' ? 'Accedi' : 'Registrati')}
-                    </button>
+                            <div>
+                                <label className="block text-sm font-medium text-text-secondary mb-1">Email</label>
+                                <input
+                                    type="email"
+                                    value={email}
+                                    onChange={(e) => setEmail(e.target.value)}
+                                    className="w-full bg-bg-tertiary border border-border rounded-lg px-3 py-2 text-text-primary focus:ring-accent focus:border-accent transition-all"
+                                    placeholder="nome@esempio.com"
+                                    required
+                                />
+                            </div>
+                            <div>
+                                <label className="block text-sm font-medium text-text-secondary mb-1">Password</label>
+                                <div className="relative">
+                                    <input
+                                        type={showPassword ? "text" : "password"}
+                                        value={password}
+                                        onChange={(e) => setPassword(e.target.value)}
+                                        className="w-full bg-bg-tertiary border border-border rounded-lg px-3 py-2 text-text-primary focus:ring-accent focus:border-accent pr-10 transition-all"
+                                        placeholder="Min. 6 caratteri"
+                                        required
+                                        minLength={6}
+                                    />
+                                    <button
+                                        type="button"
+                                        onClick={() => setShowPassword(!showPassword)}
+                                        className="absolute right-3 top-1/2 -translate-y-1/2 text-text-muted hover:text-text-primary transition-colors"
+                                    >
+                                        {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                                    </button>
+                                </div>
+                            </div>
+                            <button
+                                type="submit"
+                                disabled={loading}
+                                className="w-full py-2 bg-accent hover:bg-accent-hover text-white rounded-lg font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed mt-2"
+                            >
+                                {loading ? 'Creazione Account...' : 'Crea Account'}
+                            </button>
+                        </div>
+                    )}
                 </form>
 
                 {/* Deprecated toggle link removed in favor of Tabs */}

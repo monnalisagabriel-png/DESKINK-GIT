@@ -7,6 +7,7 @@ import { api } from '../../../services/api';
 import { useAuth } from '../../auth/AuthContext';
 import { format } from 'date-fns';
 import { DragDropUpload } from '../../../components/DragDropUpload';
+import { supabase } from '../../../lib/supabase';
 
 interface AppointmentDrawerProps {
     isOpen: boolean;
@@ -36,6 +37,7 @@ export const AppointmentDrawer: React.FC<AppointmentDrawerProps> = ({
     // Delete Confirmation State
     const [isDeleting, setIsDeleting] = useState(false);
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const [isRefunding, setIsRefunding] = useState(false);
 
     // Form State
     const [formData, setFormData] = useState<Partial<Appointment>>({
@@ -127,6 +129,32 @@ export const AppointmentDrawer: React.FC<AppointmentDrawerProps> = ({
             ...prev,
             images: prev.images?.filter((_, i) => i !== index)
         }));
+    };
+
+    const handleRefundAndReject = async () => {
+        if (!selectedAppointment?.id || !onDelete) return;
+        if (!confirm('Sei sicuro di voler rifiutare e rimborsare questo appuntamento?')) return;
+
+        setIsRefunding(true);
+        try {
+            // Call Edge Function
+            const { error } = await supabase.functions.invoke('refund-payment', {
+                body: {
+                    appointment_id: selectedAppointment.id,
+                    reason: 'requested_by_customer' // or 'rejected_by_artist'
+                }
+            });
+
+            if (error) throw error;
+
+            // Delete Appointment locally
+            await onDelete(selectedAppointment.id);
+        } catch (err) {
+            console.error('Refund failed:', err);
+            alert('Rimborso fallito. Controlla i log o riprova.');
+        } finally {
+            setIsRefunding(false);
+        }
     };
 
     const STATUS_LABELS: Record<string, string> = {
@@ -430,6 +458,15 @@ export const AppointmentDrawer: React.FC<AppointmentDrawerProps> = ({
                                     >
                                         Sì, elimina
                                     </button>
+                                    {selectedAppointment.stripe_payment_intent_id && (
+                                        <button
+                                            onClick={handleRefundAndReject}
+                                            disabled={isRefunding}
+                                            className="bg-orange-500 hover:bg-orange-600 text-white px-3 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-1"
+                                        >
+                                            {isRefunding ? 'Rimborso...' : 'Rimborsa & Elimina'}
+                                        </button>
+                                    )}
                                     <button
                                         onClick={() => setIsDeleting(false)}
                                         className="bg-bg-tertiary hover:bg-bg-primary text-text-primary px-3 py-2 rounded-lg text-sm transition-colors border border-border"

@@ -73,7 +73,14 @@ export const useCalendar = () => {
             }
 
             const data = await api.appointments.list(start, end, artistFilter || undefined, user?.studio_id);
-            setAppointments(data);
+            // Filter out PENDING, CANCELLED, REJECTED, DECLINED appointments
+            // The calendar should only show confirmed or potentially confirmable (though pending is filtered too per request)
+            setAppointments(data.filter(a =>
+                a.status !== 'PENDING' &&
+                a.status !== 'CANCELLED' &&
+                a.status !== 'REJECTED' &&
+                a.status !== 'DECLINED'
+            ));
         } catch (err) {
             console.error(err);
         } finally {
