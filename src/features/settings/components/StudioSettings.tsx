@@ -1,10 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { Building, Globe, MapPin, Save, Trash2, UploadCloud, CreditCard, Users, Star, Paintbrush, Calendar, LogOut, Shield, ChevronRight, ExternalLink } from 'lucide-react';
+import { Building, Globe, MapPin, Save, Trash2, UploadCloud, CreditCard, ExternalLink } from 'lucide-react';
 import { api } from '../../../services/api';
 import { useAuth } from '../../auth/AuthContext';
 import { DragDropUpload } from '../../../components/DragDropUpload';
 import { useSubscription } from '../../subscription/hooks/useSubscription';
-import { SubscriptionPlans } from '../../subscription/components/SubscriptionPlans';
 import type { Studio } from '../../../services/types';
 
 export const StudioSettings: React.FC = () => {
@@ -14,7 +13,6 @@ export const StudioSettings: React.FC = () => {
     const [loading, setLoading] = useState(false);
     const [saving, setSaving] = useState(false);
     const [uploading, setUploading] = useState(false);
-    const [showPlans, setShowPlans] = useState(false);
     const [restoring, setRestoring] = useState(false);
 
     useEffect(() => {
@@ -379,7 +377,7 @@ export const StudioSettings: React.FC = () => {
                                 <div className="flex gap-4">
                                     <button
                                         type="button"
-                                        onClick={() => setShowPlans(true)}
+                                        onClick={() => console.log('Show plans')}
                                         className="px-4 py-2 bg-accent text-white rounded-lg hover:bg-accent-hover transition-colors"
                                     >
                                         Attiva un piano
