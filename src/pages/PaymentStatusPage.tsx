@@ -99,7 +99,6 @@ export const PaymentStatusPage: React.FC = () => {
                         <p className="text-slate-400">Stiamo aspettando la conferma sicura dalla banca.</p>
                         <p className="text-xs text-slate-600 mt-4">Non chiudere questa pagina ({attempts})</p>
 
-                        {/* DEBUG DATA */}
                         <div className="mt-8 p-4 bg-black/50 rounded text-left font-mono text-xs text-slate-400 overflow-auto max-h-32">
                             <p className="font-bold text-slate-200">Debug Info:</p>
                             <p>User: {user?.id}</p>
@@ -108,6 +107,12 @@ export const PaymentStatusPage: React.FC = () => {
                             ) : (
                                 <p>Status: {lastSub ? JSON.stringify(lastSub, null, 2) : 'Fetching...'}</p>
                             )}
+                        </div>
+
+                        <div className="mt-6 border-t border-slate-700 pt-6">
+                            <a href="/dashboard" className="text-sm text-slate-400 hover:text-white underline transition-colors">
+                                Salta attesa e vai alla Dashboard
+                            </a>
                         </div>
                     </div>
                 )}
