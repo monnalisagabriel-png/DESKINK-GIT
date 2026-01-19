@@ -29,6 +29,7 @@ export const PaymentStatusPage: React.FC = () => {
         let isMounted = true;
         let timeoutId: ReturnType<typeof setTimeout>;
         const startTime = Date.now();
+        let hasTriedProvisioning = false;
 
         const checkStatus = async () => {
             if (!isMounted) return;
@@ -45,46 +46,54 @@ export const PaymentStatusPage: React.FC = () => {
 
                     // Critical: Force Context Refresh
                     console.log('Subscription active! Refreshing context...');
-
                     try {
                         if (refreshSubscription) await refreshSubscription();
                         if (refreshProfile) await refreshProfile();
-
-                        // NEW: Check if Studio is missing despite subscription
-                        if (!hasStudio) {
-                            const pendingName = localStorage.getItem('pendingStudioName');
-                            if (pendingName) {
-                                console.log('Attempting to provision missing studio:', pendingName);
-                                setStatus('provisioning');
-                                const res = await api.subscription.provisionMissingStudio(pendingName);
-                                if (isMounted) setProvisionResult(res);
-
-                                if (res.success) {
-                                    if (refreshProfile) await refreshProfile();
-                                    // Clear storage
-                                    localStorage.removeItem('pendingStudioName');
-                                    setStatus('active');
-                                } else {
-                                    console.error("Provisioning failed", res.error);
-                                    // Fallback to error or keep trying?
-                                    // If provisioning failed, it might mean user already has studio (idempotency handled by API)
-                                    // We will retry check loop
-                                }
-                            }
-                        }
-
-                    } catch (e) {
-                        console.warn('Context refresh/provision failed, will retry next tick', e);
-                    }
+                    } catch (e) { console.warn(e); }
 
                     // We do NOT navigate here. We wait for `hasStudio` effect above.
 
                 } else {
+                    // IF NO SUBSCRIPTION FOUND (usually because Studio is missing)
+                    // Check if we should try provisioning anyway
+                    const pendingName = localStorage.getItem('pendingStudioName');
+
+                    if (!sub && pendingName && !hasTriedProvisioning && attempts > 1) {
+                        // We waited 2 cycles (~6s). Sub still null. Studio likely missing.
+                        // Try provisioning!
+                        console.log('Subscription missing, but pending name found. Attempting Force-Provision:', pendingName);
+                        setStatus('provisioning');
+                        hasTriedProvisioning = true;
+
+                        try {
+                            const res = await api.subscription.provisionMissingStudio(pendingName);
+                            if (isMounted) setProvisionResult(res);
+
+                            if (res.success) {
+                                console.log('Force-Provision Success!');
+                                if (refreshProfile) await refreshProfile();
+                                // Clear storage
+                                localStorage.removeItem('pendingStudioName');
+                                // Force immediate re-check
+                                checkStatus();
+                                return;
+                            } else {
+                                console.error("Force-Provision failed", res.error);
+                                // If failed, maybe they really didn't pay? Or other error.
+                                // Go back to waiting/error
+                                setStatus('waiting');
+                            }
+                        } catch (provErr) {
+                            console.error("Provisioning Exception:", provErr);
+                            setStatus('waiting');
+                        }
+                    }
+
                     // Stop after 120 seconds (extended)
                     if (Date.now() - startTime > 120000) {
                         setStatus('error');
                     } else {
-                        // If checking and not active, keep 'checking' or 'waiting'
+                        // If checking and not active/provisioning, keep 'checking' or 'waiting'
                         if (status !== 'checking' && status !== 'provisioning') setStatus('waiting');
 
                         setAttempts(prev => prev + 1);

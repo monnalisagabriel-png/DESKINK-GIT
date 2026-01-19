@@ -22,6 +22,11 @@ export const StudioGuard: React.FC = () => {
 
     // If hasStudio is false (checked and confirmed no), redirect to start-payment
     if (hasStudio === false) {
+        // FAIL-SAFE: If we have a pending studio name, go to payment status to try provisioning
+        const pendingName = localStorage.getItem('pendingStudioName');
+        if (pendingName) {
+            return <Navigate to="/payment-status" replace />;
+        }
         return <Navigate to="/start-payment" replace />;
     }
 
