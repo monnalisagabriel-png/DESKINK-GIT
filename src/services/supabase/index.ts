@@ -1861,6 +1861,10 @@ Formatta la risposta ESCLUSIVAMENTE come un JSON array di stringhe, esempio: ["C
             // DYNAMICALLY GET URL from the client to avoid mismatch with Auth Token
             // @ts-ignore - accessing internal property to ensure match
             const supabaseUrl = supabase.supabaseUrl || (supabase as any).itemsUrl || import.meta.env.VITE_SUPABASE_URL || 'https://onwvisahipnlpdijqzoa.supabase.co';
+
+            // @ts-ignore - accessing internal property
+            const supabaseKey = supabase.supabaseKey || (supabase as any).apiKey || import.meta.env.VITE_SUPABASE_ANON_KEY;
+
             const FUNCTION_URL = `${supabaseUrl}/functions/v1/create-checkout-session`;
 
             console.log(`[REPO] Fetching checkout session from: ${FUNCTION_URL} for tier: ${mappedTier}`);
@@ -1870,6 +1874,7 @@ Formatta la risposta ESCLUSIVAMENTE come un JSON array di stringhe, esempio: ["C
                     method: 'POST',
                     headers: {
                         'Authorization': `Bearer ${session.access_token}`,
+                        'apikey': supabaseKey, // CRITICAL: Supabase Gateway requires this
                         'Content-Type': 'application/json'
                     },
                     body: JSON.stringify({
