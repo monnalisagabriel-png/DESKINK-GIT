@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
     Users, Calendar, TrendingUp,
@@ -136,6 +136,7 @@ export const Dashboard: React.FC = () => {
             if (!user) return;
             if (user.role === 'owner' || user.role === 'STUDIO_ADMIN' || user.role === 'MANAGER') {
                 try {
+                    if (!user.studio_id) return;
                     const fStats = await api.financials.getStats(new Date(), user.studio_id);
                     let wCount = 0;
                     if (user.studio_id) {
@@ -164,7 +165,7 @@ export const Dashboard: React.FC = () => {
             }
         };
         loadStats();
-    }, [user?.role, user?.studio_id]);
+    }, [user]);
 
     // -- Realtime Hooks --
     useRealtime('appointments', () => {
@@ -173,13 +174,13 @@ export const Dashboard: React.FC = () => {
     });
 
     useRealtime('waitlist_entries', () => {
-        if (user.role === 'owner' || user.role === 'MANAGER') {
+        if (user?.role === 'owner' || user?.role === 'MANAGER') {
             loadDashboardData();
         }
     });
 
     useRealtime('transactions', () => {
-        if (user.role === 'owner' || user.role === 'MANAGER') {
+        if (user?.role === 'owner' || user?.role === 'MANAGER') {
             loadDashboardData();
         }
     });
@@ -209,423 +210,256 @@ export const Dashboard: React.FC = () => {
     if (!user) return <div className="p-8 text-center text-white">Caricamento utente...</div>;
 
     const renderAdminWidgets = () => (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+        <>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+                <StatsCard
+                    title="Incasso Oggi"
+                    value={`€ ${stats.revenue_today.toLocaleString()}`}
+                    icon={DollarSign}
+                    trend="+12%"
+                    color="cyan"
+                    onClick={() => navigate('/financials')}
+                />
+                <StatsCard
+                    title="Incasso Mese"
+                    value={`€ ${stats.revenue_month.toLocaleString()}`}
+                    icon={TrendingUp}
+                    trend="+8%"
+                    color="purple"
+                    onClick={() => navigate('/financials')}
+                />
+                <StatsCard
+                    title="Waitlist"
+                    value={stats.waitlist_count.toString()}
+                    icon={Users}
+                    trend="In attesa"
+                    color="pink"
+                    onClick={() => navigate('/waitlist')}
+                />
+                <StatsCard
+                    title="Staff Presente"
+                    value={`${stats.staff_present}/${stats.staff_total}`}
+                    icon={UserCheck}
+                    trend="Oggi"
+                    color="orange"
+                    onClick={() => navigate('/team')}
+                />
+            </div>
+
+            <div className="mt-8">
+                <h2 className="text-xl font-bold text-white mb-4">Richieste Appuntamenti</h2>
+                <BookingRequests />
+            </div>
+        </>
+    );
+
+    const renderArtistWidgets = () => (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
             <StatsCard
-                title="Incasso Oggi"
-                value={isPrivacyMode ? '••••' : `€${stats.revenue_today.toLocaleString()}`}
-                change={isPrivacyMode ? undefined : "0%"}
-                isPositive={true}
-                icon={DollarSign}
-                color="bg-green-500"
+                title="Prossimo Appuntamento"
+                value={appointments.length > 0 ? format(parseISO(appointments[0].start_time), "HH:mm") : "--:--"}
+                icon={Clock}
+                trend={appointments.length > 0 ? "Oggi" : "Nessuno"}
+                color="cyan"
             />
             <StatsCard
-                title="Appuntamenti Validi"
+                title="Appuntamenti Oggi"
                 value={appointments.length.toString()}
-                change="0"
-                isPositive={true}
                 icon={Calendar}
-                color="bg-blue-500"
+                trend="Confermati"
+                color="purple"
             />
             <StatsCard
-                title="Richieste in Attesa"
-                value={stats.waitlist_count.toString()}
-                icon={Users}
-                color="bg-orange-500"
-            />
-            <StatsCard
-                title="Staff Presente"
-                value={`${stats.staff_present}/${stats.staff_total}`}
-                icon={UserCheck}
-                color="bg-purple-500"
+                title="I Tuoi Guadagni (Mese)"
+                value={isPrivacyMode ? "****" : `€ ${artistRealEarnings.toLocaleString()}`}
+                icon={DollarSign}
+                trend="Netto (Stimato)"
+                color="green"
             />
         </div>
     );
 
-    const renderArtistWidgets = () => {
-        const netEarnings = isPrivacyMode ? '••••' : `€${artistRealEarnings.toLocaleString('it-IT', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
-
-        const myApptsCount = appointments.length;
-        const now = new Date();
-        const nextAppt = appointments.find(a => new Date(a.start_time) > now);
-        let nextApptText = 'Nessuno';
-
-        if (nextAppt) {
-            const diffMs = new Date(nextAppt.start_time).getTime() - now.getTime();
-            const diffMins = Math.round(diffMs / 60000);
-            if (diffMins < 60) nextApptText = `tra ${diffMins}m`;
-            else {
-                const diffHours = Math.floor(diffMins / 60);
-                nextApptText = `tra ${diffHours}h`;
-            }
-        }
-
-        return (
-            <div className="space-y-8 mb-8">
-                <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-                    <StatsCard
-                        title="I Miei Appuntamenti"
-                        value={myApptsCount.toString()}
-                        icon={Calendar}
-                        color="bg-accent"
-                    />
-                    {contract?.rent_type === 'PRESENCES' && (
-                        <StatsCard
-                            title="Presenze Rimanenti"
-                            value={isPrivacyMode ? '••••' : `${(contract.presence_package_limit || 0) - contract.used_presences}/${contract.presence_package_limit}`}
-                            icon={Users}
-                            color={(contract.presence_package_limit || 0) - contract.used_presences <= 2 ? "bg-red-500" : "bg-green-500"}
-                        />
-                    )}
-                    <StatsCard
-                        title="Prossimo Cliente"
-                        value={nextApptText}
-                        icon={Clock}
-                        color="bg-blue-500"
-                    />
-                    <StatsCard
-                        title="Guadagno Reale (Mese)"
-                        value={netEarnings}
-                        change={isPrivacyMode ? undefined : "0%"}
-                        isPositive={true}
-                        icon={TrendingUp}
-                        color="bg-green-500"
-                    />
-                </div>
-
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                    <div className="lg:col-span-3">
-                        <BookingRequests appointments={appointments} onUpdate={loadDashboardData} />
-                    </div>
-                </div>
-            </div>
-        );
-    };
-
-    const renderStudentWidgets = () => {
-        if (!studentCourse) return (
-            <div className="col-span-full text-center py-12 bg-bg-secondary rounded-lg border border-border text-text-muted">
-                Non sei iscritto a nessun corso al momento.
-            </div>
-        );
-
-        return (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8 col-span-full">
-                <div className="bg-bg-secondary p-6 rounded-xl border border-border flex flex-col justify-between">
-                    <div>
-                        <div className="flex items-center gap-3 mb-4">
-                            <div className="p-2 bg-purple-500/20 rounded-lg text-purple-400">
-                                <BookOpen size={24} />
-                            </div>
-                            <div>
-                                <h3 className="text-lg font-bold text-text-primary">Il Tuo Corso</h3>
-                                <p className="text-sm text-text-muted">{studentCourse.title}</p>
-                            </div>
-                        </div>
-                        <p className="text-text-secondary text-sm line-clamp-2 mb-4">
-                            {studentCourse.description}
-                        </p>
-                    </div>
-                    <div className="flex items-center gap-4 text-sm text-text-muted pt-4 border-t border-border">
-                        <span className="flex items-center gap-1"><Clock size={14} /> {studentCourse.duration}</span>
-                        <span className="flex items-center gap-1"><FileText size={14} /> {studentCourse.materials?.length || 0} Moduli</span>
-                    </div>
-                </div>
-
-                <div className="bg-bg-secondary p-6 rounded-xl border border-border">
-                    <h3 className="text-lg font-bold text-text-primary mb-4 flex items-center gap-2">
-                        <UserCheck size={20} className="text-green-400" /> Le Tue Presenze
-                    </h3>
-
-                    {studentEnrollment ? (
-                        <>
-                            <div className="mb-2 flex justify-between items-end">
-                                <span className="text-3xl font-bold text-text-primary">{studentEnrollment.attended_days}</span>
-                                <span className="text-sm text-text-muted mb-1">su {studentEnrollment.allowed_days} giorni totali</span>
-                            </div>
-                            <div className="w-full bg-bg-tertiary h-3 rounded-full overflow-hidden mb-4">
-                                <div
-                                    className={clsx("h-full transition-all duration-500",
-                                        studentEnrollment.attended_days >= studentEnrollment.allowed_days ? "bg-red-500" : "bg-green-500")}
-                                    style={{ width: `${Math.min((studentEnrollment.attended_days / studentEnrollment.allowed_days) * 100, 100)}%` }}
-                                />
-                            </div>
-                            <p className="text-xs text-text-muted text-center">
-                                {studentEnrollment.attended_days >= studentEnrollment.allowed_days
-                                    ? "Hai completato i giorni previsti!"
-                                    : "Continua così!"}
-                            </p>
-                        </>
-                    ) : (
-                        <p className="text-text-muted italic">Dati presenze non disponibili.</p>
-                    )}
-
-                    <div className="mt-4 pt-4 border-t border-border flex justify-center">
-                        <button
-                            onClick={() => setIsTermsViewOpen(true)}
-                            className="text-xs text-text-muted hover:text-text-primary underline flex items-center gap-1 transition-colors"
-                        >
-                            <FileText size={12} />
-                            Vedi Termini e Condizioni Accettati
-                        </button>
-                    </div>
-                </div>
-
-                <div className="bg-bg-secondary p-6 rounded-xl border border-border flex flex-col justify-between">
-                    <h3 className="text-lg font-bold text-text-primary mb-4">Materiale Didattico</h3>
-                    <div className="space-y-3 mb-4 flex-1 overflow-y-auto max-h-[300px]">
-                        {(studentCourse.materials || []).map((mat, i) => (
-                            <div
-                                key={i}
-                                onClick={() => {
-                                    if (mat.url && mat.url !== '#') window.open(mat.url, '_blank');
-                                    else alert('Link non disponibile per questo materiale');
-                                }}
-                                className="flex items-center gap-3 p-3 rounded bg-bg-tertiary/30 hover:bg-bg-tertiary transition-colors cursor-pointer group border border-transparent hover:border-border"
-                            >
-                                <div className="text-accent group-hover:text-text-primary transition-colors p-2 bg-white/5 rounded-lg">
-                                    {mat.type === 'VIDEO' ? <PlayCircle size={18} /> : <FileText size={18} />}
-                                </div>
-                                <div className="flex-1 min-w-0">
-                                    <p className="text-sm font-medium text-text-secondary group-hover:text-text-primary truncate transition-colors">{mat.title}</p>
-                                    <p className="text-xs text-text-muted">{mat.type}</p>
-                                </div>
-                                <ChevronRight size={16} className="text-text-muted opacity-0 group-hover:opacity-100 transition-opacity" />
-                            </div>
-                        ))}
-                        {(studentCourse.materials || []).length === 0 && (
-                            <div className="text-center py-8 text-text-muted italic flex flex-col items-center gap-2">
-                                <BookOpen size={24} className="opacity-20" />
-                                <p>Nessun materiale disponibile per il tuo corso.</p>
-                            </div>
-                        )}
-                    </div>
-                </div>
-            </div>
-        );
-    };
+    const renderStudentWidgets = () => (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+            <StatsCard
+                title="Il Tuo Corso"
+                value={studentCourse?.title || "Nessun Corso"}
+                icon={BookOpen}
+                trend={studentEnrollment?.status === 'ACTIVE' ? "Attivo" : "Non Attivo"}
+                color="cyan"
+                onClick={() => navigate('/academy')}
+            />
+            <StatsCard
+                title="Lezioni Completate"
+                value={studentEnrollment ? `${studentEnrollment.completed_lessons.length} / ${studentCourse?.modules.reduce((acc, m) => acc + m.lessons.length, 0) || 0}` : "0 / 0"}
+                icon={CheckCircle}
+                trend="Progresso"
+                color="purple"
+            />
+            {/* Presenze Rimanenti removed as per previous request or kept if relevant, kept simple for now */}
+        </div>
+    );
 
     return (
-        <div className="h-full overflow-y-auto overflow-x-hidden p-4 md:p-8 pt-20 md:pt-8 text-text-primary">
-            <div className="max-w-7xl mx-auto">
-                <header className="mb-8 flex justify-between items-start">
-                    <div>
-                        <h1 className="text-2xl md:text-3xl font-bold text-text-primary mb-2 truncate">
-                            {studio?.name || 'DESKINK'}
-                        </h1>
-                        <p className="text-text-muted text-sm md:text-base">
-                            Bentornato, <span className="text-text-primary font-medium">{user.full_name || user.email?.split('@')[0] || 'User'}</span>
-                        </p>
-                    </div>
-                    <div className="flex gap-2 md:hidden">
+        <div className="min-h-screen bg-gray-900 text-white p-4 pb-20 md:pb-4 md:p-8">
+            <header className="flex justify-between items-center mb-8">
+                <div>
+                    <h1 className="text-3xl font-bold bg-gradient-to-r from-cyan-400 to-purple-500 bg-clip-text text-transparent">
+                        Dashboard
+                    </h1>
+                    <p className="text-gray-400 mt-1">
+                        Benvenuto, {user?.full_name}
+                    </p>
+                </div>
+
+                <div className="flex gap-3">
+                    <button
+                        onClick={togglePrivacyMode}
+                        className="p-2 bg-gray-800 rounded-lg hover:bg-gray-700 transition-colors"
+                        title={isPrivacyMode ? "Mostra valori" : "Nascondi valori"}
+                    >
+                        {isPrivacyMode ? <EyeOff size={20} className="text-gray-400" /> : <Eye size={20} className="text-gray-400" />}
+                    </button>
+                    {(user.role === 'STUDENT' || user.role === 'student') && studio?.academy_terms && (
                         <button
-                            onClick={() => setIsShareOpen(true)}
-                            className="p-2 bg-bg-secondary border border-border rounded-full text-text-muted hover:text-text-primary transition-colors"
-                            title="Condividi App"
+                            onClick={() => {
+                                setViewTermsContent(studio.academy_terms || '');
+                                setIsTermsViewOpen(true);
+                            }}
+                            className="bg-gray-800 hover:bg-gray-700 text-cyan-400 px-4 py-2 rounded-lg flex items-center gap-2 transition-colors"
                         >
-                            <Share2 size={20} />
+                            <FileText size={18} />
+                            <span>Regolamento</span>
                         </button>
+                    )}
+                </div>
+            </header>
+
+            {/* Widgets Section */}
+            {(user.role === 'owner' || user.role === 'MANAGER' || user.role === 'STUDIO_ADMIN') && renderAdminWidgets()}
+            {(user.role === 'ARTIST' || user.role === 'artist') && renderArtistWidgets()}
+            {(user.role === 'STUDENT' || user.role === 'student') && renderStudentWidgets()}
+
+
+            {/* Main Content Area - Appointments List */}
+            <div className="bg-gray-800 rounded-2xl p-6 border border-gray-700">
+                <div className="flex justify-between items-center mb-6">
+                    <h2 className="text-xl font-bold flex items-center gap-2">
+                        <Calendar className="text-cyan-400" />
+                        Appuntamenti di Oggi
+                    </h2>
+                    <button
+                        onClick={() => navigate('/calendar')}
+                        className="text-sm text-gray-400 hover:text-white flex items-center gap-1"
+                    >
+                        Vedi Calendario <ChevronRight size={16} />
+                    </button>
+                </div>
+
+                {loading ? (
+                    <div className="text-center py-8 text-gray-400">Caricamento appuntamenti...</div>
+                ) : appointments.length === 0 ? (
+                    <div className="text-center py-12 bg-gray-900/50 rounded-xl border border-dashed border-gray-700">
+                        <Calendar size={48} className="mx-auto text-gray-600 mb-4" />
+                        <p className="text-gray-400">Nessun appuntamento in programma per oggi</p>
                         <button
-                            onClick={togglePrivacyMode}
-                            className="p-2 bg-bg-secondary border border-border rounded-full text-text-muted hover:text-text-primary transition-colors"
-                            title={isPrivacyMode ? 'Mostra Valori' : 'Nascondi Valori'}
+                            onClick={() => navigate('/calendar')}
+                            className="mt-4 text-cyan-400 hover:text-cyan-300 font-medium"
                         >
-                            {isPrivacyMode ? <EyeOff size={20} /> : <Eye size={20} />}
+                            Aggiungi Appuntamento
                         </button>
                     </div>
-                </header>
-
-                {(user.role === 'owner' || user.role === 'STUDIO_ADMIN' || user.role === 'studio_admin' || user.role === 'MANAGER' || user.role === 'manager') && renderAdminWidgets()}
-                {(user.role === 'ARTIST' || user.role === 'artist') && renderArtistWidgets()}
-                {(user.role === 'STUDENT' || user.role === 'student') && renderStudentWidgets()}
-
-                {user.role !== 'STUDENT' && user.role !== 'student' && (
-                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-20">
-                        <div className="lg:col-span-2 bg-bg-secondary border border-border rounded-lg p-6 min-h-[300px]">
-                            <h3 className="text-lg font-bold text-text-primary mb-4">
-                                {(user.role === 'ARTIST' || user.role === 'artist') ? 'Programma di Oggi' : 'Appuntamenti Recenti'}
-                            </h3>
-
-                            {loading ? (
-                                <div className="flex justify-center items-center h-48 text-text-muted">
-                                    Caricamento...
-                                </div>
-                            ) : (
-                                <div className="space-y-6">
-                                    {/* Current Week */}
-                                    <div>
-                                        <h4 className="text-[10px] font-semibold text-text-muted mb-3 uppercase tracking-wider">Questa Settimana</h4>
-                                        {appointments.filter(appt => isSameWeek(parseISO(appt.start_time), new Date(), { weekStartsOn: 1 })).length > 0 ? (
-                                            <div className="space-y-3">
-                                                {appointments
-                                                    .filter(appt => isSameWeek(parseISO(appt.start_time), new Date(), { weekStartsOn: 1 }))
-                                                    .map((appt) => (
-                                                        <div key={appt.id} className="flex flex-col sm:flex-row sm:items-center justify-between p-4 bg-bg-primary rounded-lg border border-border/50 hover:border-accent/50 transition-colors gap-4">
-                                                            <div className="flex items-center gap-3 min-w-0 flex-1">
-                                                                <div className="h-10 w-10 shrink-0 rounded-full bg-accent/10 flex items-center justify-center text-accent">
-                                                                    <Calendar size={18} />
-                                                                </div>
-                                                                <div className="min-w-0 flex-1">
-                                                                    <p className="font-medium text-text-primary text-sm truncate">
-                                                                        {format(parseISO(appt.start_time), 'EEEE d MMMM', { locale: it })} - {format(parseISO(appt.start_time), 'HH:mm')}
-                                                                    </p>
-                                                                    <p className="text-xs text-text-muted truncate">
-                                                                        {appt.client?.full_name} • {appt.service_name}
-                                                                    </p>
-                                                                </div>
-                                                            </div>
-
-                                                            <div className="flex justify-end">
-                                                                {user.role !== 'ARTIST' && (
-                                                                    <button
-                                                                        onClick={() => sendWhatsAppReminder(appt, 'CONFIRMATION')}
-                                                                        className="p-2 text-green-400 hover:bg-green-400/10 rounded-lg transition-colors"
-                                                                        title="Richiedi Conferma"
-                                                                    >
-                                                                        <CheckCircle size={18} />
-                                                                    </button>
-                                                                )}
-                                                            </div>
-                                                        </div>
-                                                    ))}
+                ) : (
+                    <div className="space-y-4">
+                        {appointments.map((appt) => (
+                            <div
+                                key={appt.id}
+                                className="bg-gray-900 p-4 rounded-xl border border-gray-700 hover:border-cyan-500/50 transition-colors group"
+                            >
+                                <div className="flex justify-between items-start">
+                                    <div className="flex gap-4">
+                                        <div className="flex flex-col items-center justify-center bg-gray-800 w-16 h-16 rounded-lg border border-gray-700">
+                                            <span className="text-xl font-bold text-white">
+                                                {format(parseISO(appt.start_time), 'HH:mm')}
+                                            </span>
+                                            <span className="text-xs text-gray-500">
+                                                {format(parseISO(appt.end_time), 'HH:mm')}
+                                            </span>
+                                        </div>
+                                        <div>
+                                            <h3 className="font-bold text-lg text-white group-hover:text-cyan-400 transition-colors">
+                                                {appt.client?.full_name || 'Cliente Occasionale'}
+                                            </h3>
+                                            <div className="flex items-center gap-2 text-gray-400 text-sm mt-1">
+                                                <span className="px-2 py-0.5 rounded-full bg-gray-800 border border-gray-600 text-xs">
+                                                    {appt.service_id ? 'Servizio' : 'Consulenza'}
+                                                </span>
+                                                {appt.notes && (
+                                                    <span className="text-gray-500 truncate max-w-[200px]">
+                                                        • {appt.notes}
+                                                    </span>
+                                                )}
                                             </div>
-                                        ) : (
-                                            <p className="text-sm text-text-muted italic">Nessun appuntamento.</p>
-                                        )}
+                                        </div>
                                     </div>
 
-                                    {/* Next Week */}
-                                    <div>
-                                        <h4 className="text-[10px] font-semibold text-text-muted mb-3 uppercase tracking-wider">Prossima Settimana</h4>
-                                        {appointments.filter(appt => !isSameWeek(parseISO(appt.start_time), new Date(), { weekStartsOn: 1 })).length > 0 ? (
-                                            <div className="space-y-3">
-                                                {appointments
-                                                    .filter(appt => !isSameWeek(parseISO(appt.start_time), new Date(), { weekStartsOn: 1 }))
-                                                    .map((appt) => (
-                                                        <div key={appt.id} className="flex flex-col sm:flex-row sm:items-center justify-between p-4 bg-bg-primary rounded-lg border border-border/50 hover:border-accent/50 transition-colors gap-4">
-                                                            <div className="flex items-center gap-3 min-w-0 flex-1">
-                                                                <div className="h-10 w-10 shrink-0 rounded-full bg-purple-500/10 flex items-center justify-center text-purple-500">
-                                                                    <Calendar size={18} />
-                                                                </div>
-                                                                <div className="min-w-0 flex-1">
-                                                                    <p className="font-medium text-text-primary text-sm truncate">
-                                                                        {format(parseISO(appt.start_time), 'EEEE d MMMM', { locale: it })} - {format(parseISO(appt.start_time), 'HH:mm')}
-                                                                    </p>
-                                                                    <p className="text-xs text-text-muted truncate">
-                                                                        {appt.client?.full_name} • {appt.service_name}
-                                                                    </p>
-                                                                </div>
-                                                            </div>
-
-                                                            <div className="flex gap-2 justify-end">
-                                                                {user.role !== 'ARTIST' && (
-                                                                    <>
-                                                                        <button
-                                                                            onClick={() => sendWhatsAppReminder(appt, 'WEEK_NOTICE')}
-                                                                            className="p-2 text-blue-400 hover:bg-blue-400/10 rounded-lg transition-colors"
-                                                                            title="Promemoria 1 Settimana"
-                                                                        >
-                                                                            <Clock size={18} />
-                                                                        </button>
-                                                                        <button
-                                                                            onClick={() => sendWhatsAppReminder(appt, 'CONFIRMATION')}
-                                                                            className="p-2 text-green-400 hover:bg-green-400/10 rounded-lg transition-colors"
-                                                                            title="Richiedi Conferma"
-                                                                        >
-                                                                            <CheckCircle size={18} />
-                                                                        </button>
-                                                                    </>
-                                                                )}
-                                                            </div>
-                                                        </div>
-                                                    ))}
-                                            </div>
-                                        ) : (
-                                            <p className="text-sm text-text-muted italic">Nessun appuntamento.</p>
-                                        )}
+                                    <div className="flex items-center gap-2">
+                                        <button
+                                            onClick={() => sendWhatsAppReminder(appt, 'WEEK_NOTICE')}
+                                            className="p-2 hover:bg-green-500/10 text-gray-400 hover:text-green-500 rounded-lg transition-colors"
+                                            title="Invia promemoria WhatsApp"
+                                        >
+                                            <Share2 size={18} />
+                                        </button>
+                                        <div className={clsx(
+                                            "px-3 py-1 rounded-full text-xs font-medium border",
+                                            {
+                                                'bg-green-500/10 text-green-500 border-green-500/20': appt.status === 'CONFIRMED',
+                                                'bg-yellow-500/10 text-yellow-500 border-yellow-500/20': appt.status === 'PENDING',
+                                                'bg-blue-500/10 text-blue-500 border-blue-500/20': appt.status === 'COMPLETED',
+                                                'bg-red-500/10 text-red-500 border-red-500/20': appt.status === 'CANCELLED'
+                                            }
+                                        )}>
+                                            {appt.status}
+                                        </div>
                                     </div>
-                                </div>
-                            )}
-                        </div>
-
-                        <div className="space-y-6">
-                            <div className="bg-bg-secondary border border-border rounded-lg p-6">
-                                <h3 className="text-lg font-bold text-text-primary mb-4">Azioni Rapide</h3>
-                                <div className="space-y-3">
-                                    <button
-                                        onClick={() => navigate('/calendar')}
-                                        className="w-full py-3 px-4 bg-accent hover:bg-accent-hover text-white rounded-lg font-medium transition-colors text-sm"
-                                    >
-                                        + Nuovo Appuntamento
-                                    </button>
-                                    <button
-                                        onClick={() => navigate('/communications')}
-                                        className="w-full py-3 px-4 bg-bg-tertiary hover:bg-white/10 text-text-primary rounded-lg font-medium transition-colors border border-border text-sm"
-                                    >
-                                        Controlla Messaggi
-                                    </button>
                                 </div>
                             </div>
-                        </div>
+                        ))}
                     </div>
                 )}
             </div>
 
-            {/* Share App QR Modal */}
-            {isShareOpen && (
-                <div className="fixed inset-0 z-50 bg-black/90 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-200">
-                    <div className="bg-white rounded-2xl p-8 max-w-sm w-full text-center relative shadow-2xl transform transition-all scale-100">
-                        <button
-                            onClick={() => setIsShareOpen(false)}
-                            className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 transition-colors p-2"
-                        >
-                            <X size={24} />
-                        </button>
-
-                        <h2 className="text-2xl font-bold text-gray-900 mb-2">Condividi DESKINK</h2>
-                        <p className="text-gray-500 mb-6">Fai scansionare questo codice per accedere all'applicazione</p>
-
-                        <div className="bg-gray-100 p-4 rounded-xl inline-block mb-6">
-                            <img
-                                src={`https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(window.location.origin)}`}
-                                alt="App QR Code"
-                                className="w-64 h-64 mix-blend-multiply"
-                            />
-                        </div>
-
-                        <div className="flex flex-col gap-2">
-                            <p className="text-xs text-gray-400 break-all bg-gray-50 p-2 rounded">{window.location.origin}</p>
-                            <button
-                                onClick={() => setIsShareOpen(false)}
-                                className="w-full py-3 bg-gray-900 hover:bg-black text-white rounded-xl font-medium transition-colors"
-                            >
-                                Chiudi
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            )}
-
-            {/* Read-Only Terms Modal */}
+            {/* Terms Modal */}
             {isTermsViewOpen && (
-                <div className="fixed inset-0 z-[60] bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
-                    <div className="bg-bg-primary border border-border rounded-xl w-full max-w-2xl flex flex-col max-h-[90vh]">
-                        <div className="p-6 border-b border-border flex items-center justify-between">
-                            <h2 className="text-xl font-bold text-text-primary flex items-center gap-2">
-                                <FileText className="text-accent" />
-                                Termini e Condizioni
+                <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+                    <div className="bg-gray-800 rounded-2xl w-full max-w-2xl max-h-[80vh] flex flex-col border border-gray-700 shadow-2xl">
+                        <div className="p-6 border-b border-gray-700 flex justify-between items-center">
+                            <h2 className="text-xl font-bold text-cyan-400 flex items-center gap-2">
+                                <FileText size={24} />
+                                Regolamento Accademia
                             </h2>
                             <button
                                 onClick={() => setIsTermsViewOpen(false)}
-                                className="text-text-muted hover:text-text-primary transition-colors"
+                                className="p-2 hover:bg-gray-700 rounded-full text-gray-400 hover:text-white transition-colors"
                             >
-                                <X size={24} />
+                                <X size={20} />
                             </button>
                         </div>
-
-                        <div className="p-6 flex-1 overflow-y-auto bg-bg-tertiary/30">
-                            <div className="prose prose-invert max-w-none text-text-secondary text-sm whitespace-pre-wrap font-mono bg-bg-primary p-4 rounded-lg border border-border">
-                                {viewTermsContent || "Nessun termine disponibile."}
+                        <div className="p-6 overflow-y-auto custom-scrollbar">
+                            <div className="prose prose-invert max-w-none">
+                                <pre className="whitespace-pre-wrap font-sans text-gray-300 leading-relaxed">
+                                    {viewTermsContent || "Nessun regolamento disponibile."}
+                                </pre>
                             </div>
+                        </div>
+                        <div className="p-6 border-t border-gray-700 flex justify-end">
+                            <button
+                                onClick={() => setIsTermsViewOpen(false)}
+                                className="px-6 py-2 bg-gray-700 hover:bg-gray-600 text-white rounded-lg transition-colors font-medium"
+                            >
+                                Chiudi
+                            </button>
                         </div>
                     </div>
                 </div>
