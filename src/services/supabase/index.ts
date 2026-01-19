@@ -1849,61 +1849,62 @@ Formatta la risposta ESCLUSIVAMENTE come un JSON array di stringhe, esempio: ["C
             const { data: { session } } = await supabase.auth.getSession();
             if (!session) throw new Error("Not authenticated");
 
-            // Use Supabase SDK standard invocation which handles Auth headers automatically
-            // Map planId from 'starter' -> 'basic' if that's what the Edge Function expects (Price IDs mapping)
-            // Edge Function Index.ts has: basic, pro, plus. So 'starter' from DB/UI needs to be mapped to 'basic'.
+            // Mapping: 'starter' (UI) -> 'basic' (Stripe/Edge Function Config)
             const tierMapping: Record<string, string> = {
                 'starter': 'basic',
                 'basic': 'basic',
                 'pro': 'pro',
                 'plus': 'plus'
             };
-
             const mappedTier = tierMapping[planId] || planId;
 
-            console.log(`[Repo] Creating checkout session for tier: ${mappedTier} (orig: ${planId}) (Token len: ${session.access_token.length})`);
+            const PROJECT_REF = 'onwvisahipnlpdijqzoa';
+            const FUNCTION_URL = `https://${PROJECT_REF}.supabase.co/functions/v1/create-checkout-session`;
 
-            const { data, error } = await supabase.functions.invoke('create-checkout-session', {
-                body: {
-                    tier: mappedTier,
-                    interval: 'month',
-                    success_url: successUrl,
-                    cancel_url: cancelUrl,
-                    extra_seats: extraSeats,
-                    studio_name: studioName
-                },
-                headers: {
-                    Authorization: `Bearer ${session.access_token}`
+            console.log(`[REPO] Fetching checkout session from: ${FUNCTION_URL} for tier: ${mappedTier}`);
+
+            try {
+                const response = await fetch(FUNCTION_URL, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${session.access_token}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        tier: mappedTier,
+                        interval: 'month',
+                        success_url: successUrl,
+                        cancel_url: cancelUrl,
+                        extra_seats: extraSeats,
+                        studio_name: studioName
+                    })
+                });
+
+                const responseText = await response.text();
+
+                let data;
+                try {
+                    data = JSON.parse(responseText);
+                } catch (e) {
+                    // Start of non-JSON error (often HTML 500 page)
+                    throw new Error(`Server returned non-JSON error (${response.status}): ${responseText.substring(0, 150)}...`);
                 }
-            });
 
-            if (error) {
-                console.error("Function Invocation Error FULL OBJECT:", error);
-
-                // NEW: It seems invoke() throws an error object that might NOT contain the response body if it's a non-200.
-                // However, if the function returns a JSON with `{ error: ... }`, Supabase client typically puts it in `data` or `error`.
-                // If it's a 500/400, `error` object is populated.
-
-                let errorMessage = error.message || 'Failed to create checkout session';
-
-                // Attempt to parse 'context' or see if 'details' exists
-                if (error.context && typeof error.context === 'object') {
-                    // Sometimes context contains the response
-                    errorMessage += ` (Context: ${JSON.stringify(error.context)})`;
+                if (!response.ok) {
+                    const errorMsg = data.error || data.message || JSON.stringify(data);
+                    throw new Error(`Checkout Failed (${response.status}): ${errorMsg}`);
                 }
 
-                throw new Error(errorMessage);
+                if (!data.url) {
+                    throw new Error("No URL returned from checkout function");
+                }
+
+                return data.url;
+
+            } catch (error: any) {
+                console.error("Checkout Fetch Error:", error);
+                throw error;
             }
-
-            // Check if data is null/error despite no "error" thrown (soft error)
-            if (!data) throw new Error("No data returned from checkout function");
-            if (data.error) throw new Error(data.error); // Catch our custom error response
-
-            if (!data?.url) {
-                throw new Error("No URL returned from checkout function");
-            }
-
-            return data.url;
         },
 
         createPortalSession: async (returnUrl: string): Promise<string> => {
