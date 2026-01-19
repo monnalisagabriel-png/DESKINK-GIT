@@ -133,9 +133,8 @@ serve(async (req) => {
             success_url: success_url || `${origin}/dashboard/settings?subscription=success`,
             cancel_url: cancel_url || `${origin}/dashboard/settings?subscription=canceled`,
             allow_promotion_codes: true,
-            automatic_payment_methods: {
-                enabled: true,
-            },
+            allow_promotion_codes: true,
+            // automatic_payment_methods removed for subscription compatibility
             metadata: {
                 studio_id: studio?.id || '', // Empty for new users
                 user_id: user.id,
