@@ -6,42 +6,29 @@ import { useAuth } from './AuthContext';
 export const StudioGuard: React.FC = () => {
     const { isAuthenticated, isLoading, hasStudio, subscriptionStatus, refreshProfile, refreshSubscription } = useAuth();
 
-    // 1. Detect Payment Return
-    // Use sessionStorage to persist state in case URL params are stripped
+    // 1. DERIVE EFFECTIVE STATUS
     const queryParams = new URLSearchParams(window.location.search);
     const isPaymentSuccess = queryParams.get('payment') === 'success';
 
-    // Initialize persistent provisioning state if URL param is present
-    if (isPaymentSuccess && !sessionStorage.getItem('provisioning_mode')) {
-        sessionStorage.setItem('provisioning_mode', 'true');
+    let effectiveStatus = subscriptionStatus;
+
+    // Treat "payment=success" as a virtual "pending" state if DB isn't active yet
+    if (isPaymentSuccess && subscriptionStatus !== 'active') {
+        effectiveStatus = 'pending_provisioning';
     }
 
-    const isProvisioning = sessionStorage.getItem('provisioning_mode') === 'true';
-
-    // 2. Poll for Activation
+    // 2. POLL IF PENDING/PROVISIONING
     React.useEffect(() => {
-        if (isProvisioning && (!hasStudio || subscriptionStatus !== 'active')) {
+        if (effectiveStatus === 'pending_provisioning') {
             const interval = setInterval(async () => {
-                console.log('Polling for activation...', subscriptionStatus);
+                console.log('Polling for activation (Status: pending_provisioning)...');
                 await refreshProfile?.();
                 await refreshSubscription?.();
             }, 1000); // 1s aggressive polling
 
-            // Safety Timeout (e.g. 60s)
-            const timeout = setTimeout(() => {
-                sessionStorage.removeItem('provisioning_mode');
-                // Allow fall-through to error/redirect after timeout
-            }, 60000);
-
-            return () => {
-                clearInterval(interval);
-                clearTimeout(timeout);
-            };
-        } else if (hasStudio && subscriptionStatus === 'active') {
-            // Success! Clear mode
-            sessionStorage.removeItem('provisioning_mode');
+            return () => clearInterval(interval);
         }
-    }, [isProvisioning, hasStudio, subscriptionStatus, refreshProfile, refreshSubscription]);
+    }, [effectiveStatus, refreshProfile, refreshSubscription]);
 
     if (isLoading) {
         return (
@@ -57,37 +44,31 @@ export const StudioGuard: React.FC = () => {
         return <Navigate to="/login" replace />;
     }
 
-    // 3. BLOCKING LOADING STATE
-    // Strictly block access while provisioning
-    if (isProvisioning) {
-        if (!hasStudio || subscriptionStatus !== 'active') {
-            return (
-                <div className="flex flex-col items-center justify-center h-screen bg-bg-primary space-y-4">
-                    <div className="text-2xl font-bold text-accent animate-pulse">
-                        Configurazione Studio in corso...
-                    </div>
-                    <p className="text-text-muted">Il pagamento è stato ricevuto. Attendi l'attivazione (max 30s)...</p>
-                    <div className="text-sm text-text-muted">Status: {subscriptionStatus || 'waiting'}</div>
+    // 3. HANDLE STATES
+    if (hasStudio && subscriptionStatus === 'active') {
+        // Access Granted
+        return <Outlet />;
+    }
+
+    if (effectiveStatus === 'pending_provisioning') {
+        // Loading State (NO REDIRECT)
+        return (
+            <div className="flex flex-col items-center justify-center h-screen bg-bg-primary space-y-4">
+                <div className="text-2xl font-bold text-accent animate-pulse">
+                    Configurazione Studio in corso...
                 </div>
-            );
-        }
-        // Once active, we drop through (Effect handles cleanup)
+                <p className="text-text-muted">Stiamo attivando il tuo piano. Attendi qualche secondo...</p>
+                <div className="text-sm text-text-muted">Non ricaricare la pagina.</div>
+            </div>
+        );
     }
 
-    // Normal Protection Logic
+    // STRICT BLOCK: If we are here, status is NOT active and NOT pending
+    // Redirect to pricing
     if (hasStudio === false) {
-        // Fail-safe logic for pending studio is removed in favor of strict flow compliance
-        // User Rule 5: If not paid/active -> pricing only (start-payment)
         return <Navigate to="/start-payment" replace />;
     }
 
-    if (!subscriptionStatus || subscriptionStatus === 'none' || subscriptionStatus === 'canceled' || subscriptionStatus === 'incomplete') {
-        // User Rule 5: Strict Block
-        // If we are here, hasStudio is true, but sub is bad.
-        // Redirect to pricing/payment
-        return <Navigate to="/start-payment" replace />;
-    }
-
-    // Allow Access
-    return <Outlet />;
+    return <Navigate to="/start-payment" replace />;
 };
+```
