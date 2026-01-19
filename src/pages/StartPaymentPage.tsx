@@ -81,8 +81,8 @@ export const StartPaymentPage: React.FC = () => {
 
             const checkoutUrl = await api.subscription.createCheckoutSession(
                 selectedPlan,
-                `${window.location.origin}/payment-status`,
-                `${window.location.origin}/start-payment`,
+                `${window.location.origin}/dashboard?payment=success`,
+                `${window.location.origin}/pricing`, // Cancel URL to Pricing as requested
                 0, // Extra seats default 0
                 studioName // Studio Name for creation
             );
