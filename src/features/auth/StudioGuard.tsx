@@ -71,4 +71,3 @@ export const StudioGuard: React.FC = () => {
 
     return <Navigate to="/start-payment" replace />;
 };
-```
