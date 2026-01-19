@@ -1846,8 +1846,33 @@ Formatta la risposta ESCLUSIVAMENTE come un JSON array di stringhe, esempio: ["C
             };
         },
         createCheckoutSession: async (planId: string, successUrl: string, cancelUrl: string, extraSeats: number = 0, studioName?: string): Promise<string> => {
-            const { data: { session } } = await supabase.auth.getSession();
-            if (!session) throw new Error("Not authenticated");
+            // 1. ROBUST AUTH CHECK & REFRESH
+            // Ensure we have a valid session. 'getSession' is cached, so we might need to be careful.
+            let { data: { session }, error: sessionError } = await supabase.auth.getSession();
+
+            if (sessionError || !session) {
+                console.warn("[REPO] Session potentially missing/expired. Attempting refresh...");
+                const { data: { session: refreshedSession }, error: refreshError } = await supabase.auth.refreshSession();
+
+                if (refreshError || !refreshedSession) {
+                    console.error("[REPO] Failed to refresh session:", refreshError);
+                    throw new Error("Sessione scaduta o non valida. Effettua nuovamente il login.");
+                }
+                session = refreshedSession;
+            }
+
+            // Double check expiry (optional, but requested "ensure valid")
+            // JWT expiry is in 'exp', session has 'expires_at' (timestamp in seconds)
+            const now = Math.floor(Date.now() / 1000);
+            if (session.expires_at && session.expires_at < now + 10) { // 10s buffer
+                console.warn("[REPO] Session about to expire. Refreshing...");
+                const { data: { session: refreshedSession }, error: refreshError } = await supabase.auth.refreshSession();
+                if (!refreshError && refreshedSession) {
+                    session = refreshedSession;
+                }
+            }
+
+            if (!session) throw new Error("Not authenticated (Session Missing)");
 
             // Mapping: 'starter' (UI) -> 'basic' (Stripe/Edge Function Config)
             const tierMapping: Record<string, string> = {
