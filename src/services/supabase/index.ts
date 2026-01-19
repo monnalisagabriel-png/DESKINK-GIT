@@ -1846,35 +1846,50 @@ Formatta la risposta ESCLUSIVAMENTE come un JSON array di stringhe, esempio: ["C
             };
         },
         createCheckoutSession: async (planId: string, successUrl: string, cancelUrl: string, extraSeats: number = 0, studioName?: string): Promise<string> => {
-            // 1. ROBUST AUTH CHECK & REFRESH
-            // Ensure we have a valid session. 'getSession' is cached, so we might need to be careful.
+            console.log('[REPO] createCheckoutSession called. Checking Auth...');
+
+            // 1. GET SESSION
             let { data: { session }, error: sessionError } = await supabase.auth.getSession();
 
             if (sessionError || !session) {
-                console.warn("[REPO] Session potentially missing/expired. Attempting refresh...");
+                console.warn("[REPO] No active session. Attempting refresh...");
                 const { data: { session: refreshedSession }, error: refreshError } = await supabase.auth.refreshSession();
 
                 if (refreshError || !refreshedSession) {
-                    console.error("[REPO] Failed to refresh session:", refreshError);
-                    throw new Error("Sessione scaduta o non valida. Effettua nuovamente il login.");
+                    console.error("[REPO] Refresh failed:", refreshError);
+                    throw new Error("Login richiesto: Sessione scaduta.");
                 }
                 session = refreshedSession;
             }
 
-            // Double check expiry (optional, but requested "ensure valid")
-            // JWT expiry is in 'exp', session has 'expires_at' (timestamp in seconds)
+            // 2. CHECK EXPIRY (Logic from previous step, kept for safety)
             const now = Math.floor(Date.now() / 1000);
-            if (session.expires_at && session.expires_at < now + 10) { // 10s buffer
-                console.warn("[REPO] Session about to expire. Refreshing...");
+            if (session.expires_at && session.expires_at < now + 20) {
+                console.log("[REPO] Session expiring within 20s. Refreshing...");
                 const { data: { session: refreshedSession }, error: refreshError } = await supabase.auth.refreshSession();
                 if (!refreshError && refreshedSession) {
                     session = refreshedSession;
                 }
             }
 
-            if (!session) throw new Error("Not authenticated (Session Missing)");
+            // 3. EXTRACT COMPONENTS
+            const token = session.access_token;
+            if (!token) throw new Error("Errore Auth: Access Token mancante.");
 
-            // Mapping: 'starter' (UI) -> 'basic' (Stripe/Edge Function Config)
+            // @ts-ignore
+            const sbUrl = supabase.supabaseUrl || (supabase as any).itemsUrl || import.meta.env.VITE_SUPABASE_URL || 'https://onwvisahipnlpdijqzoa.supabase.co';
+            // @ts-ignore
+            const sbKey = supabase.supabaseKey || (supabase as any).apiKey || import.meta.env.VITE_SUPABASE_ANON_KEY;
+
+            if (!sbKey) throw new Error("Errore Config: API Key mancante.");
+
+            const FUNCTION_URL = `${sbUrl}/functions/v1/create-checkout-session`;
+
+            console.log(`[REPO] Ready to fetch: ${FUNCTION_URL}`);
+            console.log(`[REPO] Auth: Bearer ${token.substring(0, 10)}... (Len: ${token.length})`);
+            console.log(`[REPO] Apikey: ${sbKey.substring(0, 5)}...`);
+
+            // Mapping
             const tierMapping: Record<string, string> = {
                 'starter': 'basic',
                 'basic': 'basic',
@@ -1883,23 +1898,12 @@ Formatta la risposta ESCLUSIVAMENTE come un JSON array di stringhe, esempio: ["C
             };
             const mappedTier = tierMapping[planId] || planId;
 
-            // DYNAMICALLY GET URL from the client to avoid mismatch with Auth Token
-            // @ts-ignore - accessing internal property to ensure match
-            const supabaseUrl = supabase.supabaseUrl || (supabase as any).itemsUrl || import.meta.env.VITE_SUPABASE_URL || 'https://onwvisahipnlpdijqzoa.supabase.co';
-
-            // @ts-ignore - accessing internal property
-            const supabaseKey = supabase.supabaseKey || (supabase as any).apiKey || import.meta.env.VITE_SUPABASE_ANON_KEY;
-
-            const FUNCTION_URL = `${supabaseUrl}/functions/v1/create-checkout-session`;
-
-            console.log(`[REPO] Fetching checkout session from: ${FUNCTION_URL} for tier: ${mappedTier}`);
-
             try {
                 const response = await fetch(FUNCTION_URL, {
                     method: 'POST',
                     headers: {
-                        'Authorization': `Bearer ${session.access_token}`,
-                        'apikey': supabaseKey, // CRITICAL: Supabase Gateway requires this
+                        'Authorization': `Bearer ${token}`,
+                        'apikey': sbKey,
                         'Content-Type': 'application/json'
                     },
                     body: JSON.stringify({
@@ -1918,17 +1922,16 @@ Formatta la risposta ESCLUSIVAMENTE come un JSON array di stringhe, esempio: ["C
                 try {
                     data = JSON.parse(responseText);
                 } catch (e) {
-                    // Start of non-JSON error (often HTML 500 page)
-                    throw new Error(`Server returned non-JSON error (${response.status}): ${responseText.substring(0, 150)}...`);
+                    throw new Error(`Errore Server (${response.status}): ${responseText.substring(0, 150)}...`);
                 }
 
                 if (!response.ok) {
                     const errorMsg = data.error || data.message || JSON.stringify(data);
-                    throw new Error(`Checkout Failed (${response.status}): ${errorMsg}`);
+                    throw new Error(`Errore Pagamento (${response.status}): ${errorMsg}`);
                 }
 
                 if (!data.url) {
-                    throw new Error("No URL returned from checkout function");
+                    throw new Error("Nessun URL di checkout ricevuto.");
                 }
 
                 return data.url;
