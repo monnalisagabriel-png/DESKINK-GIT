@@ -38,9 +38,14 @@ serve(async (req) => {
         }
 
         // Authenticate user
+        // @ts-ignore
+        const supabaseUrl = Deno.env.get("PROD_SUPABASE_URL") || Deno.env.get("SUPABASE_URL") || "";
+        // @ts-ignore
+        const supabaseKey = Deno.env.get("PROD_SUPABASE_ANON_KEY") || Deno.env.get("SUPABASE_ANON_KEY") || "";
+
         const supabaseClient = createClient(
-            Deno.env.get("SUPABASE_URL") ?? "",
-            Deno.env.get("SUPABASE_ANON_KEY") ?? "",
+            supabaseUrl,
+            supabaseKey,
             { global: { headers: { Authorization: authHeader } } }
         );
 
@@ -128,6 +133,9 @@ serve(async (req) => {
             success_url: success_url || `${origin}/dashboard/settings?subscription=success`,
             cancel_url: cancel_url || `${origin}/dashboard/settings?subscription=canceled`,
             allow_promotion_codes: true,
+            automatic_payment_methods: {
+                enabled: true,
+            },
             metadata: {
                 studio_id: studio?.id || '', // Empty for new users
                 user_id: user.id,
