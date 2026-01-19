@@ -5,7 +5,6 @@ import { useAuth } from './AuthContext';
 
 export const StudioGuard: React.FC = () => {
     const { isAuthenticated, isLoading, hasStudio, subscriptionStatus, refreshProfile, refreshSubscription } = useAuth();
-    const [isPolling, setIsPolling] = React.useState(false);
 
     // Check for payment override
     const queryParams = new URLSearchParams(window.location.search);
@@ -14,7 +13,6 @@ export const StudioGuard: React.FC = () => {
     // Effect to poll if we are in "Payment Success" mode but data isn't ready
     React.useEffect(() => {
         if (isPaymentSuccess && (!hasStudio || subscriptionStatus !== 'active')) {
-            setIsPolling(true);
             const interval = setInterval(async () => {
                 console.log('Polling for studio/subscription activation...');
                 await refreshProfile?.();
@@ -22,8 +20,6 @@ export const StudioGuard: React.FC = () => {
             }, 2000);
 
             return () => clearInterval(interval);
-        } else if (hasStudio && subscriptionStatus === 'active') {
-            setIsPolling(false);
         }
     }, [isPaymentSuccess, hasStudio, subscriptionStatus, refreshProfile, refreshSubscription]);
 
