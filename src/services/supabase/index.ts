@@ -1880,18 +1880,24 @@ Formatta la risposta ESCLUSIVAMENTE come un JSON array di stringhe, esempio: ["C
             if (error) {
                 console.error("Function Invocation Error FULL OBJECT:", error);
 
-                // Try to extract meaningful message from common Supabase Function error shapes
+                // NEW: It seems invoke() throws an error object that might NOT contain the response body if it's a non-200.
+                // However, if the function returns a JSON with `{ error: ... }`, Supabase client typically puts it in `data` or `error`.
+                // If it's a 500/400, `error` object is populated.
+
                 let errorMessage = error.message || 'Failed to create checkout session';
 
-                // Sometimes the error is a stringified JSON in the message
-                try {
-                    if (error.context && typeof error.context === 'object') {
-                        errorMessage += ` (Context: ${JSON.stringify(error.context)})`;
-                    }
-                } catch (e) { /* ignore */ }
+                // Attempt to parse 'context' or see if 'details' exists
+                if (error.context && typeof error.context === 'object') {
+                    // Sometimes context contains the response
+                    errorMessage += ` (Context: ${JSON.stringify(error.context)})`;
+                }
 
                 throw new Error(errorMessage);
             }
+
+            // Check if data is null/error despite no "error" thrown (soft error)
+            if (!data) throw new Error("No data returned from checkout function");
+            if (data.error) throw new Error(data.error); // Catch our custom error response
 
             if (!data?.url) {
                 throw new Error("No URL returned from checkout function");
