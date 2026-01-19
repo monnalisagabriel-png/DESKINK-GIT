@@ -60,7 +60,18 @@ serve(async (req) => {
                             .single();
 
                         if (createError) {
-                            console.error('Failed to create studio:', createError);
+                            console.error('Failed to create studio (might exist):', createError);
+                            // FALLBACK: User might already have a studio, try to find it
+                            const { data: existingStudio } = await supabaseClient
+                                .from('studios')
+                                .select('id')
+                                .eq('created_by', userId)
+                                .maybeSingle();
+
+                            if (existingStudio) {
+                                studioId = existingStudio.id;
+                                console.log(`Fallback: Found existing studio ID ${studioId}`);
+                            }
                         } else if (newStudio) {
                             studioId = newStudio.id;
                             console.log(`Studio created: ${studioId}`);
