@@ -1846,44 +1846,30 @@ Formatta la risposta ESCLUSIVAMENTE come un JSON array di stringhe, esempio: ["C
             };
         },
         createCheckoutSession: async (planId: string, successUrl: string, cancelUrl: string, extraSeats: number = 0, studioName?: string): Promise<string> => {
-            console.log('[REPO] createCheckoutSession called. Checking Auth...');
+            console.log('[REPO] createCheckoutSession called.');
 
-            // 1. GET SESSION
-            let { data: { session }, error: sessionError } = await supabase.auth.getSession();
+            // 1. FORCE REFRESH to ensure valid JWT
+            // We do not rely on cache. We ask Supabase for a fresh token.
+            const { data: { session }, error: refreshError } = await supabase.auth.refreshSession();
 
-            if (sessionError || !session) {
-                console.warn("[REPO] No active session. Attempting refresh...");
-                const { data: { session: refreshedSession }, error: refreshError } = await supabase.auth.refreshSession();
-
-                if (refreshError || !refreshedSession) {
-                    console.error("[REPO] Refresh failed:", refreshError);
-                    throw new Error("Login richiesto: Sessione scaduta.");
-                }
-                session = refreshedSession;
+            if (refreshError || !session) {
+                console.error("[REPO] Critical Auth Error - Refresh Failed:", refreshError);
+                throw new Error("Errore Autenticazione: Sessione non valida. Riprova a fare login.");
             }
 
-            // 2. CHECK EXPIRY (Logic from previous step, kept for safety)
-            const now = Math.floor(Date.now() / 1000);
-            if (session.expires_at && session.expires_at < now + 20) {
-                console.log("[REPO] Session expiring within 20s. Refreshing...");
-                const { data: { session: refreshedSession }, error: refreshError } = await supabase.auth.refreshSession();
-                if (!refreshError && refreshedSession) {
-                    session = refreshedSession;
-                }
-            }
-
-            // 3. EXTRACT COMPONENTS
             const token = session.access_token;
-            if (!token) throw new Error("Errore Auth: Access Token mancante.");
+            console.log(`[REPO] Fresh Token acquired. Length: ${token.length}`);
 
+            // 2. GET CONFIG (Dynamic)
             // @ts-ignore
             const sbUrl = supabase.supabaseUrl || (supabase as any).itemsUrl || import.meta.env.VITE_SUPABASE_URL || 'https://onwvisahipnlpdijqzoa.supabase.co';
             // @ts-ignore
             const sbKey = supabase.supabaseKey || (supabase as any).apiKey || import.meta.env.VITE_SUPABASE_ANON_KEY;
 
-            if (!sbKey) throw new Error("Errore Config: API Key mancante.");
+            if (!sbKey) throw new Error("Errore Configurazione: API Key mancante.");
 
             const FUNCTION_URL = `${sbUrl}/functions/v1/create-checkout-session`;
+
 
             console.log(`[REPO] Ready to fetch: ${FUNCTION_URL}`);
             console.log(`[REPO] Auth: Bearer ${token.substring(0, 10)}... (Len: ${token.length})`);
