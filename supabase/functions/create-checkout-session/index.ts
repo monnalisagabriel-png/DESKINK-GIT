@@ -97,6 +97,47 @@ serve(async (req) => {
             throw new Error("Studio not found. Please provide a studio name to create one.");
         }
 
+        let targetStudio = studio;
+
+        // If no existing studio found, CREATE ONE NOW (Pre-Provisioning)
+        // This ensures we have an ID to pass to Stripe as client_reference_id
+        if (!targetStudio && studio_name) {
+            console.log(`[Function] Creating 'pending' studio for pre-checkout: ${studio_name}`);
+
+            // STRICT INSERT: No null fields to avoid constraint issues
+            const { data: newStudio, error: createError } = await supabaseAdmin
+                .from('studios')
+                .insert({
+                    name: studio_name,
+                    created_by: user.id,
+                    subscription_status: 'none', // Use allowed status (active/past_due/canceled/trialing/none)
+                    subscription_tier: tier || 'basic',
+                    max_artists: 1,
+                    max_managers: 1,
+                    extra_slots: 0
+                })
+                .select('*')
+                .single();
+
+            if (createError) {
+                console.error("Failed to pre-create studio:", createError);
+                throw new Error(`Failed to initialize studio: ${createError.message}`);
+            }
+            targetStudio = newStudio;
+
+            // Create Owner Membership immediately
+            const { error: memberError } = await supabaseAdmin.from('studio_memberships').insert({
+                studio_id: targetStudio.id,
+                user_id: user.id,
+                role: 'owner'
+            });
+
+            if (memberError) {
+                console.error("Failed to create initial membership:", memberError);
+                // Continue, but log it. Webhook will retry upsert.
+            }
+        }
+
         const priceId = PRICE_IDS[tier];
 
         const line_items = [
@@ -123,47 +164,55 @@ serve(async (req) => {
 
         // Create Checkout Session
         const session = await stripe.checkout.sessions.create({
-            // If studio exists, attach to customer. Else (new user), use email.
-            ...(studio?.stripe_customer_id
-                ? { customer: studio.stripe_customer_id }
+            // Attach to customer if exists (and has ID), else use email
+            ...(targetStudio?.stripe_customer_id
+                ? { customer: targetStudio.stripe_customer_id }
                 : { customer_email: user.email }
             ),
+            client_reference_id: targetStudio?.id, // CRITICAL: Link Stripe Session to Studio ID
             line_items: line_items,
             mode: "subscription",
             success_url: success_url || `${origin}/dashboard/settings?subscription=success`,
             cancel_url: cancel_url || `${origin}/dashboard/settings?subscription=canceled`,
             allow_promotion_codes: true,
-            allow_promotion_codes: true,
             // automatic_payment_methods removed for subscription compatibility
             metadata: {
-                studio_id: studio?.id || '', // Empty for new users
+                studio_id: targetStudio?.id || '',
                 user_id: user.id,
                 tier: tier,
                 extra_slots: extra_seats,
-                studio_name: studio_name || '' // Critical for creation in webhook
+                studio_name: targetStudio?.name || ''
             },
             subscription_data: {
                 metadata: {
-                    studio_id: studio?.id || '',
+                    studio_id: targetStudio?.id || '',
                     user_id: user.id,
                     tier: tier
                 }
             }
         });
+        subscription_data: {
+            metadata: {
+                studio_id: studio?.id || '',
+                    user_id: user.id,
+                        tier: tier
+            }
+        }
+    });
 
-        return new Response(JSON.stringify({ url: session.url }), {
-            headers: { ...corsHeaders, "Content-Type": "application/json" },
-        });
+return new Response(JSON.stringify({ url: session.url }), {
+    headers: { ...corsHeaders, "Content-Type": "application/json" },
+});
 
     } catch (error) {
-        console.error("Error handler:", error);
-        return new Response(JSON.stringify({
-            error: error.message,
-            stack: error.stack,
-            details: error
-        }), {
-            headers: { ...corsHeaders, "Content-Type": "application/json" },
-            status: 400,
-        });
-    }
+    console.error("Error handler:", error);
+    return new Response(JSON.stringify({
+        error: error.message,
+        stack: error.stack,
+        details: error
+    }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: 400,
+    });
+}
 });
