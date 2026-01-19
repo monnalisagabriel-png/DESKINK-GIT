@@ -6,23 +6,42 @@ import { useAuth } from './AuthContext';
 export const StudioGuard: React.FC = () => {
     const { isAuthenticated, isLoading, hasStudio, subscriptionStatus, refreshProfile, refreshSubscription } = useAuth();
 
-    // Check for payment override
+    // 1. Detect Payment Return
+    // Use sessionStorage to persist state in case URL params are stripped
     const queryParams = new URLSearchParams(window.location.search);
     const isPaymentSuccess = queryParams.get('payment') === 'success';
 
-    // Effect to poll if we are in "Payment Success" mode but data isn't ready
+    // Initialize persistent provisioning state if URL param is present
+    if (isPaymentSuccess && !sessionStorage.getItem('provisioning_mode')) {
+        sessionStorage.setItem('provisioning_mode', 'true');
+    }
+
+    const isProvisioning = sessionStorage.getItem('provisioning_mode') === 'true';
+
+    // 2. Poll for Activation
     React.useEffect(() => {
-        if (isPaymentSuccess && (!hasStudio || subscriptionStatus !== 'active')) {
+        if (isProvisioning && (!hasStudio || subscriptionStatus !== 'active')) {
             const interval = setInterval(async () => {
-                console.log('Polling for studio/subscription activation...');
+                console.log('Polling for activation...', subscriptionStatus);
                 await refreshProfile?.();
                 await refreshSubscription?.();
-            }, 2000);
+            }, 1000); // 1s aggressive polling
 
-            return () => clearInterval(interval);
+            // Safety Timeout (e.g. 60s)
+            const timeout = setTimeout(() => {
+                sessionStorage.removeItem('provisioning_mode');
+                // Allow fall-through to error/redirect after timeout
+            }, 60000);
+
+            return () => {
+                clearInterval(interval);
+                clearTimeout(timeout);
+            };
+        } else if (hasStudio && subscriptionStatus === 'active') {
+            // Success! Clear mode
+            sessionStorage.removeItem('provisioning_mode');
         }
-    }, [isPaymentSuccess, hasStudio, subscriptionStatus, refreshProfile, refreshSubscription]);
-
+    }, [isProvisioning, hasStudio, subscriptionStatus, refreshProfile, refreshSubscription]);
 
     if (isLoading) {
         return (
@@ -38,22 +57,21 @@ export const StudioGuard: React.FC = () => {
         return <Navigate to="/login" replace />;
     }
 
-    // BYPASS: If returning from successful payment, ALLOW ACCESS (show loading overlay if needed)
-    // The user wants "Entrare nel menu dello STUDIO senza blocchi"
-    if (isPaymentSuccess) {
+    // 3. BLOCKING LOADING STATE
+    // Strictly block access while provisioning
+    if (isProvisioning) {
         if (!hasStudio || subscriptionStatus !== 'active') {
-            // Render the App Layout but maybe with a "Finishing Setup..." banner / overlay
-            // Or just let them in (Application might break if studio_id is missing, so we safely render a loader)
             return (
                 <div className="flex flex-col items-center justify-center h-screen bg-bg-primary space-y-4">
                     <div className="text-2xl font-bold text-accent animate-pulse">
                         Configurazione Studio in corso...
                     </div>
-                    <p className="text-text-muted">Il pagamento è stato ricevuto. Stiamo preparando il tuo ambiente.</p>
+                    <p className="text-text-muted">Il pagamento è stato ricevuto. Attendi l'attivazione (max 30s)...</p>
+                    <div className="text-sm text-text-muted">Status: {subscriptionStatus || 'waiting'}</div>
                 </div>
             );
         }
-        // Once active, fall through to render Outlet
+        // Once active, we drop through (Effect handles cleanup)
     }
 
     // Normal Protection Logic
