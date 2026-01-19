@@ -1099,6 +1099,12 @@ export class MockRepository implements IRepository {
             if (idx === -1) throw new Error('Not found');
             MOCK_WAITLIST[idx] = { ...MOCK_WAITLIST[idx], status };
             return MOCK_WAITLIST[idx];
+        },
+        update: async (id: string, data: Partial<WaitlistEntry>): Promise<WaitlistEntry> => {
+            const idx = MOCK_WAITLIST.findIndex(w => w.id === id);
+            if (idx === -1) throw new Error('Not found');
+            MOCK_WAITLIST[idx] = { ...MOCK_WAITLIST[idx], ...data };
+            return MOCK_WAITLIST[idx];
         }
     };
 }
