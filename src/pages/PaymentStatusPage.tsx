@@ -5,7 +5,7 @@ import { api } from '../services/api';
 import { Loader, CheckCircle, AlertTriangle } from 'lucide-react';
 
 export const PaymentStatusPage: React.FC = () => {
-    const { user, refreshSubscription } = useAuth(); // Assume we add refreshSubscription to AuthContext
+    const { user, refreshSubscription, refreshProfile } = useAuth(); // Assume we add refreshSubscription to AuthContext
     const navigate = useNavigate();
     const [status, setStatus] = useState<'checking' | 'active' | 'waiting' | 'error'>('checking');
     const [attempts, setAttempts] = useState(0);
@@ -29,8 +29,9 @@ export const PaymentStatusPage: React.FC = () => {
 
                 if (sub?.status === 'active' || sub?.status === 'trialing') {
                     setStatus('active');
-                    // Update context
+                    // Update context to reflect new account_status and subscription
                     if (refreshSubscription) await refreshSubscription();
+                    if (refreshProfile) await refreshProfile();
                     console.log('Subscription active! Redirecting...');
 
                     setTimeout(() => {

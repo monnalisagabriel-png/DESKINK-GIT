@@ -126,6 +126,7 @@ export class SupabaseRepository implements IRepository {
                     ...userData,
                     role: (membership?.role as UserRole) || userData.role || 'STUDENT',
                     studio_id: membership?.studio_id || userData.studio_id || 'default',
+                    account_status: userData.account_status || 'pending', // Default to pending if missing
                     integrations: {
                         google_calendar: {
                             is_connected: !!googleIntegration,
@@ -168,7 +169,8 @@ export class SupabaseRepository implements IRepository {
                 email: data.session.user.email!,
                 full_name: data.session.user.user_metadata?.full_name || 'User',
                 role: (membership?.role as UserRole) || 'STUDENT',
-                studio_id: membership?.studio_id || 'default'
+                studio_id: membership?.studio_id || 'default',
+                account_status: 'pending'
             };
         },
         resetPasswordForEmail: async (email: string, redirectTo: string): Promise<void> => {
@@ -1811,7 +1813,7 @@ Formatta la risposta ESCLUSIVAMENTE come un JSON array di stringhe, esempio: ["C
             // Fetch studio subscription info directly
             const { data: studio, error: studioError } = await supabase
                 .from('studios')
-                .select('subscription_tier, subscription_status, stripe_subscription_id')
+                .select('subscription_tier, subscription_status, stripe_subscription_id, current_period_end')
                 .eq('id', membership.studio_id)
                 .single();
 
@@ -1832,46 +1834,77 @@ Formatta la risposta ESCLUSIVAMENTE come un JSON array di stringhe, esempio: ["C
             return {
                 id: studio.stripe_subscription_id,
                 status: studio.subscription_status || 'none',
-                current_period_end: null, // Not currently stored in studios table
+                current_period_end: studio.current_period_end,
                 plan: plan
             };
         },
-        createCheckoutSession: async (planId: string, successUrl: string, cancelUrl: string, extraSeats: number = 0): Promise<string> => {
+        createCheckoutSession: async (planId: string, successUrl: string, cancelUrl: string, extraSeats: number = 0, studioName?: string): Promise<string> => {
             const { data: { session } } = await supabase.auth.getSession();
+            if (!session) throw new Error("Not authenticated");
 
-            // Map 'starter' to 'basic' as expected by the edge function
-            const tier = planId === 'starter' ? 'basic' : planId;
+            // Use Supabase SDK standard invocation which handles Auth headers automatically
+            // Map planId from 'starter' -> 'basic' if that's what the Edge Function expects (Price IDs mapping)
+            // Edge Function Index.ts has: basic, pro, plus. So 'starter' from DB/UI needs to be mapped to 'basic'.
+            const tierMapping: Record<string, string> = {
+                'starter': 'basic',
+                'basic': 'basic',
+                'pro': 'pro',
+                'plus': 'plus'
+            };
 
-            const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/create-checkout-session`, {
-                method: 'POST',
-                headers: {
-                    'Authorization': `Bearer ${session?.access_token}`,
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
-                    tier,
+            const mappedTier = tierMapping[planId] || planId;
+
+            console.log(`[Repo] Creating checkout session for tier: ${mappedTier} (orig: ${planId}) (Token len: ${session.access_token.length})`);
+
+            const { data, error } = await supabase.functions.invoke('create-checkout-session', {
+                body: {
+                    tier: mappedTier,
+                    interval: 'month',
                     success_url: successUrl,
                     cancel_url: cancelUrl,
-                    extra_seats: extraSeats
-                })
+                    extra_seats: extraSeats,
+                    studio_name: studioName
+                },
+                headers: {
+                    Authorization: `Bearer ${session.access_token}`
+                }
             });
 
-            if (!response.ok) {
-                const err = await response.json();
-                throw new Error(err.error || 'Failed to create checkout session');
+            if (error) {
+                console.error("Function Invocation Error FULL OBJECT:", error);
+
+                // Try to extract meaningful message from common Supabase Function error shapes
+                let errorMessage = error.message || 'Failed to create checkout session';
+
+                // Sometimes the error is a stringified JSON in the message
+                try {
+                    if (error.context && typeof error.context === 'object') {
+                        errorMessage += ` (Context: ${JSON.stringify(error.context)})`;
+                    }
+                } catch (e) { /* ignore */ }
+
+                throw new Error(errorMessage);
             }
 
-            const data = await response.json();
+            if (!data?.url) {
+                throw new Error("No URL returned from checkout function");
+            }
+
             return data.url;
         },
         createPortalSession: async (returnUrl: string): Promise<string> => {
             const { data: { session } } = await supabase.auth.getSession();
+            if (!session) throw new Error("Not authenticated");
 
-            const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/create-portal-session`, {
+            const HARDCODED_URL = 'https://onwvisahipnlpdijqzoa.supabase.co';
+            const HARDCODED_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9ud3Zpc2FoaXBubHBkaWpxem9hIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzcwMjU2NzgsImV4cCI6MjA1MjYwMTY3OH0.523qN0XqT-JpD3yT2qYtZzzZ-oA4yG-h4k0qT-y5qM0';
+
+            const response = await fetch(`${HARDCODED_URL}/functions/v1/create-portal-session`, {
                 method: 'POST',
                 headers: {
-                    'Authorization': `Bearer ${session?.access_token}`,
-                    'Content-Type': 'application/json'
+                    Authorization: `Bearer ${session.access_token}`,
+                    apikey: HARDCODED_KEY,
+                    "Content-Type": "application/json",
                 },
                 body: JSON.stringify({ return_url: returnUrl })
             });
@@ -1886,12 +1919,17 @@ Formatta la risposta ESCLUSIVAMENTE come un JSON array di stringhe, esempio: ["C
         },
         restoreSubscription: async (): Promise<{ success: boolean; message?: string; tier?: string }> => {
             const { data: { session } } = await supabase.auth.getSession();
+            if (!session) throw new Error("Not authenticated");
 
-            const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/restore-subscription`, {
+            const HARDCODED_URL = 'https://onwvisahipnlpdijqzoa.supabase.co';
+            const HARDCODED_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9ud3Zpc2FoaXBubHBkaWpxem9hIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzcwMjU2NzgsImV4cCI6MjA1MjYwMTY3OH0.523qN0XqT-JpD3yT2qYtZzzZ-oA4yG-h4k0qT-y5qM0';
+
+            const response = await fetch(`${HARDCODED_URL}/functions/v1/restore-subscription`, {
                 method: 'POST',
                 headers: {
-                    'Authorization': `Bearer ${session?.access_token}`,
-                    'Content-Type': 'application/json'
+                    Authorization: `Bearer ${session.access_token}`,
+                    apikey: HARDCODED_KEY,
+                    "Content-Type": "application/json",
                 }
             });
 

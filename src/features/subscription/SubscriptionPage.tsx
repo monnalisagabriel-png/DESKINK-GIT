@@ -1,6 +1,4 @@
 import React from 'react';
-import { supabase } from '../../lib/supabase';
-
 import { Check } from 'lucide-react';
 
 const PLANS = [
@@ -29,29 +27,13 @@ const PLANS = [
 ];
 
 export const SubscriptionPage = () => {
-    const [loading, setLoading] = React.useState(false);
+    // Basic state for UI, no async loading needed for redirect
     const [extraMembers, setExtraMembers] = React.useState(0);
 
     const handleSubscribe = async (tier: string) => {
-        try {
-            setLoading(true);
-            const { data, error } = await supabase.functions.invoke('create-checkout-session', {
-                body: {
-                    tier,
-                    extra_seats: tier === 'plus' ? extraMembers : 0
-                }
-            });
-
-            if (error) throw error;
-            if (data?.url) {
-                window.location.href = data.url;
-            }
-        } catch (error) {
-            console.error('Subscription error:', error);
-            alert('Errore durante l\'inizializzazione del pagamento.');
-        } finally {
-            setLoading(false);
-        }
+        // Redirect to StartPaymentPage with selected plan
+        // This unifies the payment flow and avoids "double selection"
+        window.location.href = `/start-payment?plan=${tier}`;
     };
 
     return (
@@ -107,10 +89,9 @@ export const SubscriptionPage = () => {
 
                         <button
                             onClick={() => handleSubscribe(plan.id)}
-                            disabled={loading}
                             className={`w-full py-3 rounded-xl font-bold transition-all ${plan.color} hover:opacity-90 disabled:opacity-50 text-white shadow-lg`}
                         >
-                            {loading ? 'Caricamento...' : 'Seleziona Piano'}
+                            Seleziona Piano
                         </button>
                     </div>
                 ))}

@@ -23,7 +23,7 @@ import { CommunicationsPage } from './features/communications/CommunicationsPage
 import { WaitlistForm } from './features/waitlist/WaitlistForm';
 import { PublicClientForm } from './features/clients/PublicClientForm';
 import { DebugSupabase } from './pages/DebugSupabase';
-import { RegisterStudioPage } from './pages/RegisterStudioPage';
+import { StartPaymentPage } from './pages/StartPaymentPage';
 import { AcceptInvitePage } from './pages/AcceptInvitePage';
 import { StudioGuard } from './features/auth/StudioGuard';
 import { TeamPage } from './features/team/TeamPage';
@@ -88,7 +88,8 @@ function App() {
 
                     <Route element={<RoleGuard />}>
                         {/* Routes that require Login but NOT Studio yet */}
-                        <Route path="/register-studio" element={<RegisterStudioPage />} />
+                        <Route path="/start-payment" element={<StartPaymentPage />} />
+                        <Route path="/register-studio" element={<Navigate to="/start-payment" replace />} /> {/* Redirect old route */}
                         <Route path="/payment-status" element={<PaymentStatusPage />} />
 
                         {/* Routes that require Login AND Studio Membership */}

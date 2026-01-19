@@ -13,52 +13,84 @@ const corsHeaders = {
 };
 
 const PRICE_IDS = {
+    // Basic Plan: €20/month
     basic: "price_1Squcg0hAMe4NIOXYkw5NaW3",
+    // Pro Plan: €40/month
     pro: "price_1Squdl0hAMe4NIOX0ter6U0I",
+    // Plus Plan: €70/month (Assuming this is distinct, user logs were ambiguous)
     plus: "price_1Squeq0hAMe4NIOXM03pRJj4",
+    // Extra Seat: €10/month
     extra: "price_1Squhx0hAMe4NIOXS0pEUF3p"
 };
 
 serve(async (req) => {
+    // Log the request for debugging
+    console.log(`[Function] Received request: ${req.method}`);
+
     if (req.method === "OPTIONS") {
         return new Response("ok", { headers: corsHeaders });
     }
 
     try {
+        const authHeader = req.headers.get("Authorization");
+        if (!authHeader) {
+            throw new Error("Missing Authorization header");
+        }
+
         // Authenticate user
         const supabaseClient = createClient(
             Deno.env.get("SUPABASE_URL") ?? "",
             Deno.env.get("SUPABASE_ANON_KEY") ?? "",
-            { global: { headers: { Authorization: req.headers.get("Authorization")! } } }
+            { global: { headers: { Authorization: authHeader } } }
         );
 
-        const { data: { user } } = await supabaseClient.auth.getUser();
+        const { data: { user }, error: authError } = await supabaseClient.auth.getUser();
 
-        if (!user) throw new Error("Not authenticated");
+        if (authError || !user) {
+            console.error("Auth Error details:", authError);
+            throw new Error(`Not authenticated: ${authError?.message || 'No user found'}`);
+        }
+
+        console.log(`[Function] User authenticated: ${user.id}`);
 
         // Use SERVICE ROLE client to bypass RLS for looking up the studio
-        // This is safe because we check `created_by` matches the authenticated user.
         const supabaseAdmin = createClient(
             Deno.env.get("SUPABASE_URL") ?? "",
             Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""
         );
 
         // Get Studio for this user
-        const { data: studio } = await supabaseAdmin
+        // Note: created_by should match user.id
+        const { data: studio, error: studioError } = await supabaseAdmin
             .from('studios')
             .select('*')
-            // Match 'created_by' (which is the correct column name from migration) OR 'owner_id' if schema changed
-            // Migration says 'created_by'
             .eq('created_by', user.id)
-            .single();
+            .maybeSingle();
 
-        if (!studio) {
-            throw new Error("Studio not found or you are not the owner.");
+        if (studioError) {
+            console.error("Studio lookup error", studioError);
         }
 
-        const { tier, interval, extra_seats = 0, success_url, cancel_url } = await req.json(); // tier: 'basic' | 'pro' | 'plus'
+        let body;
+        try {
+            body = await req.json();
+        } catch (e) {
+            throw new Error("Invalid JSON body");
+        }
 
-        if (!PRICE_IDS[tier]) throw new Error("Invalid tier");
+        const { tier, interval, extra_seats = 0, success_url, cancel_url, studio_name } = body;
+
+        console.log(`[Function] Processing checkout for tier: ${tier}, studio: ${studio?.id || 'New'}`);
+
+        if (!PRICE_IDS[tier]) {
+            console.error(`Invalid tier: ${tier}. Available: ${Object.keys(PRICE_IDS).join(', ')}`);
+            throw new Error(`Invalid tier: ${tier}`);
+        }
+
+        // Allow missing studio ONLY if studio_name is provided (New User Flow)
+        if (!studio && !studio_name) {
+            throw new Error("Studio not found. Please provide a studio name to create one.");
+        }
 
         const priceId = PRICE_IDS[tier];
 
@@ -69,9 +101,6 @@ serve(async (req) => {
             },
         ];
 
-        // Add extra seats if applicable (and valid for the plan? assuming yes for now or specifically for Plus)
-        // The prompt implies a general available option or specific to one config. 
-        // Using "extra" price ID.
         if (extra_seats > 0) {
             if (!PRICE_IDS.extra) throw new Error("Extra member price not configured");
             line_items.push({
@@ -80,11 +109,17 @@ serve(async (req) => {
             });
         }
 
-        const origin = req.headers.get("origin");
+        const origin = req.headers.get("origin") || 'http://localhost:3000';
+
+        // Check if Stripe Key is present
+        if (!Deno.env.get("STRIPE_SECRET_KEY")) {
+            throw new Error("Server configuration error: STRIPE_SECRET_KEY is missing");
+        }
 
         // Create Checkout Session
         const session = await stripe.checkout.sessions.create({
-            ...(studio.stripe_customer_id
+            // If studio exists, attach to customer. Else (new user), use email.
+            ...(studio?.stripe_customer_id
                 ? { customer: studio.stripe_customer_id }
                 : { customer_email: user.email }
             ),
@@ -94,10 +129,18 @@ serve(async (req) => {
             cancel_url: cancel_url || `${origin}/dashboard/settings?subscription=canceled`,
             allow_promotion_codes: true,
             metadata: {
-                studio_id: studio.id,
+                studio_id: studio?.id || '', // Empty for new users
                 user_id: user.id,
                 tier: tier,
-                extra_slots: extra_seats
+                extra_slots: extra_seats,
+                studio_name: studio_name || '' // Critical for creation in webhook
+            },
+            subscription_data: {
+                metadata: {
+                    studio_id: studio?.id || '',
+                    user_id: user.id,
+                    tier: tier
+                }
             }
         });
 
@@ -106,8 +149,12 @@ serve(async (req) => {
         });
 
     } catch (error) {
-        console.error("Error:", error);
-        return new Response(JSON.stringify({ error: error.message }), {
+        console.error("Error handler:", error);
+        return new Response(JSON.stringify({
+            error: error.message,
+            stack: error.stack,
+            details: error
+        }), {
             headers: { ...corsHeaders, "Content-Type": "application/json" },
             status: 400,
         });

@@ -5,6 +5,7 @@ export interface User {
   email: string;
   full_name: string;
   role: UserRole;
+  account_status?: 'pending' | 'active' | 'suspended'; // Added for strict payment flow
   avatar_url?: string;
   studio_id?: string; // If user belongs to a specific studio (Artist/Manager)
   phone?: string;
@@ -361,7 +362,7 @@ export interface IRepository {
   };
   subscription: {
     getSubscription(): Promise<SaasSubscription | null>;
-    createCheckoutSession(planId: string, successUrl: string, cancelUrl: string, extraSeats?: number): Promise<string>;
+    createCheckoutSession(planId: string, successUrl: string, cancelUrl: string, extraSeats?: number, studioName?: string): Promise<string>;
     createPortalSession(returnUrl: string): Promise<string>;
     restoreSubscription(): Promise<{ success: boolean; message?: string; tier?: string }>;
   };

@@ -20,9 +20,9 @@ export const StudioGuard: React.FC = () => {
         return <Navigate to="/login" replace />;
     }
 
-    // If hasStudio is false (checked and confirmed no), redirect to register-studio
+    // If hasStudio is false (checked and confirmed no), redirect to start-payment
     if (hasStudio === false) {
-        return <Navigate to="/register-studio" replace />;
+        return <Navigate to="/start-payment" replace />;
     }
 
     // Check Subscription Status (if user is Owner)

@@ -25,6 +25,32 @@ export const RoleGuard: React.FC<RoleGuardProps> = ({ allowedRoles }) => {
         return <Navigate to="/login" state={{ from: location }} replace />;
     }
 
+    // STRICT PAYMENT FLOW: Block access if account is pending
+    // Allow access ONLY to /start-payment if pending
+    if (user?.account_status === 'pending') {
+        if (location.pathname !== '/start-payment') {
+            return <Navigate to="/start-payment" replace />;
+        }
+        // If on /start-payment, allow thorough
+    } else {
+        // If Active (or suspended?)
+        // If they stick to /start-payment, normally redirect to dashboard.
+        // BUT, if they don't have a studio yet, they MIGHT need to be here to create one (via payment).
+        // Check hasStudio from useAuth() - Note: RoleGuard needs to ensure useAuth provides this.
+        // Ideally we check: if (location.pathname === '/start-payment' && hasStudio) -> redirect to /
+
+        // However, RoleGuard doesn't strictly depend on 'hasStudio' being populated yet (might be loading).
+        // But 'isLoading' check at top handles the unset state mostly.
+
+        // For now, let's just ALLOW /start-payment always, or filter by studio existence if we can.
+        // Safer: If they are active and go to start-payment, let them! Maybe they want to buy another studio? (Future proof)
+        // OR better to fix the loop:
+
+        // if (location.pathname === '/start-payment' && hasStudio) {
+        //    return <Navigate to="/" replace />;
+        // }
+    }
+
     if (allowedRoles && user) {
         // Case-insensitive check
         const normalizedUserRole = user.role.toLowerCase();

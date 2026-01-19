@@ -42,19 +42,60 @@ serve(async (req) => {
                 console.log(`Metadata: studio_id=${studioId}, user_id=${userId}, tier=${tier}`);
 
                 if (!studioId && userId) {
-                    console.log(`Studio ID missing in metadata, attempting to find studio for user ${userId}`);
-                    // Fallback: Find studio owned by user
-                    const { data: studioVal } = await supabaseClient
-                        .from('studios')
-                        .select('id')
-                        .eq('created_by', userId)
-                        .single();
+                    console.log(`Studio ID missing in metadata for user ${userId}`);
 
-                    if (studioVal) {
-                        studioId = studioVal.id;
-                        console.log(`Found studio ${studioId} for user ${userId}`);
+                    // NEW: Check for studio_name to CREATE a new studio
+                    const studioName = session.metadata?.studio_name;
+                    if (studioName) {
+                        console.log(`Creating NEW studio "${studioName}" for user ${userId}`);
+                        const { data: newStudio, error: createError } = await supabaseClient
+                            .from('studios')
+                            .insert({
+                                name: studioName,
+                                created_by: userId,
+                                subscription_status: 'active', // Will be updated below anyway
+                                subscription_tier: tier || 'basic'
+                            })
+                            .select('id')
+                            .single();
+
+                        if (createError) {
+                            console.error('Failed to create studio:', createError);
+                        } else if (newStudio) {
+                            studioId = newStudio.id;
+                            console.log(`Studio created: ${studioId}`);
+
+                            // Create Membership
+                            const { error: memberError } = await supabaseClient
+                                .from('studio_memberships')
+                                .insert({
+                                    studio_id: studioId,
+                                    user_id: userId,
+                                    role: 'owner'
+                                });
+                            if (memberError) console.error('Failed to create membership:', memberError);
+
+                            // Activate User
+                            const { error: userError } = await supabaseClient
+                                .from('users')
+                                .update({ account_status: 'active' })
+                                .eq('id', userId);
+                            if (userError) console.error('Failed to activate user:', userError);
+                        }
                     } else {
-                        console.error(`Could not find studio for user ${userId}`);
+                        // Fallback: Find existing studio owned by user if no name provided
+                        const { data: studioVal } = await supabaseClient
+                            .from('studios')
+                            .select('id')
+                            .eq('created_by', userId)
+                            .single();
+
+                        if (studioVal) {
+                            studioId = studioVal.id;
+                            console.log(`Found existing studio ${studioId} for user ${userId}`);
+                        } else {
+                            console.error(`Could not find or create studio for user ${userId}`);
+                        }
                     }
                 }
 
