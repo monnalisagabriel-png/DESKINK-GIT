@@ -1858,8 +1858,10 @@ Formatta la risposta ESCLUSIVAMENTE come un JSON array di stringhe, esempio: ["C
             };
             const mappedTier = tierMapping[planId] || planId;
 
-            const PROJECT_REF = 'onwvisahipnlpdijqzoa';
-            const FUNCTION_URL = `https://${PROJECT_REF}.supabase.co/functions/v1/create-checkout-session`;
+            // DYNAMICALLY GET URL from the client to avoid mismatch with Auth Token
+            // @ts-ignore - accessing internal property to ensure match
+            const supabaseUrl = supabase.supabaseUrl || (supabase as any).itemsUrl || import.meta.env.VITE_SUPABASE_URL || 'https://onwvisahipnlpdijqzoa.supabase.co';
+            const FUNCTION_URL = `${supabaseUrl}/functions/v1/create-checkout-session`;
 
             console.log(`[REPO] Fetching checkout session from: ${FUNCTION_URL} for tier: ${mappedTier}`);
 
