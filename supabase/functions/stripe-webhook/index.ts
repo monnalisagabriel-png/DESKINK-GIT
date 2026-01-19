@@ -116,6 +116,24 @@ serve(async (req) => {
                 }
 
                 if (studioId && tier) {
+                    // CRITICAL FIX: Ensure Membership Exists
+                    // Even if studio exists, membership might be missing (e.g. previous errors)
+                    // We use upsert with ignoreDuplicates to be safe
+                    const { error: memberEnsureError } = await supabaseClient
+                        .from('studio_memberships')
+                        .upsert({
+                            studio_id: studioId,
+                            user_id: userId,
+                            role: 'owner'
+                        }, { onConflict: 'studio_id, user_id', ignoreDuplicates: true });
+
+                    if (memberEnsureError) {
+                        console.error('Failed to ensure membership in webhook:', memberEnsureError);
+                        // Continue anyway to update subscription, but this is bad.
+                    } else {
+                        console.log(`Membership guaranteed for user ${userId} in studio ${studioId}`);
+                    }
+
                     // Update Studio Subscription
                     // Set limits based on tier
                     let maxArtists = 1;
