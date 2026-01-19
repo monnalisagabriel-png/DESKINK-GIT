@@ -34,7 +34,12 @@ serve(async (req) => {
                 const session = event.data.object;
                 console.log(`Processing checkout.session.completed for session ${session.id}`);
 
-                let studioId = session.metadata?.studio_id;
+                // 1. Try Client Reference ID (Guaranteed by new create-checkout-session)
+                let studioId = session.client_reference_id;
+
+                // 2. Fallback to metadata
+                if (!studioId) studioId = session.metadata?.studio_id;
+
                 const userId = session.metadata?.user_id;
                 const tier = session.metadata?.tier; // 'basic', 'pro', 'plus'
                 const extraSlots = parseInt(session.metadata?.extra_slots || '0');
