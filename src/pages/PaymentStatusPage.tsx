@@ -5,12 +5,23 @@ import { api } from '../services/api';
 import { Loader, CheckCircle, AlertTriangle } from 'lucide-react';
 
 export const PaymentStatusPage: React.FC = () => {
-    const { user, refreshSubscription, refreshProfile } = useAuth(); // Assume we add refreshSubscription to AuthContext
+    const { user, refreshSubscription, refreshProfile, hasStudio } = useAuth();
     const navigate = useNavigate();
     const [status, setStatus] = useState<'checking' | 'active' | 'waiting' | 'error'>('checking');
     const [attempts, setAttempts] = useState(0);
     const [lastSub, setLastSub] = useState<any>(null);
     const [lastError, setLastError] = useState<any>(null);
+
+    // Effect to catch "Active" status from Context if it happens automatically
+    useEffect(() => {
+        if (hasStudio && status === 'active') {
+            console.log('PaymentStatus: Studio confirmed in context. Navigating to Dashboard...');
+            const timer = setTimeout(() => {
+                navigate('/dashboard');
+            }, 1000);
+            return () => clearTimeout(timer);
+        }
+    }, [hasStudio, status, navigate]);
 
     useEffect(() => {
         let isMounted = true;
@@ -29,22 +40,29 @@ export const PaymentStatusPage: React.FC = () => {
 
                 if (sub?.status === 'active' || sub?.status === 'trialing') {
                     setStatus('active');
-                    // Update context to reflect new account_status and subscription
-                    if (refreshSubscription) await refreshSubscription();
-                    if (refreshProfile) await refreshProfile();
-                    console.log('Subscription active! Redirecting...');
 
-                    setTimeout(() => {
-                        if (isMounted) navigate('/dashboard');
-                    }, 2000);
+                    // Critical: Force Context Refresh
+                    console.log('Subscription active! Refreshing context...');
+
+                    try {
+                        if (refreshSubscription) await refreshSubscription();
+                        if (refreshProfile) await refreshProfile();
+                    } catch (e) {
+                        console.warn('Context refresh failed, will retry next tick', e);
+                    }
+
+                    // We do NOT navigate here. We wait for `hasStudio` effect above.
+
                 } else {
-                    // Stop after 60 seconds
-                    if (Date.now() - startTime > 60000) {
+                    // Stop after 120 seconds (extended)
+                    if (Date.now() - startTime > 120000) {
                         setStatus('error');
                     } else {
-                        setStatus('waiting');
+                        // If checking and not active, keep 'checking' or 'waiting'
+                        if (status !== 'checking') setStatus('waiting');
+
                         setAttempts(prev => prev + 1);
-                        // Schedule next check ONLY after this one completes
+                        // Schedule next check
                         timeoutId = setTimeout(checkStatus, 3000);
                     }
                 }
@@ -52,20 +70,19 @@ export const PaymentStatusPage: React.FC = () => {
                 console.error("Polling error", err);
                 if (isMounted) {
                     setLastError(err);
-                    setStatus('error'); // Or just retry?
-                    // Let's retry on error too, but slower
+                    // Keep trying even on error (could be network glitch)
                     timeoutId = setTimeout(checkStatus, 5000);
                 }
             }
         };
 
-        checkStatus(); // Initial check
+        checkStatus();
 
         return () => {
             isMounted = false;
             clearTimeout(timeoutId);
         };
-    }, [navigate, refreshSubscription]);
+    }, [refreshSubscription, refreshProfile]);
 
     return (
         <div className="min-h-screen bg-slate-900 flex items-center justify-center p-4">
@@ -76,7 +93,30 @@ export const PaymentStatusPage: React.FC = () => {
                             <CheckCircle size={32} />
                         </div>
                         <h2 className="text-2xl font-bold text-white mb-2">Pagamento Confermato!</h2>
-                        <p className="text-slate-400">Il tuo studio è attivo. Ti stiamo portando alla Dashboard...</p>
+
+                        {!hasStudio ? (
+                            <div className="mt-4 p-4 bg-yellow-500/10 rounded-lg border border-yellow-500/20 text-yellow-200 text-sm animate-pulse">
+                                <p className="font-bold mb-1">Configurazione Studio in corso...</p>
+                                <p className="text-xs opacity-80">Stiamo sincronizzando i dati con il server.</p>
+                            </div>
+                        ) : (
+                            <p className="text-slate-400">Il tuo studio è attivo. Ti stiamo portando alla Dashboard...</p>
+                        )}
+
+                        {/* 
+                           Fallback button if stuck for > 5 seconds in "active" but no studio 
+                           Users can click it to force a reload which often fixes context 
+                        */}
+                        {!hasStudio && (
+                            <div className="mt-6 opacity-0 animate-in fade-in duration-1000 delay-5000 fill-mode-forwards">
+                                <button
+                                    onClick={() => window.location.reload()}
+                                    className="text-xs text-slate-500 hover:text-white underline cursor-pointer"
+                                >
+                                    Se non succede nulla, clicca qui per ricaricare
+                                </button>
+                            </div>
+                        )}
                     </div>
                 ) : status === 'error' && attempts > 25 ? (
                     <div className="animate-in fade-in zoom-in duration-500">
