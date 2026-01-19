@@ -1143,6 +1143,11 @@ export class MockRepository implements IRepository {
         restoreSubscription: async (): Promise<{ success: boolean; message?: string; tier?: string }> => {
             await new Promise(resolve => setTimeout(resolve, 1000));
             return { success: true, message: 'Subscription restored (mock)', tier: 'pro' };
+        },
+        provisionMissingStudio: async (_studioName: string): Promise<{ success: boolean; studioId?: string; error?: string }> => {
+            await new Promise(resolve => setTimeout(resolve, 1000));
+            // In mock, we can just say "yes it worked"
+            return { success: true, studioId: 'studio-mock-provisioned' };
         }
     };
 }
