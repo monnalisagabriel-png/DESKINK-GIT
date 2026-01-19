@@ -1,16 +1,18 @@
+
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../features/auth/AuthContext';
 import { api } from '../services/api';
-import { Loader, CheckCircle, AlertTriangle } from 'lucide-react';
+import { Loader, CheckCircle, AlertTriangle, Wrench } from 'lucide-react';
 
 export const PaymentStatusPage: React.FC = () => {
     const { user, refreshSubscription, refreshProfile, hasStudio } = useAuth();
     const navigate = useNavigate();
-    const [status, setStatus] = useState<'checking' | 'active' | 'waiting' | 'error'>('checking');
+    const [status, setStatus] = useState<'checking' | 'active' | 'waiting' | 'error' | 'provisioning'>('checking');
     const [attempts, setAttempts] = useState(0);
     const [lastSub, setLastSub] = useState<any>(null);
     const [lastError, setLastError] = useState<any>(null);
+    const [provisionResult, setProvisionResult] = useState<any>(null);
 
     // Effect to catch "Active" status from Context if it happens automatically
     useEffect(() => {
@@ -47,8 +49,32 @@ export const PaymentStatusPage: React.FC = () => {
                     try {
                         if (refreshSubscription) await refreshSubscription();
                         if (refreshProfile) await refreshProfile();
+
+                        // NEW: Check if Studio is missing despite subscription
+                        if (!hasStudio) {
+                            const pendingName = localStorage.getItem('pendingStudioName');
+                            if (pendingName) {
+                                console.log('Attempting to provision missing studio:', pendingName);
+                                setStatus('provisioning');
+                                const res = await api.subscription.provisionMissingStudio(pendingName);
+                                if (isMounted) setProvisionResult(res);
+
+                                if (res.success) {
+                                    if (refreshProfile) await refreshProfile();
+                                    // Clear storage
+                                    localStorage.removeItem('pendingStudioName');
+                                    setStatus('active');
+                                } else {
+                                    console.error("Provisioning failed", res.error);
+                                    // Fallback to error or keep trying?
+                                    // If provisioning failed, it might mean user already has studio (idempotency handled by API)
+                                    // We will retry check loop
+                                }
+                            }
+                        }
+
                     } catch (e) {
-                        console.warn('Context refresh failed, will retry next tick', e);
+                        console.warn('Context refresh/provision failed, will retry next tick', e);
                     }
 
                     // We do NOT navigate here. We wait for `hasStudio` effect above.
@@ -59,7 +85,7 @@ export const PaymentStatusPage: React.FC = () => {
                         setStatus('error');
                     } else {
                         // If checking and not active, keep 'checking' or 'waiting'
-                        if (status !== 'checking') setStatus('waiting');
+                        if (status !== 'checking' && status !== 'provisioning') setStatus('waiting');
 
                         setAttempts(prev => prev + 1);
                         // Schedule next check
@@ -82,7 +108,7 @@ export const PaymentStatusPage: React.FC = () => {
             isMounted = false;
             clearTimeout(timeoutId);
         };
-    }, [refreshSubscription, refreshProfile]);
+    }, [refreshSubscription, refreshProfile, hasStudio]);
 
     return (
         <div className="min-h-screen bg-slate-900 flex items-center justify-center p-4">
@@ -118,6 +144,14 @@ export const PaymentStatusPage: React.FC = () => {
                             </div>
                         )}
                     </div>
+                ) : status === 'provisioning' ? (
+                    <div className="animate-in fade-in zoom-in duration-500">
+                        <div className="w-16 h-16 bg-blue-500/20 rounded-full flex items-center justify-center mx-auto mb-6 text-blue-500 animate-pulse">
+                            <Wrench size={32} />
+                        </div>
+                        <h2 className="text-2xl font-bold text-white mb-2">Configurazione in corso...</h2>
+                        <p className="text-slate-400">Rilevato problema sulla sincronizzazione automatica. Stiamo applicando una correzione manuale...</p>
+                    </div>
                 ) : status === 'error' && attempts > 25 ? (
                     <div className="animate-in fade-in zoom-in duration-500">
                         <div className="w-16 h-16 bg-red-500/20 rounded-full flex items-center justify-center mx-auto mb-6 text-red-500">
@@ -143,10 +177,14 @@ export const PaymentStatusPage: React.FC = () => {
                         <div className="mt-8 p-4 bg-black/50 rounded text-left font-mono text-xs text-slate-400 overflow-auto max-h-32">
                             <p className="font-bold text-slate-200">Debug Info:</p>
                             <p>User: {user?.id}</p>
+                            <p>HasStudio: {hasStudio ? 'YES' : 'NO'}</p>
                             {lastError ? (
                                 <p className="text-red-400">Error: {JSON.stringify(lastError, null, 2)}</p>
                             ) : (
                                 <p>Status: {lastSub ? JSON.stringify(lastSub, null, 2) : 'Fetching...'}</p>
+                            )}
+                            {provisionResult && (
+                                <p className="text-blue-300">Provision: {JSON.stringify(provisionResult)}</p>
                             )}
                         </div>
 

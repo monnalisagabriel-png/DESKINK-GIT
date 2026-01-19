@@ -366,6 +366,7 @@ export interface IRepository {
     createCheckoutSession(planId: string, successUrl: string, cancelUrl: string, extraSeats?: number, studioName?: string): Promise<string>;
     createPortalSession(returnUrl: string): Promise<string>;
     restoreSubscription(): Promise<{ success: boolean; message?: string; tier?: string }>;
+    provisionMissingStudio(studioName: string): Promise<{ success: boolean; studioId?: string; error?: string }>;
   };
 }
 

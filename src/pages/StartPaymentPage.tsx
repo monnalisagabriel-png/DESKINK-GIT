@@ -74,6 +74,10 @@ export const StartPaymentPage: React.FC = () => {
 
         try {
             console.log(`[Payment] Initiating checkout for plan: ${selectedPlan}, studio: ${studioName}`);
+            // Save studio name for potential recovery in PaymentStatusPage
+            if (studioName) {
+                localStorage.setItem('pendingStudioName', studioName);
+            }
 
             const checkoutUrl = await api.subscription.createCheckoutSession(
                 selectedPlan,

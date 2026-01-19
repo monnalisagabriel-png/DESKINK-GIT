@@ -1899,54 +1899,74 @@ Formatta la risposta ESCLUSIVAMENTE come un JSON array di stringhe, esempio: ["C
 
             return data.url;
         },
+
         createPortalSession: async (returnUrl: string): Promise<string> => {
             const { data: { session } } = await supabase.auth.getSession();
             if (!session) throw new Error("Not authenticated");
 
-            const HARDCODED_URL = 'https://onwvisahipnlpdijqzoa.supabase.co';
-            const HARDCODED_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9ud3Zpc2FoaXBubHBkaWpxem9hIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzcwMjU2NzgsImV4cCI6MjA1MjYwMTY3OH0.523qN0XqT-JpD3yT2qYtZzzZ-oA4yG-h4k0qT-y5qM0';
-
-            const response = await fetch(`${HARDCODED_URL}/functions/v1/create-portal-session`, {
-                method: 'POST',
+            const { data, error } = await supabase.functions.invoke('create-portal-session', {
+                body: { return_url: returnUrl },
                 headers: {
-                    Authorization: `Bearer ${session.access_token}`,
-                    apikey: HARDCODED_KEY,
-                    "Content-Type": "application/json",
-                },
-                body: JSON.stringify({ return_url: returnUrl })
+                    Authorization: `Bearer ${session.access_token}`
+                }
             });
 
-            if (!response.ok) {
-                const err = await response.json();
-                throw new Error(err.error || 'Failed to create portal session');
+            if (error) {
+                console.error("Create Portal Session Error:", error);
+                throw new Error(error.message || 'Failed to create portal session');
             }
-
-            const data = await response.json();
             return data.url;
         },
+
         restoreSubscription: async (): Promise<{ success: boolean; message?: string; tier?: string }> => {
             const { data: { session } } = await supabase.auth.getSession();
             if (!session) throw new Error("Not authenticated");
 
-            const HARDCODED_URL = 'https://onwvisahipnlpdijqzoa.supabase.co';
-            const HARDCODED_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9ud3Zpc2FoaXBubHBkaWpxem9hIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzcwMjU2NzgsImV4cCI6MjA1MjYwMTY3OH0.523qN0XqT-JpD3yT2qYtZzzZ-oA4yG-h4k0qT-y5qM0';
+            // Restore via Edge Function if needed, currently just a placeholder/manual check
+            // Or we can invoke a restore function if one exists.
+            // For now, let's keep the mock response or implement a real check.
+            // Let's implement a real check using the provision logic (idempotent).
 
-            const response = await fetch(`${HARDCODED_URL}/functions/v1/restore-subscription`, {
-                method: 'POST',
+            // Actually, for "Restore Purchase", we usually just check Stripe again.
+            // We can reuse provisionMissingStudio logic essentially.
+
+            const { data, error } = await supabase.functions.invoke('provision-missing-studio', {
+                body: { studio_name: 'Restored Studio' }, // Name doesn't matter if it exists
+                headers: { Authorization: `Bearer ${session.access_token}` }
+            });
+
+            if (error) {
+                return { success: false, message: error.message };
+            }
+
+            if (data.success) {
+                return { success: true, message: "Subscription restored", tier: 'basic' };
+            }
+
+            return { success: false, message: "No active subscription found to restore" };
+        },
+
+        provisionMissingStudio: async (studioName: string): Promise<{ success: boolean; studioId?: string; error?: string }> => {
+            const { data: { session } } = await supabase.auth.getSession();
+            if (!session) throw new Error("No session");
+
+            console.log('[REPO] Provisioning missing studio:', studioName);
+
+            const { data, error } = await supabase.functions.invoke('provision-missing-studio', {
+                body: { studio_name: studioName },
                 headers: {
-                    Authorization: `Bearer ${session.access_token}`,
-                    apikey: HARDCODED_KEY,
-                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${session.access_token}`
                 }
             });
 
-            if (!response.ok) {
-                const err = await response.json();
-                console.error("Restore Error Response:", err);
-                throw new Error(err.error || 'Failed to restore subscription');
+            if (error) {
+                console.error("Provisioning error:", error);
+                return { success: false, error: error.message };
             }
 
-            return await response.json();
+            console.log('[REPO] Provision Result:', data);
+            return data;
         }
     };
 }
+
