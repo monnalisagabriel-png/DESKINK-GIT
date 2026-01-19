@@ -1,59 +1,60 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
+import {
+    Users, Calendar, TrendingUp,
+    Clock, CheckCircle, ChevronRight,
+    DollarSign, FileText, PlayCircle, BookOpen,
+    Share2, Eye, EyeOff, X, UserCheck
+} from 'lucide-react';
 import { useAuth } from '../auth/AuthContext';
 import { StatsCard } from './components/StatsCard';
-import {
-    DollarSign,
-    Calendar,
-    Users,
-    UserCheck,
-    Clock,
-    TrendingUp,
-    BookOpen,
-    CheckCircle,
-    FileText,
-    PlayCircle,
-    Eye,
-    EyeOff,
-    Share2,
-    X,
-    ChevronRight,
-} from 'lucide-react';
 import { api } from '../../services/api';
 import type { ArtistContract, Appointment, Studio, Course, CourseEnrollment } from '../../services/types';
 import { format, addWeeks, startOfDay, endOfWeek, parseISO, isSameWeek, startOfMonth, endOfMonth } from 'date-fns';
+import { useRealtime } from '../../hooks/useRealtime';
 import { it } from 'date-fns/locale';
 import { useLayoutStore } from '../../stores/layoutStore';
 import { BookingRequests } from './components/BookingRequests';
 import clsx from 'clsx';
 
+interface DashboardStats {
+    revenue_today: number;
+    revenue_month: number;
+    waitlist_count: number;
+    staff_present: number;
+    staff_total: number;
+}
+
 export const Dashboard: React.FC = () => {
     const { user } = useAuth();
     const navigate = useNavigate();
-    const [isShareOpen, setIsShareOpen] = useState(false);
     const { isPrivacyMode, togglePrivacyMode } = useLayoutStore();
-    const [contract, setContract] = React.useState<ArtistContract | null>(null);
-    const [appointments, setAppointments] = React.useState<Appointment[]>([]);
-    const [studio, setStudio] = React.useState<Studio | null>(null);
 
-    // Student State
-    const [studentCourse, setStudentCourse] = React.useState<Course | null>(null);
-    const [studentEnrollment, setStudentEnrollment] = React.useState<CourseEnrollment | null>(null);
-
-    // Terms Modal
-    const [isTermsViewOpen, setIsTermsViewOpen] = useState(false);
-    const [viewTermsContent, setViewTermsContent] = useState('');
-
-    const [loading, setLoading] = React.useState(true);
-    const [artistRealEarnings, setArtistRealEarnings] = React.useState(0);
-
-    const [stats, setStats] = React.useState({
+    // -- State Definitions --
+    const [loading, setLoading] = useState(true);
+    const [stats, setStats] = useState<DashboardStats>({
         revenue_today: 0,
         revenue_month: 0,
         waitlist_count: 0,
         staff_present: 0,
         staff_total: 0
     });
+
+    const [artistRealEarnings, setArtistRealEarnings] = useState(0);
+
+    // Artist/Owner State
+    const [appointments, setAppointments] = useState<Appointment[]>([]);
+    const [contract, setContract] = useState<ArtistContract | null>(null);
+    const [studio, setStudio] = useState<Studio | null>(null);
+
+    // Student State
+    const [studentCourse, setStudentCourse] = useState<Course | null>(null);
+    const [studentEnrollment, setStudentEnrollment] = useState<CourseEnrollment | null>(null);
+
+    // UI State
+    const [isShareOpen, setIsShareOpen] = useState(false);
+    const [isTermsViewOpen, setIsTermsViewOpen] = useState(false);
+    const [viewTermsContent, setViewTermsContent] = useState('');
 
     const loadDashboardData = async () => {
         if (!user) return;
@@ -109,22 +110,9 @@ export const Dashboard: React.FC = () => {
             if (isArtist) {
                 const startMonth = startOfMonth(today);
                 const endMonth = endOfMonth(today);
-                // Fetch transactions for current month
                 const txs = await api.financials.listTransactions(startMonth, endMonth, user.studio_id);
-
-                // Filter own income
                 const myTxs = txs.filter(t => t.artist_id === user.id && t.type === 'INCOME');
                 const gross = myTxs.reduce((sum, t) => sum + Number(t.amount), 0);
-
-                // Calculate Net based on comm
-                // Note: Contract is set in state but might not be updated yet if setContract was just called? 
-                // Wait, setContract is async state update. Better to use the fetched 'c' variable if available or fetch again.
-                // We fetched 'c' above (line 88). 
-                // Let's reuse 'c' logic. 
-                // But 'c' is scoped in if(isArtist).
-                // I will duplicate logic or move 'c' out.
-                // Actually I can just re-fetch contract or access it if I refactor.
-                // Refactoring slightly:
 
                 const contract = await api.artists.getContract(user.id);
                 const rate = contract?.commission_rate || 50;
@@ -139,11 +127,11 @@ export const Dashboard: React.FC = () => {
         }
     };
 
-    React.useEffect(() => {
+    useEffect(() => {
         if (user && user.id) loadDashboardData();
     }, [user, user?.id, user?.role, user?.studio_id]);
 
-    React.useEffect(() => {
+    useEffect(() => {
         const loadStats = async () => {
             if (!user) return;
             if (user.role === 'owner' || user.role === 'STUDIO_ADMIN' || user.role === 'MANAGER') {
@@ -160,7 +148,6 @@ export const Dashboard: React.FC = () => {
                     if (user.studio_id) {
                         const team = await api.settings.listTeamMembers(user.studio_id);
                         sTotal = team.length;
-                        // Mock "Present" check for now, or check presence logs if implemented for everyone
                         sPresent = team.length;
                     }
 
@@ -179,6 +166,24 @@ export const Dashboard: React.FC = () => {
         loadStats();
     }, [user?.role, user?.studio_id]);
 
+    // -- Realtime Hooks --
+    useRealtime('appointments', () => {
+        console.log('Realtime: refreshing appointments');
+        loadDashboardData();
+    });
+
+    useRealtime('waitlist_entries', () => {
+        if (user.role === 'owner' || user.role === 'MANAGER') {
+            loadDashboardData();
+        }
+    });
+
+    useRealtime('transactions', () => {
+        if (user.role === 'owner' || user.role === 'MANAGER') {
+            loadDashboardData();
+        }
+    });
+
     const sendWhatsAppReminder = (appt: Appointment, type: 'WEEK_NOTICE' | 'CONFIRMATION') => {
         if (!appt.client?.phone) {
             alert('Numero di telefono non disponibile per questo cliente.');
@@ -187,7 +192,7 @@ export const Dashboard: React.FC = () => {
 
         const dateStr = format(parseISO(appt.start_time), "d MMMM", { locale: it });
         const timeStr = format(parseISO(appt.start_time), "HH:mm");
-        const studioName = studio?.name || "DESKINK Studio";
+        const studioName = studio?.name || "InkFlow Studio";
         const location = studio ? `${studio.address}, ${studio.city}` : "Via Loreto Balatelle, 208, Acireale";
 
         let message = '';
@@ -237,13 +242,9 @@ export const Dashboard: React.FC = () => {
     );
 
     const renderArtistWidgets = () => {
-        // Calculate dynamic earnings from TRANSACTIONS (Real Earnings)
-        // const monthlyEarnings ... (removed)
-
         const netEarnings = isPrivacyMode ? '••••' : `€${artistRealEarnings.toLocaleString('it-IT', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 
         const myApptsCount = appointments.length;
-
         const now = new Date();
         const nextAppt = appointments.find(a => new Date(a.start_time) > now);
         let nextApptText = 'Nessuno';
@@ -358,7 +359,6 @@ export const Dashboard: React.FC = () => {
                         <p className="text-text-muted italic">Dati presenze non disponibili.</p>
                     )}
 
-
                     <div className="mt-4 pt-4 border-t border-border flex justify-center">
                         <button
                             onClick={() => setIsTermsViewOpen(true)}
@@ -400,7 +400,7 @@ export const Dashboard: React.FC = () => {
                         )}
                     </div>
                 </div>
-            </div >
+            </div>
         );
     };
 
@@ -437,6 +437,7 @@ export const Dashboard: React.FC = () => {
                 {(user.role === 'owner' || user.role === 'STUDIO_ADMIN' || user.role === 'studio_admin' || user.role === 'MANAGER' || user.role === 'manager') && renderAdminWidgets()}
                 {(user.role === 'ARTIST' || user.role === 'artist') && renderArtistWidgets()}
                 {(user.role === 'STUDENT' || user.role === 'student') && renderStudentWidgets()}
+
                 {user.role !== 'STUDENT' && user.role !== 'student' && (
                     <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-20">
                         <div className="lg:col-span-2 bg-bg-secondary border border-border rounded-lg p-6 min-h-[300px]">
@@ -603,6 +604,7 @@ export const Dashboard: React.FC = () => {
                     </div>
                 </div>
             )}
+
             {/* Read-Only Terms Modal */}
             {isTermsViewOpen && (
                 <div className="fixed inset-0 z-[60] bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
@@ -625,20 +627,9 @@ export const Dashboard: React.FC = () => {
                                 {viewTermsContent || "Nessun termine disponibile."}
                             </div>
                         </div>
-
-                        <div className="p-6 border-t border-border flex justify-end">
-                            <button
-                                onClick={() => setIsTermsViewOpen(false)}
-                                className="px-4 py-2 rounded-lg font-bold bg-bg-tertiary text-white hover:bg-white/10 border border-border transition-colors"
-                            >
-                                Chiudi
-                            </button>
-                        </div>
                     </div>
                 </div>
             )}
         </div>
     );
 };
-
-export default Dashboard;

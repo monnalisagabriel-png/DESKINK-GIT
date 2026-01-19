@@ -1256,7 +1256,7 @@ export class SupabaseRepository implements IRepository {
         list: async (studioId: string): Promise<WaitlistEntry[]> => {
             const { data, error } = await supabase
                 .from('waitlist_entries')
-                .select('*')
+                .select('id, studio_id, client_id, email, phone, client_name, preferred_artist_id, styles, description, status, created_at, interest_type, notes')
                 .eq('studio_id', studioId)
                 .order('created_at', { ascending: false });
             if (error) throw error;
@@ -1269,9 +1269,6 @@ export class SupabaseRepository implements IRepository {
                 .from('waitlist_entries')
                 .insert({
                     ...data,
-                    // If signature provided, we might interpret it or stored separately. 
-                    // But WaitlistEntry interface doesn't explicitly have signature_url, but 'images'?
-                    // Or we assume logic handles it.
                 })
                 .select()
                 .single();
@@ -1303,6 +1300,16 @@ export class SupabaseRepository implements IRepository {
                 .single();
             if (error) throw error;
             return data;
+        },
+        update: async (id: string, data: Partial<WaitlistEntry>): Promise<WaitlistEntry> => {
+            const { data: updated, error } = await supabase
+                .from('waitlist_entries')
+                .update(data)
+                .eq('id', id)
+                .select()
+                .single();
+            if (error) throw error;
+            return updated;
         }
     };
 

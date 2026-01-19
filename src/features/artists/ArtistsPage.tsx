@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { Search, Filter, User as UserIcon, AlertCircle, MessageCircle } from 'lucide-react';
 import { api } from '../../services/api';
 import { useAuth } from '../auth/AuthContext';
+import { useRealtime } from '../../hooks/useRealtime';
 import type { User, ArtistContract } from '../../services/types';
 
 export const ArtistsPage: React.FC = () => {
@@ -12,10 +13,6 @@ export const ArtistsPage: React.FC = () => {
     const [contracts, setContracts] = useState<Record<string, ArtistContract | null>>({});
     const [loading, setLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState('');
-
-    useEffect(() => {
-        loadData();
-    }, [user?.studio_id]);
 
     const loadData = async () => {
         if (!user?.studio_id) return;
@@ -38,6 +35,22 @@ export const ArtistsPage: React.FC = () => {
             setLoading(false);
         }
     };
+
+    useEffect(() => {
+        loadData();
+    }, [user?.studio_id]);
+
+    // Enable Realtime Updates
+    useRealtime('users', () => {
+        console.log('Realtime update: users table changed');
+        loadData();
+    });
+
+    useRealtime('artist_contracts', () => {
+        console.log('Realtime update: contracts table changed');
+        loadData();
+    });
+
 
 
     const filteredArtists = artists.filter(a =>

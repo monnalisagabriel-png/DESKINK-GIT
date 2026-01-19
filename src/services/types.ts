@@ -355,6 +355,7 @@ export interface IRepository {
     addToWaitlist(data: Omit<WaitlistEntry, 'id' | 'created_at' | 'status'>, signatureData?: string, templateVersion?: number): Promise<WaitlistEntry>;
     addToWaitlistPublic(data: Omit<WaitlistEntry, 'id' | 'created_at' | 'status'>, signatureData?: string, templateVersion?: number): Promise<Pick<WaitlistEntry, 'id'>>;
     updateStatus(id: string, status: WaitlistEntry['status']): Promise<WaitlistEntry>;
+    update(id: string, data: Partial<WaitlistEntry>): Promise<WaitlistEntry>;
   };
   storage: {
     upload(bucket: string, path: string, file: File): Promise<string>; // Returns public URL
@@ -441,6 +442,7 @@ export interface WaitlistEntry {
   styles: string[];
   description?: string;
   images?: string[];
+  notes?: string; // Internal notes
   status: 'PENDING' | 'CONTACTED' | 'IN_PROGRESS' | 'BOOKED' | 'REJECTED';
   created_at: string;
 }

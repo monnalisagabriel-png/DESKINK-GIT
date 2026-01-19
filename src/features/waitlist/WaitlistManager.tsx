@@ -2,10 +2,11 @@ import React, { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { api } from '../../services/api';
 import type { WaitlistEntry } from '../../services/types';
-import { Search, Filter, QrCode, CheckCircle, Clock, UserPlus, ArrowUpRight, ChevronDown, ArrowDownWideNarrow, ArrowUpNarrowWide, PenTool, Check, Link, ChevronDownCircle } from 'lucide-react';
+import { Search, Filter, QrCode, CheckCircle, Clock, UserPlus, ArrowUpRight, ChevronDown, ArrowDownWideNarrow, ArrowUpNarrowWide, PenTool, Check, Link, ChevronDownCircle, Edit3, Save, X, StickyNote } from 'lucide-react';
 import clsx from 'clsx';
 import { useAuth } from '../auth/AuthContext';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { useRealtime } from '../../hooks/useRealtime';
 
 export const WaitlistManager: React.FC = () => {
     const { user } = useAuth();
@@ -31,12 +32,22 @@ export const WaitlistManager: React.FC = () => {
     const [undoAction, setUndoAction] = useState<{ id: string, status: WaitlistEntry['status'] } | null>(null);
     const [undoTimer, setUndoTimer] = useState<ReturnType<typeof setTimeout> | null>(null);
 
+    // Notes State
+    const [editingNoteId, setEditingNoteId] = useState<string | null>(null);
+    const [noteText, setNoteText] = useState('');
+
     // React Query
     const { data: entries = [], isLoading: loading } = useQuery({
         queryKey: ['waitlist', user?.studio_id],
         queryFn: () => api.waitlist.list(user?.studio_id || 'studio-1'),
         enabled: !!user?.studio_id,
         staleTime: 1000 * 60 * 5, // 5 minutes
+    });
+
+    // Enable Realtime Updates
+    useRealtime('waitlist_entries', () => {
+        console.log('[WaitlistManager] Realtime update detected. Invalidating query...');
+        queryClient.invalidateQueries({ queryKey: ['waitlist', user?.studio_id] });
     });
 
     const handleStatusUpdate = async (id: string, status: WaitlistEntry['status'], isUndo = false) => {
@@ -75,6 +86,23 @@ export const WaitlistManager: React.FC = () => {
             setUndoAction(null);
             if (undoTimer) clearTimeout(undoTimer);
         }
+    };
+
+    const handleSaveNote = async (id: string) => {
+        try {
+            await api.waitlist.update(id, { notes: noteText });
+            queryClient.invalidateQueries({ queryKey: ['waitlist', user?.studio_id] });
+            setEditingNoteId(null);
+            setNoteText('');
+        } catch (err) {
+            console.error("Error saving note:", err);
+            alert("Errore nel salvataggio della nota");
+        }
+    };
+
+    const startEditingNote = (entry: WaitlistEntry) => {
+        setEditingNoteId(entry.id);
+        setNoteText(entry.notes || '');
     };
 
     const publicLink = `${window.location.origin}/public/waitlist/${user?.studio_id || 'studio-1'}`;
@@ -274,7 +302,7 @@ export const WaitlistManager: React.FC = () => {
                 )}
 
                 {/* Mobile Dropdown Menu for Status */}
-                <div className="md:hidden mb-6">
+                <div className="xl:hidden mb-6">
                     <div className="relative bg-bg-secondary border border-border rounded-lg p-2">
                         <select
                             value={activeTab}
@@ -298,7 +326,7 @@ export const WaitlistManager: React.FC = () => {
                 </div>
 
                 {/* Desktop Tabs */}
-                <div className="hidden md:flex border-b border-border mb-6 w-full min-w-0">
+                <div className="hidden xl:flex border-b border-border mb-6 w-full min-w-0">
                     <button
                         onClick={() => setActiveTab('PENDING')}
                         className={clsx(
@@ -439,7 +467,7 @@ export const WaitlistManager: React.FC = () => {
                 </div>
 
                 {/* Desktop Table View */}
-                <div className="hidden md:block bg-bg-secondary rounded-xl border border-border overflow-x-auto">
+                <div className="hidden xl:block bg-bg-secondary rounded-xl border border-border overflow-x-auto">
                     <table className="w-full text-left min-w-[800px]">
                         <thead className="bg-bg-tertiary border-b border-border text-xs uppercase text-text-muted">
                             <tr>
@@ -494,6 +522,36 @@ export const WaitlistManager: React.FC = () => {
                                             <div className="text-sm text-text-secondary truncate max-w-xs" title={entry.description}>
                                                 {entry.description || '-'}
                                             </div>
+
+                                            {/* Notes Field */}
+                                            <div className="mt-2">
+                                                {editingNoteId === entry.id ? (
+                                                    <div className="flex gap-2 items-start animate-in fade-in slide-in-from-top-1">
+                                                        <textarea
+                                                            value={noteText}
+                                                            onChange={(e) => setNoteText(e.target.value)}
+                                                            className="text-xs bg-bg-tertiary border border-border rounded p-1 w-full min-w-[200px] outline-none focus:border-red-500 text-red-500 font-medium"
+                                                            placeholder="Scrivi una nota importante..."
+                                                            rows={2}
+                                                            autoFocus
+                                                        />
+                                                        <button onClick={() => handleSaveNote(entry.id)} className="p-1 hover:bg-green-500/10 text-green-500 rounded"><Save size={14} /></button>
+                                                        <button onClick={() => setEditingNoteId(null)} className="p-1 hover:bg-red-500/10 text-red-500 rounded"><X size={14} /></button>
+                                                    </div>
+                                                ) : (
+                                                    <div
+                                                        onClick={() => startEditingNote(entry)}
+                                                        className={clsx(
+                                                            "text-xs font-bold cursor-pointer transition-colors flex items-center gap-1 group/note",
+                                                            entry.notes ? "text-red-500 hover:text-red-400" : "text-text-muted hover:text-text-primary"
+                                                        )}
+                                                    >
+                                                        <StickyNote size={12} className={entry.notes ? "fill-red-500/20" : ""} />
+                                                        {entry.notes ? entry.notes : <span className="opacity-0 group-hover/note:opacity-100 transition-opacity">Aggiungi nota</span>}
+                                                        {!entry.notes && <Edit3 size={10} className="opacity-0 group-hover/note:opacity-100" />}
+                                                    </div>
+                                                )}
+                                            </div>
                                         </td>
                                         <td className="p-4 text-sm text-text-secondary">
                                             {new Date(entry.created_at).toLocaleDateString()}
@@ -521,7 +579,7 @@ export const WaitlistManager: React.FC = () => {
                 </div>
 
                 {/* Mobile Card View */}
-                <div className="md:hidden space-y-4">
+                <div className="xl:hidden space-y-4">
                     {loading ? (
                         <div className="p-8 text-center text-text-muted">Caricamento...</div>
                     ) : visibleEntries.length === 0 ? (
@@ -562,6 +620,43 @@ export const WaitlistManager: React.FC = () => {
                                 {entry.description && (
                                     <p className="text-sm text-text-secondary italic bg-bg-tertiary/50 p-2 rounded break-words">"{entry.description}"</p>
                                 )}
+
+                                {/* Notes Section for Mobile */}
+                                <div className="border-t border-border/50 pt-2">
+                                    {editingNoteId === entry.id ? (
+                                        <div className="flex gap-2 items-start">
+                                            <textarea
+                                                value={noteText}
+                                                onChange={(e) => setNoteText(e.target.value)}
+                                                className="text-sm bg-bg-tertiary border border-border rounded p-2 w-full outline-none focus:border-red-500 text-red-500 font-bold"
+                                                placeholder="Nota importante..."
+                                                rows={2}
+                                            />
+                                            <div className="flex flex-col gap-1">
+                                                <button onClick={() => handleSaveNote(entry.id)} className="p-2 bg-green-500/10 text-green-500 rounded"><Save size={16} /></button>
+                                                <button onClick={() => setEditingNoteId(null)} className="p-2 bg-red-500/10 text-red-500 rounded"><X size={16} /></button>
+                                            </div>
+                                        </div>
+                                    ) : (
+                                        <div
+                                            onClick={() => startEditingNote(entry)}
+                                            className={clsx(
+                                                "p-2 rounded cursor-pointer transition-colors flex items-start gap-2",
+                                                entry.notes ? "bg-red-500/5 border border-red-500/20" : "hover:bg-bg-tertiary"
+                                            )}
+                                        >
+                                            <StickyNote size={16} className={clsx("mt-0.5", entry.notes ? "text-red-500 fill-red-500/20" : "text-text-muted")} />
+                                            <div className="flex-1">
+                                                {entry.notes ? (
+                                                    <p className="text-sm font-bold text-red-500">{entry.notes}</p>
+                                                ) : (
+                                                    <p className="text-sm text-text-muted">Aggiungi una nota...</p>
+                                                )}
+                                            </div>
+                                            <Edit3 size={14} className="text-text-muted mt-0.5" />
+                                        </div>
+                                    )}
+                                </div>
 
                                 <div className="pt-2 border-t border-border mt-1">
                                     {renderActions(entry, true)}
