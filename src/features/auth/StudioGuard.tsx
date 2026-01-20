@@ -17,6 +17,14 @@ export const StudioGuard: React.FC = () => {
         effectiveStatus = 'pending_provisioning';
     }
 
+    // 3. BRUTAL REDIRECT: If status becomes active, force entry
+    React.useEffect(() => {
+        if (subscriptionStatus === 'active') {
+            console.log('Subscription ACTIVE detected. Forcing redirect to Dashboard...');
+            window.location.href = '/dashboard';
+        }
+    }, [subscriptionStatus]);
+
     // 2. POLL IF PENDING/PROVISIONING
     React.useEffect(() => {
         if (effectiveStatus === 'pending_provisioning') {
