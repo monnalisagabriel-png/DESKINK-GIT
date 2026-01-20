@@ -191,28 +191,21 @@ serve(async (req) => {
                 }
             }
         });
-        subscription_data: {
-            metadata: {
-                studio_id: studio?.id || '',
-                    user_id: user.id,
-                        tier: tier
-            }
-        }
-    });
 
-return new Response(JSON.stringify({ url: session.url }), {
-    headers: { ...corsHeaders, "Content-Type": "application/json" },
-});
+
+        return new Response(JSON.stringify({ url: session.url }), {
+            headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
 
     } catch (error) {
-    console.error("Error handler:", error);
-    return new Response(JSON.stringify({
-        error: error.message,
-        stack: error.stack,
-        details: error
-    }), {
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-        status: 400,
-    });
-}
+        console.error("Error handler:", error);
+        return new Response(JSON.stringify({
+            error: error.message,
+            stack: error.stack,
+            details: error
+        }), {
+            headers: { ...corsHeaders, "Content-Type": "application/json" },
+            status: 400,
+        });
+    }
 });
