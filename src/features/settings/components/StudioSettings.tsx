@@ -238,6 +238,16 @@ export const StudioSettings: React.FC = () => {
                                 className="w-full bg-bg-tertiary border border-border rounded-lg px-4 py-2 text-text-primary focus:border-accent focus:outline-none"
                             />
                         </div>
+                        <div>
+                            <label className="block text-sm font-medium text-text-muted mb-1">Telefono / WhatsApp Studio</label>
+                            <input
+                                type="text"
+                                value={studio.phone || ''}
+                                onChange={e => setStudio({ ...studio, phone: e.target.value })}
+                                className="w-full bg-bg-tertiary border border-border rounded-lg px-4 py-2 text-text-primary focus:border-accent focus:outline-none"
+                                placeholder="+39 333 1234567"
+                            />
+                        </div>
                     </div>
 
                     <div className="grid grid-cols-1 xl:grid-cols-2 gap-6 pt-4 border-t border-border">

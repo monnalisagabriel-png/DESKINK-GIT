@@ -5,7 +5,7 @@ import type { User, Service } from '../../services/types';
 import { supabase } from '../../lib/supabase';
 import { loadStripe } from '@stripe/stripe-js';
 import { Elements, PaymentElement, useStripe, useElements } from '@stripe/react-stripe-js';
-import { ChevronRight, ChevronLeft, User as UserIcon, CheckCircle, CreditCard, Image as ImageIcon, AlertTriangle, Calendar, Clock, Search, Eraser, PenTool, Lock } from 'lucide-react';
+import { ChevronRight, ChevronLeft, User as UserIcon, CheckCircle, CreditCard, Image as ImageIcon, AlertTriangle, Calendar, Clock, Search, Eraser, PenTool, Lock, X, Info } from 'lucide-react';
 import SignatureCanvas from 'react-signature-canvas';
 
 // Steps: Artist -> Service -> Date -> Details -> Consent -> Payment -> Success
@@ -84,6 +84,7 @@ export const PublicBookingPage: React.FC = () => {
     const [artists, setArtists] = useState<User[]>([]);
     const [services, setServices] = useState<Service[]>([]);
     const [selectedArtist, setSelectedArtist] = useState<User | null>(null);
+    const [viewingArtist, setViewingArtist] = useState<User | null>(null); // For Modal
     const [selectedService, setSelectedService] = useState<Service | null>(null);
     const [selectedDate, setSelectedDate] = useState<Date | null>(new Date());
     const [selectedTime, setSelectedTime] = useState<string | null>(null);
@@ -142,7 +143,7 @@ export const PublicBookingPage: React.FC = () => {
                 .from('users')
                 .select('id, full_name, email, role, avatar_url, bio, styles, portfolio_photos, excluded_styles, calendar_color, availability, stripe_account_id')
                 .eq('studio_id', studioId)
-                .or('role.eq.artist,role.eq.owner')
+                .eq('role', 'artist')
                 .eq('is_public_booking_enabled', true);
 
             if (artistError) throw artistError;
@@ -235,6 +236,12 @@ export const PublicBookingPage: React.FC = () => {
             try {
                 setLoading(true);
                 const amount = paymentOption === 'FULL' ? selectedService!.price : selectedService!.deposit_amount;
+
+                // Handle 0-cost (Free Booking)
+                if (amount <= 0) {
+                    await finalizeBooking(); // Bypass Payment
+                    return;
+                }
 
                 const { data, error } = await supabase.functions.invoke('payment-intent', {
                     body: {
@@ -595,10 +602,10 @@ export const PublicBookingPage: React.FC = () => {
                             ) : (
                                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                                     {artists.map(artist => (
-                                        <button
+                                        <div
                                             key={artist.id}
                                             onClick={() => setSelectedArtist(artist)}
-                                            className={`group relative p-6 rounded-3xl border text-left transition-all duration-300 hover:shadow-xl flex flex-col gap-4 h-full
+                                            className={`group relative p-6 rounded-3xl border text-left transition-all duration-300 hover:shadow-xl flex flex-col gap-4 h-full cursor-pointer
                                                 ${selectedArtist?.id === artist.id
                                                     ? 'border-green-600 bg-green-600 text-white ring-4 ring-green-100 shadow-2xl scale-[1.02]'
                                                     : 'border-gray-200 bg-white hover:border-gray-300'}`}
@@ -611,26 +618,31 @@ export const PublicBookingPage: React.FC = () => {
                                                         <UserIcon className={`w-full h-full p-5 ${selectedArtist?.id === artist.id ? 'text-green-200' : 'text-gray-300'}`} />
                                                     )}
                                                 </div>
-                                                <div>
-                                                    <h3 className={`text-xl font-bold mb-1 ${selectedArtist?.id === artist.id ? 'text-white' : 'text-black'}`}>{artist.full_name}</h3>
+                                                <div className="flex-1 min-w-0">
+                                                    <h3 className={`text-xl font-bold mb-1 truncate ${selectedArtist?.id === artist.id ? 'text-white' : 'text-black'}`}>{artist.full_name}</h3>
                                                     <p className={`text-sm ${selectedArtist?.id === artist.id ? 'text-green-100' : 'text-gray-500'}`}>Resident Artist</p>
                                                 </div>
                                             </div>
 
                                             {/* Details Section */}
-                                            <div className="space-y-3 w-full">
+                                            <div className="space-y-3 w-full flex-1">
                                                 {/* Styles */}
                                                 {artist.styles && artist.styles.length > 0 && (
                                                     <div className="flex flex-wrap gap-1">
-                                                        {artist.styles.map(style => (
+                                                        {artist.styles.slice(0, 3).map(style => (
                                                             <span key={style} className={`text-xs px-2 py-1 rounded-md ${selectedArtist?.id === artist.id ? 'bg-white/20 text-white' : 'bg-gray-100 text-gray-600'}`}>
                                                                 {style}
                                                             </span>
                                                         ))}
+                                                        {artist.styles.length > 3 && (
+                                                            <span className={`text-xs px-2 py-1 rounded-md ${selectedArtist?.id === artist.id ? 'bg-white/20 text-white' : 'bg-gray-100 text-gray-600'}`}>
+                                                                +{artist.styles.length - 3}
+                                                            </span>
+                                                        )}
                                                     </div>
                                                 )}
 
-                                                {/* Bio */}
+                                                {/* Bio Preview */}
                                                 {artist.bio && (
                                                     <p className={`text-sm line-clamp-2 ${selectedArtist?.id === artist.id ? 'text-green-50' : 'text-gray-500'}`}>
                                                         {artist.bio}
@@ -648,19 +660,160 @@ export const PublicBookingPage: React.FC = () => {
                                                     </div>
                                                 )}
 
-                                                {/* Excluded Styles Warning */}
-                                                {artist.excluded_styles && artist.excluded_styles.length > 0 && (
-                                                    <div className={`mt-2 text-xs p-2 rounded-lg flex items-start gap-1.5 ${selectedArtist?.id === artist.id ? 'bg-black/20 text-white' : 'bg-red-50 text-red-600'}`}>
-                                                        <AlertTriangle size={12} className="shrink-0 mt-0.5" />
-                                                        <span>
-                                                            <span className="font-bold">No:</span> {artist.excluded_styles.join(', ')}
-                                                        </span>
+                                                {/* Info Button */}
+                                                <button
+                                                    onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        setViewingArtist(artist);
+                                                    }}
+                                                    className={`w-full mt-4 py-2.5 rounded-xl font-bold text-sm flex items-center justify-center gap-2 transition-colors z-10 relative
+                                                        ${selectedArtist?.id === artist.id ? 'bg-white text-green-700 hover:bg-green-50' : 'bg-gray-100 text-black hover:bg-gray-200'}`}
+                                                >
+                                                    <Info size={16} /> Profilo & Lavori
+                                                </button>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
+
+                            {/* Continue Button */}
+                            {selectedArtist && (
+                                <div className="fixed bottom-6 left-0 right-0 p-4 flex justify-center z-20 pointer-events-none">
+                                    <button
+                                        onClick={() => setStep('SERVICE')}
+                                        className="bg-black text-white px-8 py-4 rounded-full font-bold shadow-2xl hover:bg-gray-900 transition-all pointer-events-auto flex items-center gap-2 animate-in slide-in-from-bottom-4 border border-white/20"
+                                    >
+                                        Continua con {selectedArtist.full_name} <ChevronRight size={20} />
+                                    </button>
+                                </div>
+                            )}
+
+                            {/* ARTIST DETAIL MODAL */}
+                            {viewingArtist && (
+                                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-in fade-in duration-200">
+                                    <div className="bg-white w-full max-w-4xl max-h-[90vh] rounded-3xl overflow-hidden shadow-2xl flex flex-col relative animate-in zoom-in-95 duration-300">
+                                        <button
+                                            onClick={() => setViewingArtist(null)}
+                                            className="absolute top-4 right-4 z-20 bg-black/50 text-white p-2 rounded-full hover:bg-black/70 transition-colors backdrop-blur-md"
+                                        >
+                                            <X size={20} />
+                                        </button>
+
+                                        <div className="overflow-y-auto flex-1 custom-scrollbar">
+                                            {/* Header Image / Cover */}
+                                            <div className="h-64 bg-gray-900 relative">
+                                                {viewingArtist.portfolio_photos && viewingArtist.portfolio_photos.length > 0 ? (
+                                                    <img src={viewingArtist.portfolio_photos[0]} className="w-full h-full object-cover opacity-60" />
+                                                ) : (
+                                                    <div className="w-full h-full bg-gradient-to-br from-gray-900 to-black"></div>
+                                                )}
+                                                <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent" />
+
+                                                <div className="absolute bottom-6 left-6 md:left-8 flex items-end gap-6">
+                                                    <div className="w-24 h-24 md:w-32 md:h-32 rounded-2xl bg-white p-1 shadow-xl shrink-0 rotate-3">
+                                                        {viewingArtist.avatar_url ? (
+                                                            <img src={viewingArtist.avatar_url} className="w-full h-full object-cover rounded-xl" />
+                                                        ) : (
+                                                            <div className="w-full h-full bg-gray-100 rounded-xl flex items-center justify-center">
+                                                                <UserIcon size={40} className="text-gray-400" />
+                                                            </div>
+                                                        )}
+                                                    </div>
+                                                    <div className="pb-2">
+                                                        <h2 className="text-3xl md:text-4xl font-extrabold text-white mb-1 shadow-black drop-shadow-lg">{viewingArtist.full_name}</h2>
+                                                        <div className="flex items-center gap-2">
+                                                            <span className="px-2 py-0.5 bg-white/20 text-white text-xs font-bold uppercase tracking-wider rounded backdrop-blur-md">Resident Artist</span>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            <div className="p-6 md:p-8 space-y-8">
+                                                {/* Bio */}
+                                                <div className="prose prose-lg max-w-none text-gray-600">
+                                                    <h3 className="text-xl font-bold text-black mb-3 flex items-center gap-2">
+                                                        <UserIcon size={20} className="text-black" /> Chi Sono
+                                                    </h3>
+                                                    <p className="whitespace-pre-wrap leading-relaxed">
+                                                        {viewingArtist.bio || "Nessuna biografia disponibile per questo artista."}
+                                                    </p>
+                                                </div>
+
+                                                <div className="grid md:grid-cols-2 gap-8">
+                                                    {/* Styles */}
+                                                    <div className="bg-gray-50 p-6 rounded-2xl border border-gray-100">
+                                                        <h3 className="text-lg font-bold text-black mb-4 flex items-center gap-2">
+                                                            <PenTool size={20} /> Stili Eseguiti
+                                                        </h3>
+                                                        <div className="flex flex-wrap gap-2">
+                                                            {viewingArtist.styles && viewingArtist.styles.length > 0 ? (
+                                                                viewingArtist.styles.map(s => (
+                                                                    <span key={s} className="px-3 py-1.5 bg-white text-black rounded-lg text-sm font-medium border border-gray-200 shadow-sm">
+                                                                        {s}
+                                                                    </span>
+                                                                ))
+                                                            ) : (
+                                                                <span className="text-gray-400 italic">Nessuno stile specificato</span>
+                                                            )}
+                                                        </div>
+                                                    </div>
+
+                                                    {/* Excluded Styles */}
+                                                    {viewingArtist.excluded_styles && viewingArtist.excluded_styles.length > 0 && (
+                                                        <div className="bg-red-50 p-6 rounded-2xl border border-red-100">
+                                                            <h3 className="text-lg font-bold text-red-700 mb-4 flex items-center gap-2">
+                                                                <AlertTriangle size={20} /> Non Eseguo
+                                                            </h3>
+                                                            <div className="flex flex-wrap gap-2">
+                                                                {viewingArtist.excluded_styles.map(s => (
+                                                                    <span key={s} className="px-3 py-1.5 bg-white text-red-600 rounded-lg text-sm font-medium border border-red-100 shadow-sm">
+                                                                        {s}
+                                                                    </span>
+                                                                ))}
+                                                            </div>
+                                                        </div>
+                                                    )}
+                                                </div>
+
+                                                {/* Portfolio Grid */}
+                                                {viewingArtist.portfolio_photos && viewingArtist.portfolio_photos.length > 0 && (
+                                                    <div>
+                                                        <h3 className="text-xl font-bold text-black mb-6 flex items-center gap-2">
+                                                            <ImageIcon size={20} /> Portfolio Lavori
+                                                        </h3>
+                                                        <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                                                            {viewingArtist.portfolio_photos.map((photo, i) => (
+                                                                <div key={i} className="aspect-square rounded-2xl overflow-hidden bg-gray-100 cursor-zoom-in group relative shadow-md hover:shadow-xl transition-all">
+                                                                    <img src={photo} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" />
+                                                                    <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors" />
+                                                                </div>
+                                                            ))}
+                                                        </div>
                                                     </div>
                                                 )}
                                             </div>
-                                        </button>
-                                    ))
-                                    }
+                                        </div>
+
+                                        <div className="p-6 border-t bg-gray-50 flex flex-col md:flex-row justify-end gap-3 shrink-0">
+                                            <button
+                                                onClick={() => setViewingArtist(null)}
+                                                className="px-6 py-3 rounded-xl font-bold text-gray-600 hover:bg-gray-100 transition-colors border border-transparent hover:border-gray-200"
+                                            >
+                                                Chiudi
+                                            </button>
+                                            <button
+                                                onClick={() => {
+                                                    setSelectedArtist(viewingArtist);
+                                                    setViewingArtist(null);
+                                                    setStep('SERVICE');
+                                                }}
+                                                className="px-8 py-3 bg-black text-white rounded-xl font-bold shadow-xl hover:bg-gray-800 transition-all hover:scale-[1.02] flex items-center justify-center gap-2"
+                                            >
+                                                Prenota con {viewingArtist.full_name} <ChevronRight size={18} />
+                                            </button>
+                                        </div>
+                                    </div>
                                 </div>
                             )}
                         </div>
@@ -673,35 +826,45 @@ export const PublicBookingPage: React.FC = () => {
                             <p className="text-gray-400 mb-10 text-lg">Cosa vorresti realizzare oggi?</p>
 
                             <div className="space-y-4">
-                                {services.map(service => (
-                                    <button
-                                        key={service.id}
-                                        onClick={() => setSelectedService(service)}
-                                        className={`w-full p-6 rounded-2xl border text-left transition-all duration-200 hover:shadow-lg group
+                                {services
+                                    .filter(service => service.artist_id === selectedArtist?.id)
+                                    .length === 0 ? (
+                                    <div className="text-center p-8 bg-white rounded-2xl border border-gray-200 text-gray-400">
+                                        <p>Nessun servizio disponibile per questo artista.</p>
+                                    </div>
+                                ) : (
+                                    services
+                                        .filter(service => service.artist_id === selectedArtist?.id)
+                                        .map(service => (
+                                            <button
+                                                key={service.id}
+                                                onClick={() => setSelectedService(service)}
+                                                className={`w-full p-6 rounded-2xl border text-left transition-all duration-200 hover:shadow-lg group
                                             ${selectedService?.id === service.id
-                                                ? 'border-green-600 bg-green-600 text-white shadow-xl scale-[1.02]'
-                                                : 'border-gray-200 bg-white hover:border-gray-300'}`}
-                                    >
-                                        <div className="flex justify-between items-center">
-                                            <div>
-                                                <h3 className={`text-xl font-bold mb-1 ${selectedService?.id === service.id ? 'text-white' : 'text-black'}`}>{service.name}</h3>
-                                                <div className="flex items-center gap-2">
-                                                    <Clock size={16} className={selectedService?.id === service.id ? 'text-green-200' : 'text-gray-400'} />
-                                                    <span className={`text-sm ${selectedService?.id === service.id ? 'text-green-100' : 'text-gray-600'}`}>
-                                                        {service.duration ? service.duration / 60 : 0} ore
-                                                    </span>
-                                                </div>
-                                            </div>
-                                            <div className="text-right">
-                                                <div className={`text-2xl font-bold mb-1 ${selectedService?.id === service.id ? 'text-white' : 'text-black'}`}>€{service.price}</div>
-                                                <div className={`text-xs font-semibold uppercase tracking-wider px-2 py-1 rounded-md inline-block
+                                                        ? 'border-green-600 bg-green-600 text-white shadow-xl scale-[1.02]'
+                                                        : 'border-gray-200 bg-white hover:border-gray-300'}`}
+                                            >
+                                                <div className="flex justify-between items-center">
+                                                    <div>
+                                                        <h3 className={`text-xl font-bold mb-1 ${selectedService?.id === service.id ? 'text-white' : 'text-black'}`}>{service.name}</h3>
+                                                        <div className="flex items-center gap-2">
+                                                            <Clock size={16} className={selectedService?.id === service.id ? 'text-green-200' : 'text-gray-400'} />
+                                                            <span className={`text-sm ${selectedService?.id === service.id ? 'text-green-100' : 'text-gray-600'}`}>
+                                                                {service.duration ? service.duration / 60 : 0} ore
+                                                            </span>
+                                                        </div>
+                                                    </div>
+                                                    <div className="text-right">
+                                                        <div className={`text-2xl font-bold mb-1 ${selectedService?.id === service.id ? 'text-white' : 'text-black'}`}>€{service.price}</div>
+                                                        <div className={`text-xs font-semibold uppercase tracking-wider px-2 py-1 rounded-md inline-block
                                                     ${selectedService?.id === service.id ? 'bg-white/20 text-white' : 'bg-green-100 text-green-700'}`}>
-                                                    Acconto €{service.deposit_amount}
+                                                            Acconto €{service.deposit_amount}
+                                                        </div>
+                                                    </div>
                                                 </div>
-                                            </div>
-                                        </div>
-                                    </button>
-                                ))}
+                                            </button>
+                                        ))
+                                )}
                             </div>
                         </div>
                     )}
@@ -733,111 +896,86 @@ export const PublicBookingPage: React.FC = () => {
                                             {/* Real Slots Logic */}
                                             {selectedDate ? (
                                                 (() => {
-                                                    // 1. Check for Full Day Block
-                                                    const hasFullDayBooking = dayAppointments.some(a => (a.duration || 0) >= 240);
-                                                    if (hasFullDayBooking) {
-                                                        return <p className="col-span-full text-center text-red-500 font-medium bg-red-50 p-3 rounded-lg border border-red-100">Nessuna disponibilità per questa data (Giornata Completa).</p>;
-                                                    }
-
-                                                    // 2. Get Available Slots
-                                                    // Dynamic Generation from Work Hours or Default Slots
+                                                    // 1. Get Availability Settings
                                                     const avail = selectedArtist?.availability as any;
                                                     const workStartStr = avail?.work_start || "10:00";
                                                     const workEndStr = avail?.work_end || "19:00";
+                                                    const daysOff = avail?.days_off || [0, 1]; // Default Sun(0), Mon(1) off
+                                                    const serviceDuration = selectedService?.duration || 60; // Minutes
 
-                                                    // Parse work hours (needed for validation later)
-                                                    const [workStartHour, workStartMin] = workStartStr.split(':').map(Number);
-                                                    const [workEndHour, workEndMin] = workEndStr.split(':').map(Number);
-
-                                                    const defaultSlots = avail?.default_slots as string[] | undefined;
-
-                                                    let generatedSlots: string[] = [];
-
-                                                    if (defaultSlots && defaultSlots.length > 0) {
-                                                        // Use configured slots
-                                                        generatedSlots = defaultSlots.sort();
-                                                    } else {
-                                                        // Fallback: Generate slots every 30 mins
-                                                        let currentHour = workStartHour;
-                                                        let currentMin = workStartMin;
-
-                                                        while (currentHour < workEndHour || (currentHour === workEndHour && currentMin < workEndMin)) {
-                                                            const timeStr = `${currentHour.toString().padStart(2, '0')}:${currentMin.toString().padStart(2, '0')}`;
-                                                            generatedSlots.push(timeStr);
-
-                                                            currentMin += 30;
-                                                            if (currentMin >= 60) {
-                                                                currentMin -= 60;
-                                                                currentHour += 1;
-                                                            }
-                                                        }
-                                                    }
-
-                                                    // Filter by Day Off
-                                                    const dayOfWeek = selectedDate.getDay(); // 0=Sun, 6=Sat
-                                                    const daysOff = avail?.days_off || [0, 1]; // Default Sun, Mon off if not set
+                                                    // 2. Check for Day Off
+                                                    const dayOfWeek = selectedDate.getDay();
                                                     if (daysOff.includes(dayOfWeek)) {
-                                                        return <p className="col-span-full text-center text-gray-400">Giorno di riposo.</p>;
+                                                        return <p className="col-span-full text-center text-gray-400 py-4">Giorno di riposo.</p>;
                                                     }
 
-                                                    // 3. Filter by Time Overlap with 1 Hour Buffer
-                                                    const serviceDurationDetails = selectedService?.duration || 60; // Minutes
+                                                    // 3. Generate Slots (30 min intervals)
+                                                    const [startHour, startMin] = workStartStr.split(':').map(Number);
+                                                    const [endHour, endMin] = workEndStr.split(':').map(Number);
 
-                                                    const validSlots = generatedSlots.filter(slotTimeStr => {
-                                                        const [hours, minutes] = slotTimeStr.split(':').map(Number);
-                                                        const slotStart = new Date(selectedDate);
-                                                        slotStart.setHours(hours, minutes, 0, 0);
+                                                    const workStartTime = new Date(selectedDate);
+                                                    workStartTime.setHours(startHour, startMin, 0, 0);
 
-                                                        // Calculate Slot End based on service duration
-                                                        const slotEnd = new Date(slotStart.getTime() + serviceDurationDetails * 60000);
+                                                    const workEndTime = new Date(selectedDate);
+                                                    workEndTime.setHours(endHour, endMin, 0, 0);
 
-                                                        // Check if Slot ends after Work End Time
-                                                        const workEndDate = new Date(selectedDate);
-                                                        workEndDate.setHours(workEndHour, workEndMin, 0, 0);
-                                                        if (slotEnd > workEndDate) return false;
+                                                    const allSlots: Date[] = [];
+                                                    let current = new Date(workStartTime);
 
-                                                        // Check collision with ANY existing appointment + BUFFER
-                                                        const isBlocked = dayAppointments.some(appt => {
+                                                    while (current < workEndTime) {
+                                                        allSlots.push(new Date(current));
+                                                        current.setMinutes(current.getMinutes() + 30);
+                                                    }
+
+                                                    // 4. Filter Slots
+                                                    const validSlots = allSlots.filter(slotStart => {
+                                                        const slotEnd = new Date(slotStart);
+                                                        slotEnd.setMinutes(slotEnd.getMinutes() + serviceDuration);
+
+                                                        // A. Check if slot is in the past (if today)
+                                                        const now = new Date();
+                                                        if (selectedDate.toDateString() === now.toDateString()) {
+                                                            if (slotStart <= now) return false;
+                                                        }
+
+                                                        // B. Check if service fits before work end
+                                                        if (slotEnd > workEndTime) return false;
+
+                                                        // C. Check for collision with existing appointments
+                                                        const hasCollision = dayAppointments.some(appt => {
                                                             const apptStart = new Date(appt.start_time);
-                                                            // Calculate Appointment End (Default 60 min if null)
-                                                            let apptEnd = new Date(appt.end_time);
-                                                            if (!appt.end_time) {
-                                                                apptEnd = new Date(apptStart.getTime() + (appt.duration || 60) * 60000);
-                                                            }
+                                                            const apptEnd = new Date(appt.end_time);
 
-                                                            // 1 HOUR BUFFER logic:
-                                                            // The artist is busy from [Start] to [End + 1 Hour]
-                                                            // So effective end is End + 60 mins.
-                                                            const effectiveApptEnd = new Date(apptEnd.getTime() + 60 * 60000);
-
-                                                            // Overlap check: 
-                                                            // Slot is blocked if it starts before effective end AND ends after start
-                                                            return (slotStart < effectiveApptEnd && slotEnd > apptStart);
+                                                            // Check Overlap: (StartA < EndB) and (EndA > StartB)
+                                                            return (slotStart < apptEnd && slotEnd > apptStart);
                                                         });
 
-                                                        return !isBlocked;
+                                                        return !hasCollision;
                                                     });
 
                                                     if (validSlots.length === 0) {
-                                                        return <p className="col-span-full text-center text-gray-400">Nessun orario disponibile.</p>;
+                                                        return <p className="col-span-full text-center text-gray-400 py-4">Nessun orario disponibile per la durata richiesta ({serviceDuration / 60}h).</p>;
                                                     }
 
-                                                    return validSlots.map(time => (
-                                                        <button
-                                                            key={time}
-                                                            onClick={() => setSelectedTime(time)}
-                                                            className={`py-3 rounded-xl border-2 font-bold text-sm transition-all
-                                                                ${selectedTime === time
-                                                                    ? 'bg-black border-black text-white shadow-lg scale-105'
-                                                                    : 'bg-white border-gray-200 text-gray-700 hover:border-gray-400 hover:bg-gray-50'}`}
-                                                        >
-                                                            {time}
-                                                        </button>
-                                                    ));
+                                                    return validSlots.map(slot => {
+                                                        const timeStr = slot.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                                                        return (
+                                                            <button
+                                                                key={timeStr}
+                                                                onClick={() => { setSelectedTime(timeStr); }}
+                                                                className={`p-3 rounded-xl border font-bold text-sm transition-all duration-200
+                                                                    ${selectedTime === timeStr
+                                                                        ? 'bg-black text-white border-black shadow-lg scale-105'
+                                                                        : 'bg-gray-50 text-gray-700 border-gray-200 hover:border-black hover:bg-white'}`}
+                                                            >
+                                                                {timeStr}
+                                                            </button>
+                                                        );
+                                                    });
                                                 })()
-                                            ) : (
-                                                <p className="col-span-full text-center text-gray-400">Seleziona prima una data</p>
-                                            )}
+                                            ) : null}
+
+
                                         </div>
                                     </div>
                                 )}

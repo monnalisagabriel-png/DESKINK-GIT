@@ -260,6 +260,106 @@ export class SupabaseRepository implements IRepository {
                 });
             }
 
+            // --- EMAIL AUTOMATION (Confirmation) ---
+            try {
+                console.log('[Email Auto] Starting Confirmation Logic for Studio:', newApt.studio_id);
+                // 1. Fetch Studio Automation Settings
+                const { data: studioData, error: studioError } = await supabase
+                    .from('studios')
+                    .select('*')
+                    .eq('id', newApt.studio_id)
+                    .single();
+
+                if (studioError) {
+                    console.error('[Email Auto] Error fetching studio settings:', studioError);
+                } else {
+                    const automation = studioData?.automation_settings as any;
+
+                    // 2. Check if Email is Enabled & Preference is set
+                    if (automation?.email_enabled && automation?.preferences?.appointment_confirmation) {
+                        // 3. Fetch Client Email if not present
+                        let clientEmail = '';
+                        let clientName = 'Cliente';
+
+                        if (newApt.client_id) {
+                            const { data: client, error: clientError } = await supabase
+                                .from('clients')
+                                .select('email, full_name')
+                                .eq('id', newApt.client_id)
+                                .single();
+
+                            if (clientError) {
+                                console.error('[Email Auto] Error fetching client:', clientError);
+                            } else if (client) {
+                                clientEmail = client.email;
+                                clientName = client.full_name;
+                            }
+                        }
+
+                        if (clientEmail) {
+                            const senderEmail = automation.sender_email;
+                            const studioName = studioData?.name || 'InkFlow Studio';
+
+                            const studioAddress = [studioData?.address, studioData?.city].filter(Boolean).join(', ');
+                            const whatsappContact = studioData?.phone ? `WhatsApp: ${studioData.phone}` : '';
+                            const footerInfo = [studioAddress, whatsappContact].filter(Boolean).join(' | ');
+
+                            // HTML Footer
+                            const htmlFooter = `
+                                <hr style="border: 0; border-top: 1px solid #eee; margin: 20px 0;">
+                                <p style="color: #666; font-size: 12px;">
+                                    <strong>${studioName}</strong><br/>
+                                    ${studioAddress ? `${studioAddress}<br/>` : ''}
+                                    ${studioData?.phone ? `WhatsApp: ${studioData.phone}` : ''}
+                                </p>
+                            `;
+
+                            supabase.functions.invoke('send-booking-email', {
+                                body: {
+                                    to: clientEmail,
+                                    subject: `${studioName}: Conferma Appuntamento - ${new Date(newApt.start_time).toLocaleDateString()}`,
+                                    sender_name: studioName,
+                                    reply_to: senderEmail,
+                                    text: `Ciao ${clientName},\n\nIl tuo appuntamento presso ${studioName} è stato confermato per il ` +
+                                        `${new Date(newApt.start_time).toLocaleDateString()} alle ore ${new Date(newApt.start_time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}.\n\n` +
+                                        `Servizio: ${newApt.service_name || 'Servizio'}\n` +
+                                        `Prezzo stimato: €${newApt.price || 0}\n\n` +
+                                        `Grazie,\n${studioName}\n${footerInfo}`,
+                                    html: `
+                                                <div style="font-family: sans-serif; color: #333; background-color: #ffffff; padding: 20px; border-radius: 8px;">
+                                                    <h2>Conferma Appuntamento</h2>
+                                                    <p>Ciao <strong>${clientName}</strong>,</p>
+                                                    <p>Il tuo appuntamento presso <strong>${studioName}</strong> è stato confermato.</p>
+                                                    <div style="background: #f5f5f5; padding: 15px; border-radius: 8px; margin: 20px 0;">
+                                                        <p><strong>Data:</strong> ${new Date(newApt.start_time).toLocaleDateString()}</p>
+                                                        <p><strong>Ora:</strong> ${new Date(newApt.start_time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</p>
+                                                        <p><strong>Servizio:</strong> ${newApt.service_name || 'Servizio'}</p>
+                                                        <p><strong>Costo:</strong> €${newApt.price || 0}</p>
+                                                    </div>
+
+                                                    <div style="margin-bottom: 20px;">
+                                                        <p><strong>Dove siamo:</strong><br/>
+                                                        ${studioName}<br/>
+                                                        ${studioAddress || 'Indirizzo non disponibile'}</p>
+                                                    </div>
+
+                                                    <p>Per modifiche all'appuntamento, contattaci <strong>esclusivamente su WhatsApp</strong>${studioData?.phone ? ' al numero ' + studioData.phone : ''}.</p>
+                                                    <p>A presto,<br/>${studioName}</p>
+                                                    ${htmlFooter}
+                                                </div>
+                                            `
+                                }
+                            }).then(({ data: _data, error }) => {
+                                if (error) console.error('[Email Auto] Failed invocation:', error);
+                            });
+                        }
+                    }
+                }
+            } catch (emailErr) {
+                console.error('[Email Auto] CRITICAL Error checking settings:', emailErr);
+            }
+            // ---------------------------------------
+
             // Auto-generate transaction if created with COMPLETED status
             if (newApt.status === 'COMPLETED') {
                 try {
@@ -447,6 +547,94 @@ export class SupabaseRepository implements IRepository {
                 });
             }
 
+            // --- EMAIL AUTOMATION (Status Change -> CONFIRMED) ---
+            if (current.status !== 'CONFIRMED' && updated.status === 'CONFIRMED') {
+                try {
+                    const { data: studioData } = await supabase
+                        .from('studios')
+                        .select('*')
+                        .eq('id', updated.studio_id)
+                        .single();
+
+                    const automation = studioData?.automation_settings as any;
+
+                    if (automation?.email_enabled && automation?.preferences?.appointment_confirmation) {
+                        let clientEmail = '';
+                        let clientName = 'Cliente';
+                        if (updated.client_id) {
+                            const { data: client } = await supabase
+                                .from('clients')
+                                .select('email, full_name')
+                                .eq('id', updated.client_id)
+                                .single();
+                            if (client) {
+                                clientEmail = client.email;
+                                clientName = client.full_name;
+                            }
+                        }
+
+                        if (clientEmail) {
+                            console.log('[Email Auto] Sending confirmation (update) to:', clientEmail);
+
+                            const senderEmail = automation.sender_email;
+                            const studioName = studioData?.name || 'InkFlow Studio';
+
+                            const studioAddress = [studioData?.address, studioData?.city].filter(Boolean).join(', ');
+                            const whatsappContact = studioData?.phone ? `WhatsApp: ${studioData.phone}` : '';
+                            const footerInfo = [studioAddress, whatsappContact].filter(Boolean).join(' | ');
+
+                            // HTML Footer
+                            const htmlFooter = `
+                                <hr style="border: 0; border-top: 1px solid #eee; margin: 20px 0;">
+                                <p style="color: #666; font-size: 12px;">
+                                    <strong>${studioName}</strong><br/>
+                                    ${studioAddress ? `${studioAddress}<br/>` : ''}
+                                    ${studioData?.phone ? `WhatsApp: ${studioData.phone}` : ''}
+                                </p>
+                            `;
+
+                            supabase.functions.invoke('send-booking-email', {
+                                body: {
+                                    to: clientEmail,
+                                    subject: `${studioName}: Conferma Appuntamento - ${new Date(updated.start_time).toLocaleDateString()}`,
+                                    sender_name: studioName,
+                                    reply_to: senderEmail,
+                                    text: `Ciao ${clientName},\n\nIl tuo appuntamento presso ${studioName} è stato confermato per il ` +
+                                        `${new Date(updated.start_time).toLocaleDateString()} alle ore ${new Date(updated.start_time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}.\n\n` +
+                                        `Servizio: ${updated.service_name || 'Servizio'}\n` +
+                                        `Grazie,\n${studioName}\n${footerInfo}`,
+                                    html: `
+                                         <div style="font-family: sans-serif; color: #333; background-color: #ffffff; padding: 20px; border-radius: 8px;">
+                                             <h2>Conferma Appuntamento</h2>
+                                             <p>Ciao <strong>${clientName}</strong>,</p>
+                                             <p>Il tuo appuntamento presso <strong>${studioName}</strong> è stato confermato.</p>
+                                             <div style="background: #f5f5f5; padding: 15px; border-radius: 8px; margin: 20px 0;">
+                                                 <p><strong>Data:</strong> ${new Date(updated.start_time).toLocaleDateString()}</p>
+                                                 <p><strong>Ora:</strong> ${new Date(updated.start_time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</p>
+                                                 <p><strong>Servizio:</strong> ${updated.service_name || 'Servizio'}</p>
+                                             </div>
+
+                                             <div style="margin-bottom: 20px;">
+                                                <p><strong>Dove siamo:</strong><br/>
+                                                ${studioName}<br/>
+                                                ${studioAddress || 'Indirizzo non disponibile'}</p>
+                                             </div>
+
+                                             <p>Per modifiche all'appuntamento, contattaci <strong>esclusivamente su WhatsApp</strong>${studioData?.phone ? ' al numero ' + studioData.phone : ''}.</p>
+                                             <p>A presto,<br/>${studioName}</p>
+                                             ${htmlFooter}
+                                         </div>
+                                     `
+                                }
+                            });
+                        }
+                    }
+                } catch (e) {
+                    console.error('[Email Auto] Update check failed:', e);
+                }
+            }
+            // ----------------------------------------
+
             return updated;
         },
         delete: async (id: string): Promise<void> => {
@@ -560,58 +748,19 @@ export class SupabaseRepository implements IRepository {
 
                 const config = studio?.google_sheets_config as any;
 
-                if (config && config.auto_sync_enabled && config.spreadsheet_id && config.sheet_name) {
-                    console.log('[Auto-Sync] Triggering append for client:', newClient.id);
+                if (config && config.output && config.output.enabled) {
+                    console.log('[Master-Sync] Triggering push for client:', newClient.id);
 
-                    let row: any[] = [];
-                    const mapping = config.mapping as Record<string, string> | undefined;
-
-                    if (mapping && Object.keys(mapping).length > 0) {
-                        // Use configured mapping
-                        const fields = Object.values(mapping);
-                        row = fields.map(field => {
-                            if (field === 'first_name') return (newClient.full_name || '').split(' ')[0] || '';
-                            if (field === 'last_name') {
-                                const parts = (newClient.full_name || '').split(' ');
-                                return parts.length > 1 ? parts.slice(1).join(' ') : '';
-                            }
-                            if (field === 'created_at') return new Date().toLocaleDateString();
-                            if (field === 'preferred_styles') return Array.isArray((newClient as any).preferred_styles) ? (newClient as any).preferred_styles.join(', ') : '';
-                            return (newClient as any)[field] || '';
-                        });
-                    } else {
-                        // Default Fallback
-                        const [firstName, ...lastNameParts] = (newClient.full_name || '').split(' ');
-                        const lastName = lastNameParts.join(' ');
-                        row = [
-                            firstName || '',
-                            lastName || '',
-                            newClient.email || '',
-                            newClient.phone || '',
-                            newClient.fiscal_code || '',
-                            newClient.address || '',
-                            newClient.city || '',
-                            newClient.zip_code || '',
-                            newClient.notes || '',
-                            new Date().toLocaleDateString()
-                        ];
-                    }
-
-                    // Non-blocking call
-                    supabase.functions.invoke('fetch-google-sheets', {
+                    // Non-blocking call to Edge Function
+                    supabase.functions.invoke('push-to-google-master', {
                         body: {
-                            action: 'append_data',
-                            spreadsheetId: config.spreadsheet_id,
-                            sheetName: config.sheet_name,
-                            values: [row]
+                            client: newClient,
+                            studio_id: newClient.studio_id
                         }
                     }).then(({ data, error }) => {
-                        if (error) console.error('[Auto-Sync] Edge Function Error:', error);
-                        else if (data?.error) console.error('[Auto-Sync] Sheet Error:', data.error);
-                        else console.log('[Auto-Sync] Success:', data);
-                    }).catch(err => {
-                        console.error('[Auto-Sync] Unexpected Error:', err);
-                    });
+                        if (error) console.error('[Master-Sync] Error:', error);
+                        else console.log('[Master-Sync] Success:', data);
+                    }).catch(err => console.error('[Master-Sync] Exception:', err));
                 }
             }
 

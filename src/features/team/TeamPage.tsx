@@ -3,6 +3,7 @@ import { useAuth } from '../auth/AuthContext';
 import { useSubscription } from '../subscription/hooks/useSubscription';
 import { api } from '../../services/api';
 import { Users, Copy, Check, Mail, Shield, Trash2 } from 'lucide-react';
+import { useRealtime } from '../../hooks/useRealtime';
 
 export const TeamPage: React.FC = () => {
     const { user } = useAuth();
@@ -203,20 +204,26 @@ const TeamList: React.FC<{ studioId?: string }> = ({ studioId }) => {
     const [members, setMembers] = useState<import('../../services/types').User[]>([]);
     const [loading, setLoading] = useState(true);
 
-    React.useEffect(() => {
+    const load = React.useCallback(async () => {
         if (!studioId) return;
-        const load = async () => {
-            try {
-                const data = await api.settings.listTeamMembers(studioId);
-                setMembers(data);
-            } catch (e) {
-                console.error(e);
-            } finally {
-                setLoading(false);
-            }
-        };
-        load();
+        try {
+            const data = await api.settings.listTeamMembers(studioId);
+            setMembers(data);
+        } catch (e) {
+            console.error(e);
+        } finally {
+            setLoading(false);
+        }
     }, [studioId]);
+
+    React.useEffect(() => {
+        load();
+    }, [load]);
+
+    // Realtime Updates
+    useRealtime('studio_memberships', () => {
+        load();
+    });
 
     if (loading) return <div className="text-text-muted">Caricamento membri...</div>;
     if (members.length === 0) return <div className="text-text-muted">Nessun membro collegato.</div>;

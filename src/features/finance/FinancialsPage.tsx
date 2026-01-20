@@ -18,6 +18,7 @@ import clsx from 'clsx';
 import { useAuth } from '../auth/AuthContext';
 import { useLayoutStore } from '../../stores/layoutStore';
 import { useRealtime } from '../../hooks/useRealtime';
+import { OnlineBookingBreakdown } from './components/OnlineBookingBreakdown';
 
 export const FinancialsPage: React.FC = () => {
     const { user } = useAuth();
@@ -45,6 +46,7 @@ export const FinancialsPage: React.FC = () => {
         end: endOfMonth(new Date())
     });
     const [isFilterOpen, setIsFilterOpen] = useState(false);
+    const [tab, setTab] = useState<'overview' | 'online'>('overview');
 
     useEffect(() => {
         if (user) {
@@ -108,8 +110,15 @@ export const FinancialsPage: React.FC = () => {
                     // If Artist: Only Own Share
                     if (userRole === 'artist') {
                         if (tx.artist_id === user.id) {
-                            const rate = contractsMap[user.id]?.commission_rate || 50;
-                            monthlyData[month] += (tx.amount * rate / 100);
+                            const contract = contractsMap[user.id];
+                            let share = 0;
+                            if (contract?.rent_type === 'FIXED' || contract?.rent_type === 'PRESENCES') {
+                                share = tx.amount;
+                            } else {
+                                const rate = contract?.commission_rate || 50;
+                                share = tx.amount * (rate / 100);
+                            }
+                            monthlyData[month] += share;
                         }
                     } else {
                         monthlyData[month] += tx.amount;
@@ -150,8 +159,13 @@ export const FinancialsPage: React.FC = () => {
                     // Calculate Commission
                     let commission = 0;
                     if (tx.artist_id && contractsMap[tx.artist_id]) {
-                        const rate = contractsMap[tx.artist_id].commission_rate || 50;
-                        commission = amount * (rate / 100); // Portion going to Artist
+                        const contract = contractsMap[tx.artist_id];
+                        if (contract.rent_type === 'FIXED' || contract.rent_type === 'PRESENCES') {
+                            commission = amount; // 100% to Artist
+                        } else {
+                            const rate = contract.commission_rate || 50;
+                            commission = amount * (rate / 100);
+                        }
                     } else if (tx.artist_id) {
                         commission = amount * 0.5; // Default 50%
                     }
@@ -215,8 +229,19 @@ export const FinancialsPage: React.FC = () => {
         const csvContent = [
             headers.join(','),
             ...transactions.map(tx => {
-                const commissionRate = (tx.artist_id && contracts[tx.artist_id]?.commission_rate) || 50;
-                const artistShare = tx.type === 'INCOME' ? (tx.amount * commissionRate / 100) : 0;
+                const contract = tx.artist_id ? contracts[tx.artist_id] : undefined;
+                let artistShare = 0;
+
+                if (contract?.rent_type === 'FIXED' || contract?.rent_type === 'PRESENCES') {
+                    artistShare = tx.amount;
+                } else if (tx.type === 'INCOME') {
+                    const commissionRate = contract?.commission_rate ?? 50;
+                    artistShare = tx.amount * commissionRate / 100;
+                }
+
+                // Fix: Ensure we don't calculate share for Expenses
+                if (tx.type === 'EXPENSE') artistShare = 0;
+
                 const studioShare = tx.type === 'INCOME' ? (tx.amount - artistShare) : 0;
 
                 return [
@@ -442,71 +467,122 @@ export const FinancialsPage: React.FC = () => {
                 </div>
             </div>
 
-            {/* Content Switcher: Breakdown vs Chart */}
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            {/* Content Tabs */}
+            <div className="flex gap-4 border-b border-border mb-4">
+                <button
+                    onClick={() => setTab('overview')}
+                    className={clsx(
+                        "pb-2 text-sm font-medium transition-colors border-b-2",
+                        tab === 'overview' ? "border-accent text-accent" : "border-transparent text-text-muted hover:text-text-primary"
+                    )}
+                >
+                    Panoramica
+                </button>
+                <button
+                    onClick={() => setTab('online')}
+                    className={clsx(
+                        "pb-2 text-sm font-medium transition-colors border-b-2",
+                        tab === 'online' ? "border-accent text-accent" : "border-transparent text-text-muted hover:text-text-primary"
+                    )}
+                >
+                    Prenotazioni Online
+                </button>
+            </div>
 
-                {/* Production Breakdown (Owner Only) - Left Side */}
-                {isOwner && (
-                    <div className="lg:col-span-1 bg-bg-secondary rounded-lg border border-border flex flex-col">
-                        <div className="p-4 border-b border-border flex items-center gap-2">
-                            <Users size={18} className="text-accent" />
-                            <h3 className="font-bold text-text-primary">Dettaglio Produzione</h3>
-                        </div>
-                        <div className="p-4 flex-1 overflow-y-auto space-y-4 max-h-[400px]">
-                            {producerStats.length === 0 ? (
-                                <p className="text-sm text-text-muted text-center py-4">Nessun dato per il periodo.</p>
-                            ) : (
-                                producerStats.map((p, idx) => (
-                                    <div key={idx} className="flex flex-col gap-1 p-3 bg-bg-tertiary rounded-lg border border-border/50">
-                                        <div className="flex justify-between items-center">
-                                            <span className="font-medium text-text-primary">{p.name}</span>
-                                            <span className="text-xs text-text-muted bg-white/5 px-2 py-0.5 rounded">
-                                                {formatCurrency(p.gross)} Lordi
-                                            </span>
-                                        </div>
-                                        <div className="w-full bg-black/20 h-1.5 rounded-full overflow-hidden mt-1 mb-1">
-                                            <div className="bg-accent h-full" style={{ width: `${(p.net / p.gross) * 100}%` }}></div>
-                                        </div>
-                                        <div className="flex justify-between text-xs">
-                                            <span className="text-text-muted">Quota Studio: <span className="text-green-500">{formatCurrency(p.net)}</span></span>
-                                            <span className="text-text-muted">Artista: <span className="text-orange-400">{formatCurrency(p.comm)}</span></span>
-                                        </div>
-                                    </div>
-                                ))
-                            )}
-                        </div>
+            {tab === 'online' ? (
+                <div className="bg-bg-secondary rounded-lg border border-border p-6 min-h-[400px]">
+                    <h3 className="text-lg font-bold text-text-primary mb-4">Analisi Incassi Online (Stimati)</h3>
+                    <p className="text-sm text-text-muted mb-6 max-w-2xl">
+                        Questa sezione mostra la ripartizione teorica degli incassi derivanti dalle prenotazioni online,
+                        basata sui contratti impostati con ogni artista. I fondi sono stati incassati dallo Studio tramite Stripe.
+                    </p>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                        {transactions
+                            .filter(tx => tx.appointment_id && tx.type === 'INCOME')
+                            .map(tx => (
+                                <OnlineBookingBreakdown
+                                    key={tx.id}
+                                    transaction={tx}
+                                    contract={tx.artist_id ? contracts[tx.artist_id] : undefined}
+                                    artistName={tx.artist_id ? (team.find(m => m.id === tx.artist_id)?.full_name || 'Artista') : 'Studio'}
+                                />
+                            ))}
+                        {transactions.filter(tx => tx.appointment_id && tx.type === 'INCOME').length === 0 && (
+                            <div className="col-span-full text-center py-12 text-text-muted">
+                                Nessuna prenotazione online trovata nel periodo selezionato.
+                            </div>
+                        )}
                     </div>
-                )}
+                </div>
+            ) : (
+                /* Existing Content: Breakdown + Chart */
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
 
-                {/* Yearly Trend Chart - Right Side (Takes more space) */}
-                <div className={clsx("bg-bg-secondary p-6 rounded-lg border border-border", isOwner ? "lg:col-span-2" : "lg:col-span-3")}>
-                    <h3 className="text-lg font-bold text-text-primary mb-6">Andamento Entrate (Anno Corrente)</h3>
-                    {/* Chart Container - Handle Scroll/Overflow */}
-                    <div className="relative">
-                        <div className="h-64 flex items-end justify-between gap-1 md:gap-2 px-2">
-                            {monthStats.map((val, i) => {
-                                const maxVal = Math.max(...monthStats, 1);
-                                const height = `${(val / maxVal) * 100}%`;
-                                return (
-                                    <div key={i} className="w-full flex-1 flex flex-col justify-end items-center h-full group">
-                                        <div className="w-full bg-bg-tertiary hover:bg-accent/80 transition-all rounded-t-sm relative" style={{ height: height || '1px' }}>
-                                            <div className="absolute -top-8 left-1/2 -translate-x-1/2 bg-black text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity z-20 whitespace-nowrap pointer-events-none">
-                                                {formatCurrency(val)}
+
+                    {/* Production Breakdown (Owner Only) - Left Side */}
+                    {isOwner && (
+                        <div className="lg:col-span-1 bg-bg-secondary rounded-lg border border-border flex flex-col">
+                            <div className="p-4 border-b border-border flex items-center gap-2">
+                                <Users size={18} className="text-accent" />
+                                <h3 className="font-bold text-text-primary">Dettaglio Produzione</h3>
+                            </div>
+                            <div className="p-4 flex-1 overflow-y-auto space-y-4 max-h-[400px]">
+                                {producerStats.length === 0 ? (
+                                    <p className="text-sm text-text-muted text-center py-4">Nessun dato per il periodo.</p>
+                                ) : (
+                                    producerStats.map((p, idx) => (
+                                        <div key={idx} className="flex flex-col gap-1 p-3 bg-bg-tertiary rounded-lg border border-border/50">
+                                            <div className="flex justify-between items-center">
+                                                <span className="font-medium text-text-primary">{p.name}</span>
+                                                <span className="text-xs text-text-muted bg-white/5 px-2 py-0.5 rounded">
+                                                    {formatCurrency(p.gross)} Lordi
+                                                </span>
+                                            </div>
+                                            <div className="w-full bg-black/20 h-1.5 rounded-full overflow-hidden mt-1 mb-1">
+                                                <div className="bg-accent h-full" style={{ width: `${(p.net / p.gross) * 100}%` }}></div>
+                                            </div>
+                                            <div className="flex justify-between text-xs">
+                                                <span className="text-text-muted">Quota Studio: <span className="text-green-500">{formatCurrency(p.net)}</span></span>
+                                                <span className="text-text-muted">Artista: <span className="text-orange-400">{formatCurrency(p.comm)}</span></span>
                                             </div>
                                         </div>
-                                    </div>
-                                );
-                            })}
+                                    ))
+                                )}
+                            </div>
                         </div>
-                        {/* Labels - Hide every second label on very small screens if needed, or just let them shrink */}
-                        <div className="flex justify-between mt-4 text-[10px] md:text-xs text-text-muted px-2 uppercase tracking-wider">
-                            {['Gen', 'Feb', 'Mar', 'Apr', 'Mag', 'Giu', 'Lug', 'Ago', 'Set', 'Ott', 'Nov', 'Dic'].map((m, i) => (
-                                <span key={m} className={clsx("w-full text-center", i % 2 !== 0 && "hidden sm:block")}>{m.substring(0, 3)}</span>
-                            ))}
+                    )}
+
+                    {/* Yearly Trend Chart - Right Side (Takes more space) */}
+                    <div className={clsx("bg-bg-secondary p-6 rounded-lg border border-border", isOwner ? "lg:col-span-2" : "lg:col-span-3")}>
+                        <h3 className="text-lg font-bold text-text-primary mb-6">Andamento Entrate (Anno Corrente)</h3>
+                        {/* Chart Container - Handle Scroll/Overflow */}
+                        <div className="relative">
+                            <div className="h-64 flex items-end justify-between gap-1 md:gap-2 px-2">
+                                {monthStats.map((val, i) => {
+                                    const maxVal = Math.max(...monthStats, 1);
+                                    const height = `${(val / maxVal) * 100}%`;
+                                    return (
+                                        <div key={i} className="w-full flex-1 flex flex-col justify-end items-center h-full group">
+                                            <div className="w-full bg-bg-tertiary hover:bg-accent/80 transition-all rounded-t-sm relative" style={{ height: height || '1px' }}>
+                                                <div className="absolute -top-8 left-1/2 -translate-x-1/2 bg-black text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity z-20 whitespace-nowrap pointer-events-none">
+                                                    {formatCurrency(val)}
+                                                </div>
+                                            </div>
+                                        </div>
+                                    );
+                                })}
+                            </div>
+                            {/* Labels - Hide every second label on very small screens if needed, or just let them shrink */}
+                            <div className="flex justify-between mt-4 text-[10px] md:text-xs text-text-muted px-2 uppercase tracking-wider">
+                                {['Gen', 'Feb', 'Mar', 'Apr', 'Mag', 'Giu', 'Lug', 'Ago', 'Set', 'Ott', 'Nov', 'Dic'].map((m, i) => (
+                                    <span key={m} className={clsx("w-full text-center", i % 2 !== 0 && "hidden sm:block")}>{m.substring(0, 3)}</span>
+                                ))}
+                            </div>
                         </div>
                     </div>
                 </div>
-            </div>
+            )}
 
             {/* Transactions Table */}
             <div className="bg-bg-secondary rounded-lg border border-border overflow-hidden">

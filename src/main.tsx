@@ -1,4 +1,4 @@
-import React from 'react'
+
 import ReactDOM from 'react-dom/client'
 import App from './App'
 import { GlobalErrorBoundary } from './components/GlobalErrorBoundary'
@@ -34,12 +34,10 @@ const rootEl = document.getElementById('root');
 if (rootEl) {
   const root = ReactDOM.createRoot(rootEl);
   root.render(
-    <React.StrictMode>
-      <GlobalErrorBoundary>
-        <QueryClientProvider client={queryClient}>
-          <App />
-        </QueryClientProvider>
-      </GlobalErrorBoundary>
-    </React.StrictMode>
+    <GlobalErrorBoundary>
+      <QueryClientProvider client={queryClient}>
+        <App />
+      </QueryClientProvider>
+    </GlobalErrorBoundary>
   );
 }

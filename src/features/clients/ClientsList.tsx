@@ -1,13 +1,14 @@
 import React, { useState, useMemo } from 'react';
-import { Search, Plus, Mail, Phone, MessageCircle, Megaphone, QrCode, X, Copy, Check, Star, Filter, ExternalLink, Trash2, CheckSquare, Square, RefreshCw, Loader2 } from 'lucide-react';
+import { Search, Plus, Mail, Phone, MessageCircle, Megaphone, QrCode, X, Copy, Check, Star, Filter, ExternalLink, Trash2, CheckSquare, Square, FileSpreadsheet } from 'lucide-react';
 import { api } from '../../services/api';
 import type { Client } from '../../services/types';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../auth/AuthContext';
 
-import { GoogleSheetsSyncModal } from './components/GoogleSheetsSyncModal';
-import { useGoogleSheetsSync } from './hooks/useGoogleSheetsSync';
+// Google Sheets imports removed
+
 import { ReviewRequestModal } from '../../components/ReviewRequestModal';
+import { GoogleSheetsImportModal } from './components/GoogleSheetsImportModal';
 import { useRealtime } from '../../hooks/useRealtime';
 
 import { useQuery, useQueryClient } from '@tanstack/react-query';
@@ -33,20 +34,9 @@ export const ClientsList: React.FC = () => {
     const [search, setSearch] = useState('');
     // Removed local clients state and loading state as they are handled by React Query
     const [showQR, setShowQR] = useState(false);
-    const [showImport, setShowImport] = useState(false);
-    const [modalTab, setModalTab] = useState<'import' | 'export' | 'config'>('import');
     const [copied, setCopied] = useState(false);
 
-    // Google Sync Hook
-    const { isSyncing, syncClients, hasConfig, stats: syncStats } = useGoogleSheetsSync();
-
-    // Effect to refresh query when sync is done
-    React.useEffect(() => {
-        if (syncStats && syncStats.success > 0) {
-            queryClient.invalidateQueries({ queryKey: ['clients', user?.studio_id] });
-            alert(`Sincronizzazione completata: ${syncStats.success} nuovi clienti aggiunti.`);
-        }
-    }, [syncStats, queryClient, user?.studio_id]);
+    // Removed legacy sync hook and effects
 
     // Filters State
     const [showFilters, setShowFilters] = useState(false);
@@ -57,6 +47,9 @@ export const ClientsList: React.FC = () => {
 
     // Review Modal State
     const [reviewModalData, setReviewModalData] = useState<{ isOpen: boolean; clientName: string; clientPhone?: string; studioId?: string }>({ isOpen: false, clientName: '' });
+
+    // Import Modal State
+    const [showImportModal, setShowImportModal] = useState(false);
 
     // Bulk Selection State
     const [selectedClients, setSelectedClients] = useState<Set<string>>(new Set());
@@ -85,9 +78,9 @@ export const ClientsList: React.FC = () => {
         return clients.filter(client => {
             // Search Text
             const matchesSearch = search === '' ||
-                client.full_name.toLowerCase().includes(search.toLowerCase()) ||
-                client.email.toLowerCase().includes(search.toLowerCase()) ||
-                client.phone.includes(search);
+                (client.full_name || '').toLowerCase().includes(search.toLowerCase()) ||
+                (client.email || '').toLowerCase().includes(search.toLowerCase()) ||
+                (client.phone || '').includes(search);
 
             // Broadcast Filter
             const matchesBroadcast =
@@ -166,13 +159,15 @@ export const ClientsList: React.FC = () => {
         setSelectedClients(newSelected);
     };
 
-    const handleBulkDelete = async () => {
+    // Confirm Modal State
+    const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+
+    const handleBulkDeleteClick = () => {
         if (selectedClients.size === 0) return;
+        setShowDeleteConfirm(true);
+    };
 
-        if (!window.confirm(`Sei sicuro di voler eliminare ${selectedClients.size} clienti selezionati? Questa azione è irreversibile.`)) {
-            return;
-        }
-
+    const confirmBulkDelete = async () => {
         setIsDeleting(true);
         try {
             // Delete sequentially or parallel - parallel is fine for ~50 items usually
@@ -183,7 +178,7 @@ export const ClientsList: React.FC = () => {
 
             // Clear selection
             setSelectedClients(new Set());
-            // alert("Clienti eliminati con successo.");
+            setShowDeleteConfirm(false);
         } catch (error) {
             console.error("Bulk delete failed:", error);
             alert("Errore durante l'eliminazione dei clienti. Riprova.");
@@ -210,36 +205,23 @@ export const ClientsList: React.FC = () => {
                         {/* Action Buttons Group */}
                         <div className="flex items-center gap-2 w-full md:w-auto overflow-x-auto pb-2 md:pb-0">
                             {user?.role === 'owner' && (
-                                <>
-                                    <button
-                                        onClick={() => { setModalTab('import'); setShowImport(true); }}
-                                        className="flex items-center gap-2 bg-green-600/10 border border-green-600/20 hover:bg-green-600/20 text-green-500 px-3 py-2 rounded-lg font-medium transition-colors whitespace-nowrap"
-                                        title="Importa da Google Sheets"
-                                    >
-                                        <span className="hidden lg:inline">Importa Google</span>
-                                    </button>
-
-                                    <button
-                                        onClick={syncClients}
-                                        disabled={!hasConfig || isSyncing}
-                                        className={`flex items-center gap-2 px-3 py-2 rounded-lg font-medium transition-colors whitespace-nowrap ${hasConfig
-                                            ? 'bg-green-600/10 border border-green-600/20 hover:bg-green-600/20 text-green-500'
-                                            : 'bg-gray-500/10 border border-gray-500/20 text-gray-500 cursor-not-allowed opacity-50'
-                                            }`}
-                                        title={hasConfig ? "Aggiorna da Google Sheets (Usa configurazione salvata)" : "Configura prima un foglio Google"}
-                                    >
-                                        {isSyncing ? <Loader2 size={18} className="animate-spin" /> : <RefreshCw size={18} />}
-                                        <span className="hidden lg:inline">Aggiorna</span>
-                                    </button>
-
-                                    <button
-                                        onClick={() => { setModalTab('config'); setShowImport(true); }}
-                                        className="flex items-center gap-2 bg-gray-500/10 border border-gray-500/20 hover:bg-gray-500/20 text-gray-400 hover:text-text-primary px-3 py-2 rounded-lg font-medium transition-colors whitespace-nowrap"
-                                        title="Impostazioni Google Sheets"
-                                    >
-                                        <span className="hidden lg:inline">⚙️</span>
-                                    </button>
-                                </>
+                                <button
+                                    onClick={() => navigate('/settings?tab=integrations')}
+                                    className="flex items-center gap-2 bg-gray-500/10 border border-gray-500/20 hover:bg-gray-500/20 text-gray-400 hover:text-text-primary px-3 py-2 rounded-lg font-medium transition-colors whitespace-nowrap"
+                                    title="Impostazioni Google Sheets (Webhook)"
+                                >
+                                    <span className="hidden lg:inline">⚙️ Configura Google</span>
+                                </button>
+                            )}
+                            {user?.role === 'owner' && (
+                                <button
+                                    onClick={() => setShowImportModal(true)}
+                                    className="flex items-center gap-2 bg-green-500/10 border border-green-500/20 hover:bg-green-500/20 text-green-500 hover:text-green-400 px-3 py-2 rounded-lg font-medium transition-colors whitespace-nowrap"
+                                    title="Importa Backup Iniziale da Google Sheets"
+                                >
+                                    <FileSpreadsheet size={18} />
+                                    <span className="hidden lg:inline">Importa Google</span>
+                                </button>
                             )}
                             <button
                                 onClick={() => setShowQR(true)}
@@ -301,7 +283,7 @@ export const ClientsList: React.FC = () => {
                                 Annulla
                             </button>
                             <button
-                                onClick={handleBulkDelete}
+                                onClick={handleBulkDeleteClick}
                                 disabled={isDeleting}
                                 className="flex items-center gap-2 bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg font-bold transition-colors shadow-lg disabled:opacity-50"
                             >
@@ -587,12 +569,41 @@ export const ClientsList: React.FC = () => {
                 )
             }
 
-            <GoogleSheetsSyncModal
-                isOpen={showImport}
-                onClose={() => setShowImport(false)}
-                onSyncSuccess={() => queryClient.invalidateQueries({ queryKey: ['clients', user?.studio_id] })}
-                initialTab={modalTab}
-            />
+
+
+            {/* Delete Confirmation Modal */}
+            {showDeleteConfirm && (
+                <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4" onClick={() => setShowDeleteConfirm(false)}>
+                    <div className="bg-bg-secondary border border-border rounded-xl p-6 max-w-sm w-full shadow-2xl animate-in fade-in zoom-in duration-200" onClick={e => e.stopPropagation()}>
+                        <div className="flex flex-col items-center text-center gap-4">
+                            <div className="p-3 bg-red-500/10 rounded-full text-red-500">
+                                <Trash2 size={32} />
+                            </div>
+                            <h3 className="text-xl font-bold text-text-primary">Elimina Clienti</h3>
+                            <p className="text-text-muted">
+                                Sei sicuro di voler eliminare <strong>{selectedClients.size}</strong> clienti selezionati?
+                                <br />
+                                <span className="text-red-400 text-xs">Questa azione è irreversibile.</span>
+                            </p>
+                            <div className="flex gap-3 w-full mt-2">
+                                <button
+                                    onClick={() => setShowDeleteConfirm(false)}
+                                    className="flex-1 px-4 py-2 bg-bg-tertiary hover:bg-white/10 text-text-primary rounded-lg font-medium transition-colors"
+                                >
+                                    Annulla
+                                </button>
+                                <button
+                                    onClick={confirmBulkDelete}
+                                    disabled={isDeleting}
+                                    className="flex-1 px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded-lg font-bold transition-colors disabled:opacity-50"
+                                >
+                                    {isDeleting ? 'Eliminazione...' : 'Conferma Eliminazione'}
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
 
             <ReviewRequestModal
                 isOpen={reviewModalData.isOpen}
@@ -601,6 +612,17 @@ export const ClientsList: React.FC = () => {
                 clientPhone={reviewModalData.clientPhone}
                 studioId={reviewModalData.studioId}
             />
+
+            {user?.studio_id && (
+                <GoogleSheetsImportModal
+                    isOpen={showImportModal}
+                    onClose={() => setShowImportModal(false)}
+                    studioId={user.studio_id}
+                    onSuccess={() => {
+                        queryClient.invalidateQueries({ queryKey: ['clients', user.studio_id] });
+                    }}
+                />
+            )}
         </div >
     );
 };

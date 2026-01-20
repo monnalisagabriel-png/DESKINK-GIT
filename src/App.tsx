@@ -34,8 +34,11 @@ import { TutorialsPage } from './pages/TutorialsPage';
 import { PublicBookingPage } from './features/booking';
 import { BookingStatusPage } from './pages/public/BookingStatusPage';
 import { PaymentStatusPage } from './pages/PaymentStatusPage';
+import { PublicHubPage } from './pages/public/PublicHubPage';
 
 import { useLayoutStore } from './stores/layoutStore';
+
+import { ToastProvider } from './components/Toast';
 
 function App() {
     // Global Theme Effect
@@ -59,95 +62,99 @@ function App() {
 
     return (
         <AuthProvider>
-            <BrowserRouter>
-                <Routes>
-                    <Route path="/login" element={<LoginPage />} />
-                    <Route path="/debug-supabase" element={<DebugSupabase />} />
+            <ToastProvider>
+                <BrowserRouter>
+                    <Routes>
+                        <Route path="/login" element={<LoginPage />} />
+                        <Route path="/debug-supabase" element={<DebugSupabase />} />
 
 
-                    {/* Public Routes */}
-                    <Route path="/public/waitlist/:studioId" element={<WaitlistForm />} />
-                    <Route path="/public/register/:studioId" element={<PublicClientForm />} />
-                    <Route path="/legal/privacy" element={<PrivacyPolicy />} />
-                    <Route path="/legal/terms" element={<TermsOfService />} />
-                    <Route path="/legal/cookie" element={<CookiePolicy />} />
-                    <Route path="/book/:studioId" element={<PublicBookingPage />} />
-                    <Route path="/booking-status" element={<BookingStatusPage />} />
-                    <Route path="/pricing" element={<SubscriptionPage />} />
 
-                    {/* Invitation Acceptance */}
-                    <Route path="/accept-invite" element={<AcceptInvitePage />} />
+                        {/* Public Routes */}
+                        <Route path="/connect/:studioId" element={<PublicHubPage />} />
+                        <Route path="/public/waitlist/:studioId" element={<WaitlistForm />} />
+                        <Route path="/public/register/:studioId" element={<PublicClientForm />} />
+                        <Route path="/legal/privacy" element={<PrivacyPolicy />} />
+                        <Route path="/legal/terms" element={<TermsOfService />} />
+                        <Route path="/legal/cookie" element={<CookiePolicy />} />
+                        <Route path="/book/:studioId" element={<PublicBookingPage />} />
+                        <Route path="/booking-status" element={<BookingStatusPage />} />
+                        <Route path="/pricing" element={<SubscriptionPage />} />
 
-                    {/* Password Recovery */}
-                    <Route path="/forgot-password" element={<ForgotPasswordPage />} />
-                    <Route path="/update-password" element={<UpdatePasswordPage />} />
+                        {/* Invitation Acceptance */}
+                        <Route path="/accept-invite" element={<AcceptInvitePage />} />
+
+                        {/* Password Recovery */}
+                        <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+                        <Route path="/update-password" element={<UpdatePasswordPage />} />
 
 
 
                     // ... (existing imports)
 
-                    <Route element={<RoleGuard />}>
-                        {/* Routes that require Login but NOT Studio yet */}
-                        <Route path="/start-payment" element={<StartPaymentPage />} />
-                        <Route path="/register-studio" element={<Navigate to="/start-payment" replace />} /> {/* Redirect old route */}
-                        <Route path="/payment-status" element={<PaymentStatusPage />} />
+                        <Route element={<RoleGuard />}>
+                            {/* Routes that require Login but NOT Studio yet */}
+                            <Route path="/start-payment" element={<StartPaymentPage />} />
+                            <Route path="/register-studio" element={<Navigate to="/start-payment" replace />} /> {/* Redirect old route */}
+                            <Route path="/payment-status" element={<PaymentStatusPage />} />
 
-                        {/* Routes that require Login AND Studio Membership */}
-                        <Route element={<StudioGuard />}>
-                            <Route element={<AppLayout />}>
-                                <Route path="/" element={<DashboardPage />} />
-                                <Route path="/dashboard" element={<DashboardPage />} />
+                            {/* Routes that require Login AND Studio Membership */}
+                            <Route element={<StudioGuard />}>
+                                <Route element={<AppLayout />}>
+                                    <Route path="/" element={<DashboardPage />} />
+                                    <Route path="/dashboard" element={<DashboardPage />} />
 
-                                {/* Financials (Owner, Admin, Manager, Artist) */}
-                                <Route element={<RoleGuard allowedRoles={['owner', 'STUDIO_ADMIN', 'MANAGER', 'ARTIST', 'artist']} />}>
-                                    <Route path="/financials" element={<FinancialsPage />} />
+                                    {/* Financials (Owner, Admin, Manager, Artist) */}
+                                    <Route element={<RoleGuard allowedRoles={['owner', 'STUDIO_ADMIN', 'MANAGER', 'ARTIST', 'artist']} />}>
+                                        <Route path="/financials" element={<FinancialsPage />} />
+                                    </Route>
+
+                                    {/* Calendar, Clients, Consents, Chat, Comms (Owner + Management + Artists) */}
+                                    <Route element={<RoleGuard allowedRoles={['owner', 'STUDIO_ADMIN', 'MANAGER', 'ARTIST', 'artist']} />}>
+                                        <Route path="/calendar" element={<CalendarPage />} />
+                                        <Route path="/clients" element={<ClientsPage />} />
+                                        <Route path="/clients/:id" element={<ClientProfilePage />} />
+                                        <Route path="/consents" element={<ConsentsPage />} />
+                                        <Route path="/communications" element={<CommunicationsPage />} />
+                                    </Route>
+
+                                    {/* Artists (Owner, Admin, Manager) */}
+                                    <Route element={<RoleGuard allowedRoles={['owner', 'STUDIO_ADMIN', 'MANAGER']} />}>
+                                        <Route path="/artists" element={<ArtistsPage />} />
+                                        <Route path="/artists/:id" element={<ArtistProfilePage />} />
+                                    </Route>
+
+                                    {/* Settings (All Roles) */}
+                                    <Route element={<RoleGuard allowedRoles={['owner', 'STUDIO_ADMIN', 'MANAGER', 'ARTIST', 'STUDENT']} />}>
+                                        <Route path="/settings" element={<SettingsPage />} />
+                                    </Route>
+
+                                    <Route element={<RoleGuard allowedRoles={['owner']} />}>
+                                        <Route path="/team" element={<TeamPage />} />
+                                    </Route>
+
+                                    {/* Waitlist, Marketing (Owner + Management) */}
+                                    <Route element={<RoleGuard allowedRoles={['owner', 'STUDIO_ADMIN', 'MANAGER']} />}>
+                                        <Route path="/waitlist" element={<WaitlistManager />} />
+                                        <Route path="/marketing" element={<MarketingPage />} />
+                                        <Route path="/tutorials" element={<TutorialsPage />} />
+                                    </Route>
+
+                                    {/* Academy (Owner, Admin, Student) */}
+                                    <Route element={<RoleGuard allowedRoles={['owner', 'STUDIO_ADMIN', 'STUDENT']} />}>
+                                        <Route path="/academy" element={<AcademyPage />} />
+                                    </Route>
+
                                 </Route>
-
-                                {/* Calendar, Clients, Consents, Chat, Comms (Owner + Management + Artists) */}
-                                <Route element={<RoleGuard allowedRoles={['owner', 'STUDIO_ADMIN', 'MANAGER', 'ARTIST', 'artist']} />}>
-                                    <Route path="/calendar" element={<CalendarPage />} />
-                                    <Route path="/clients" element={<ClientsPage />} />
-                                    <Route path="/clients/:id" element={<ClientProfilePage />} />
-                                    <Route path="/consents" element={<ConsentsPage />} />
-                                    <Route path="/communications" element={<CommunicationsPage />} />
-                                </Route>
-
-                                {/* Artists (Owner, Admin, Manager) */}
-                                <Route element={<RoleGuard allowedRoles={['owner', 'STUDIO_ADMIN', 'MANAGER']} />}>
-                                    <Route path="/artists" element={<ArtistsPage />} />
-                                    <Route path="/artists/:id" element={<ArtistProfilePage />} />
-                                </Route>
-
-                                {/* Settings (All Roles) */}
-                                <Route element={<RoleGuard allowedRoles={['owner', 'STUDIO_ADMIN', 'MANAGER', 'ARTIST', 'STUDENT']} />}>
-                                    <Route path="/settings" element={<SettingsPage />} />
-                                </Route>
-
-                                <Route element={<RoleGuard allowedRoles={['owner']} />}>
-                                    <Route path="/team" element={<TeamPage />} />
-                                </Route>
-
-                                {/* Waitlist, Marketing (Owner + Management) */}
-                                <Route element={<RoleGuard allowedRoles={['owner', 'STUDIO_ADMIN', 'MANAGER']} />}>
-                                    <Route path="/waitlist" element={<WaitlistManager />} />
-                                    <Route path="/marketing" element={<MarketingPage />} />
-                                    <Route path="/tutorials" element={<TutorialsPage />} />
-                                </Route>
-
-                                {/* Academy (Owner, Admin, Student) */}
-                                <Route element={<RoleGuard allowedRoles={['owner', 'STUDIO_ADMIN', 'STUDENT']} />}>
-                                    <Route path="/academy" element={<AcademyPage />} />
-                                </Route>
-
                             </Route>
                         </Route>
-                    </Route>
 
-                    {/* Catch all - Redirect to Dashboard if logged in, else Login */}
-                    <Route path="*" element={<Navigate to="/" replace />} />
-                </Routes>
-            </BrowserRouter>
-        </AuthProvider>
+                        {/* Catch all - Redirect to Dashboard if logged in, else Login */}
+                        <Route path="*" element={<Navigate to="/" replace />} />
+                    </Routes>
+                </BrowserRouter>
+            </ToastProvider>
+        </AuthProvider >
     );
 }
 

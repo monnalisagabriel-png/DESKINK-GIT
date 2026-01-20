@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { Plus, Trash2, Mail } from 'lucide-react';
+import { Plus, Trash2, Mail, Settings } from 'lucide-react';
 import { api } from '../../../services/api';
 import { useAuth } from '../../auth/AuthContext';
-import type { User } from '../../../services/types';
+import type { User, ArtistContract } from '../../../services/types';
 // import clsx from 'clsx';
 
 export const TeamSettings: React.FC = () => {
@@ -10,6 +10,8 @@ export const TeamSettings: React.FC = () => {
     const [members, setMembers] = useState<User[]>([]);
     const [loading, setLoading] = useState(true);
     const [inviteEmail, setInviteEmail] = useState('');
+    const [isContractModalOpen, setIsContractModalOpen] = useState(false);
+    const [selectedArtistId, setSelectedArtistId] = useState<string | null>(null);
 
     useEffect(() => {
         loadTeam();
@@ -89,13 +91,149 @@ export const TeamSettings: React.FC = () => {
                                         </div>
                                     </div>
                                 </div>
-                                <button onClick={() => { }} className="p-2 text-text-muted hover:text-red-500 hover:bg-red-500/10 rounded-lg transition-colors">
-                                    <Trash2 size={18} />
-                                </button>
+                                <div className="flex items-center gap-2">
+                                    <button
+                                        onClick={() => { setSelectedArtistId(member.id); setIsContractModalOpen(true); }}
+                                        className="p-2 text-text-muted hover:text-accent hover:bg-accent/10 rounded-lg transition-colors"
+                                        title="Gestione Contratto"
+                                    >
+                                        <Settings size={18} />
+                                    </button>
+                                    <button onClick={() => { }} className="p-2 text-text-muted hover:text-red-500 hover:bg-red-500/10 rounded-lg transition-colors">
+                                        <Trash2 size={18} />
+                                    </button>
+                                </div>
                             </div>
                         ))
                     )}
                 </div>
+            </div>
+
+            {
+                isContractModalOpen && selectedArtistId && (
+                    <ContractModal
+                        artistId={selectedArtistId}
+                        onClose={() => { setIsContractModalOpen(false); setSelectedArtistId(null); }}
+                    />
+                )
+            }
+        </div >
+    );
+};
+
+interface ContractModalProps {
+    artistId: string;
+    onClose: () => void;
+}
+
+const ContractModal: React.FC<ContractModalProps> = ({ artistId, onClose }) => {
+    const [loading, setLoading] = useState(true);
+    const [contract, setContract] = useState<Partial<ArtistContract>>({
+        rent_type: 'PERCENTAGE',
+        commission_rate: 50,
+        rent_fixed_amount: 0
+    });
+
+    useEffect(() => {
+        const loadContract = async () => {
+            try {
+                const data = await api.artists.getContract(artistId);
+                if (data) setContract(data);
+            } catch (e) {
+                console.error("Failed to load contract", e);
+            } finally {
+                setLoading(false);
+            }
+        };
+        loadContract();
+    }, [artistId]);
+
+    const handleSave = async (e: React.FormEvent) => {
+        e.preventDefault();
+        try {
+            await api.artists.updateContract(artistId, contract);
+            alert("Contratto aggiornato con successo!");
+            onClose();
+        } catch (err) {
+            console.error(err);
+            alert("Errore durante il salvataggio.");
+        }
+    };
+
+    return (
+        <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4 backdrop-blur-sm animate-in fade-in">
+            <div className="bg-bg-secondary w-full max-w-md p-6 rounded-xl border border-border flex flex-col gap-4">
+                <h3 className="text-xl font-bold text-text-primary">Gestione Contratto</h3>
+
+                {loading ? (
+                    <div className="text-center py-8 text-text-muted">Caricamento...</div>
+                ) : (
+                    <form onSubmit={handleSave} className="space-y-4">
+                        <div>
+                            <label className="block text-sm text-text-muted mb-1">Tipo di Contratto</label>
+                            <select
+                                value={contract.rent_type}
+                                onChange={e => setContract({ ...contract, rent_type: e.target.value as any })}
+                                className="w-full bg-bg-tertiary border border-border rounded-lg p-2 text-text-primary"
+                            >
+                                <option value="PERCENTAGE">Percentuale (Commissione)</option>
+                                <option value="FIXED">Affitto Fisso (Resident)</option>
+                                <option value="PRESENCES">Pacchetto Presenze (Guest)</option>
+                            </select>
+                        </div>
+
+                        {contract.rent_type === 'PERCENTAGE' && (
+                            <div>
+                                <label className="block text-sm text-text-muted mb-1">Commissione Artista (%)</label>
+                                <input
+                                    type="number"
+                                    value={contract.commission_rate}
+                                    onChange={e => setContract({ ...contract, commission_rate: parseFloat(e.target.value) })}
+                                    className="w-full bg-bg-tertiary border border-border rounded-lg p-2 text-text-primary"
+                                />
+                                <p className="text-xs text-text-muted mt-1">Percentuale che rimane all'artista. Il resto va allo studio.</p>
+                            </div>
+                        )}
+
+                        {contract.rent_type === 'FIXED' && (
+                            <div>
+                                <label className="block text-sm text-text-muted mb-1">Affitto Mensile (€)</label>
+                                <input
+                                    type="number"
+                                    value={contract.rent_fixed_amount}
+                                    onChange={e => setContract({ ...contract, rent_fixed_amount: parseFloat(e.target.value) })}
+                                    className="w-full bg-bg-tertiary border border-border rounded-lg p-2 text-text-primary"
+                                />
+                            </div>
+                        )}
+
+                        <div className="grid grid-cols-2 gap-4">
+                            <div>
+                                <label className="block text-sm text-text-muted mb-1">P.IVA / C.F.</label>
+                                <input
+                                    type="text"
+                                    value={contract.vat_number || ''}
+                                    onChange={e => setContract({ ...contract, vat_number: e.target.value })}
+                                    className="w-full bg-bg-tertiary border border-border rounded-lg p-2 text-text-primary"
+                                />
+                            </div>
+                            <div>
+                                <label className="block text-sm text-text-muted mb-1">IBAN</label>
+                                <input
+                                    type="text"
+                                    value={contract.iban || ''}
+                                    onChange={e => setContract({ ...contract, iban: e.target.value })}
+                                    className="w-full bg-bg-tertiary border border-border rounded-lg p-2 text-text-primary"
+                                />
+                            </div>
+                        </div>
+
+                        <div className="flex justify-end gap-2 mt-4">
+                            <button type="button" onClick={onClose} className="px-4 py-2 text-text-muted hover:text-text-primary">Annulla</button>
+                            <button type="submit" className="px-4 py-2 bg-accent text-white rounded-lg hover:bg-accent-hover">Salva</button>
+                        </div>
+                    </form>
+                )}
             </div>
         </div>
     );

@@ -239,26 +239,35 @@ export const Dashboard: React.FC = () => {
     );
 
     const renderArtistWidgets = () => (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
-            <StatsCard
-                title="Prossimo Appuntamento"
-                value={appointments.length > 0 ? format(parseISO(appointments[0].start_time), "HH:mm") : "--:--"}
-                icon={Clock}
-                color="cyan"
-            />
-            <StatsCard
-                title="Appuntamenti Oggi"
-                value={appointments.length.toString()}
-                icon={Calendar}
-                color="purple"
-            />
-            <StatsCard
-                title="I Tuoi Guadagni (Mese)"
-                value={isPrivacyMode ? "****" : `€ ${artistRealEarnings.toLocaleString()}`}
-                icon={DollarSign}
-                color="green"
-            />
-        </div>
+        <>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+                <StatsCard
+                    title="Prossimo Appuntamento"
+                    value={appointments.length > 0 ? format(parseISO(appointments[0].start_time), "HH:mm") : "--:--"}
+                    icon={Clock}
+                    color="cyan"
+                />
+                <StatsCard
+                    title="Appuntamenti Oggi"
+                    value={appointments.length.toString()}
+                    icon={Calendar}
+                    color="purple"
+                />
+                <StatsCard
+                    title="I Tuoi Guadagni (Mese)"
+                    value={isPrivacyMode ? "****" : `€ ${artistRealEarnings.toLocaleString()}`}
+                    icon={DollarSign}
+                    color="green"
+                />
+            </div>
+
+            <div className="mb-8">
+                <h2 className="text-xl font-bold text-text-primary mb-4">Richieste in Sospeso</h2>
+                <div className="bg-bg-secondary rounded-xl border border-border p-4 shadow-sm">
+                    <BookingRequests appointments={appointments} onUpdate={loadDashboardData} />
+                </div>
+            </div>
+        </>
     );
 
     const renderStudentWidgets = () => (

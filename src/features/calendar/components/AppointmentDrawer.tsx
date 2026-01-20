@@ -8,6 +8,7 @@ import { useAuth } from '../../auth/AuthContext';
 import { format } from 'date-fns';
 import { DragDropUpload } from '../../../components/DragDropUpload';
 import { supabase } from '../../../lib/supabase';
+import { useToast } from '../../../components/Toast';
 
 interface AppointmentDrawerProps {
     isOpen: boolean;
@@ -29,6 +30,7 @@ export const AppointmentDrawer: React.FC<AppointmentDrawerProps> = ({
     initialClientId
 }) => {
     const { user } = useAuth();
+    const { error: toastError } = useToast();
     const { isPrivacyMode } = useLayoutStore();
     const [clients, setClients] = useState<Client[]>([]);
     const [clientSearch, setClientSearch] = useState('');
@@ -497,7 +499,7 @@ export const AppointmentDrawer: React.FC<AppointmentDrawerProps> = ({
                             disabled={isSubmitting}
                             onClick={() => {
                                 if (!formData.start_time || !formData.end_time) {
-                                    alert('Data e Orario sono obbligatori');
+                                    toastError('Data e Orario sono obbligatori');
                                     return;
                                 }
 

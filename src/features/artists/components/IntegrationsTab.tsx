@@ -1,9 +1,11 @@
 import React, { useState } from 'react';
 import { Calendar, CheckCircle, RefreshCw, LogOut, ExternalLink, AlertTriangle } from 'lucide-react';
 import { api } from '../../../services/api';
-import type { User } from '../../../services/types';
+import type { User, Studio } from '../../../services/types';
 import clsx from 'clsx';
 import { useAuth } from '../../../features/auth/AuthContext';
+import { AutomationSettings } from '../../settings/components/AutomationSettings';
+import { GoogleSheetsSettings } from '../../settings/components/GoogleSheetsSettings';
 
 interface IntegrationsTabProps {
     artist: User;
@@ -14,11 +16,23 @@ export const IntegrationsTab: React.FC<IntegrationsTabProps> = ({ artist, onUpda
     const { user: currentUser } = useAuth();
     const [connecting, setConnecting] = useState(false);
     const [syncing, setSyncing] = useState(false);
+    const [studio, setStudio] = useState<Studio | null>(null);
 
     // Only the artist themselves, Owner, or Admin can manage integrations
     const canManage = currentUser?.id === artist.id || currentUser?.role === 'owner' || currentUser?.role === 'STUDIO_ADMIN';
+    const isOwner = currentUser?.role === 'owner' || currentUser?.role === 'STUDIO_ADMIN';
 
-    // ... handleConnect, handleDisconnect, handleSyncNow ...
+    React.useEffect(() => {
+        if (isOwner && artist.studio_id) {
+            api.settings.getStudio(artist.studio_id).then(setStudio);
+        }
+    }, [isOwner, artist.studio_id]);
+
+    const handleStudioUpdate = () => {
+        if (artist.studio_id) {
+            api.settings.getStudio(artist.studio_id).then(setStudio);
+        }
+    };
 
     const handleConnect = () => {
         setConnecting(true);
@@ -26,7 +40,6 @@ export const IntegrationsTab: React.FC<IntegrationsTabProps> = ({ artist, onUpda
         // Construct the redirect URL for the Edge Function
         // We pass artist.id as user_id so the token is saved for this specific artist
         const loginUrl = `${supabaseUrl}/functions/v1/google-auth/login?user_id=${artist.id}&redirect_to=${encodeURIComponent(window.location.href)}`;
-
         window.location.href = loginUrl;
     };
 
@@ -54,8 +67,6 @@ export const IntegrationsTab: React.FC<IntegrationsTabProps> = ({ artist, onUpda
         }
     };
 
-
-
     if (!canManage) {
         return (
             <div className="flex flex-col items-center justify-center py-12 text-text-muted">
@@ -67,15 +78,13 @@ export const IntegrationsTab: React.FC<IntegrationsTabProps> = ({ artist, onUpda
 
     const gcal = artist.integrations?.google_calendar;
 
-    // ... (keep existing check for success param) ...
-
     return (
         <div className="space-y-6">
             <h3 className="text-xl font-bold text-text-primary mb-6">Integrazioni Esterne</h3>
 
-            {/* Google Calendar Card - Keep existing code ... */}
+            {/* Google Calendar Card */}
             <div className="bg-bg-tertiary p-6 rounded-xl border border-border flex flex-col md:flex-row gap-6 items-start md:items-center justify-between">
-                {/* ... (keep existing content of card) ... */}
+                {/* ... (existing Google Calendar content content) ... */}
                 <div className="flex items-start gap-4">
                     <div className={clsx(
                         "w-12 h-12 rounded-full flex items-center justify-center",
@@ -138,6 +147,16 @@ export const IntegrationsTab: React.FC<IntegrationsTabProps> = ({ artist, onUpda
                     )}
                 </div>
             </div>
+
+            {/* Google Sheets Webhook Configuration */}
+            {isOwner && studio && (
+                <GoogleSheetsSettings studioId={studio.id} />
+            )}
+
+            {/* Automated Communications (Owner Only) */}
+            {isOwner && studio && (
+                <AutomationSettings studio={studio} onUpdate={handleStudioUpdate} />
+            )}
 
         </div>
     );

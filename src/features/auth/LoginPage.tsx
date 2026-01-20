@@ -21,6 +21,34 @@ export const LoginPage: React.FC = () => {
 
     const from = location.state?.from?.pathname || '/dashboard';
 
+    // NUCLEAR OPTION: Force cleanup if ?clean=true is present
+    React.useEffect(() => {
+        const params = new URLSearchParams(location.search);
+        if (params.get('clean') === 'true') {
+            console.warn('☢️ NUCLEAR CLEANUP INITIATED ☢️');
+
+            // 1. Clear LocalStorage
+            localStorage.clear();
+            sessionStorage.clear();
+
+            // 2. Clear Supabase Storage (specifically)
+            for (let i = 0; i < localStorage.length; i++) {
+                const key = localStorage.key(i);
+                if (key?.startsWith('sb-')) {
+                    localStorage.removeItem(key);
+                }
+            }
+
+            // 3. Force Sign Out
+            import('../../lib/supabase').then(async ({ supabase }) => {
+                await supabase.auth.signOut();
+                console.log('✅ CLEANUP COMPLETE. Reloading...');
+                // 4. Reload without param to prevent loops
+                window.location.href = '/login';
+            });
+        }
+    }, [location.search]);
+
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setLoading(true);

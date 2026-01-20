@@ -122,6 +122,9 @@ export interface Appointment {
   deposit?: number; // Acconto
   google_event_id?: string; // ID Google Calendar synced event
   stripe_payment_intent_id?: string; // For refunds
+  reminder_sent?: boolean; // Legacy/General
+  reminder_7d_sent?: boolean;
+  reminder_24h_sent?: boolean;
 }
 
 
@@ -479,12 +482,24 @@ export interface Studio {
     deposit_currency: string;
     stripe_enabled: boolean;
   };
+  automation_settings?: {
+    whatsapp_enabled: boolean;
+    whatsapp_business_id?: string;
+    email_enabled: boolean;
+    sender_email?: string; // [NEW] Email Mittente (Reply-To)
+    preferences: {
+      appointment_confirmation: boolean;
+      appointment_reminder: boolean;
+      booking_cancellation: boolean;
+    };
+  };
   consent_text?: string;
 }
 
 export interface Service {
   id: string;
   studio_id: string;
+  artist_id?: string; // Optional for now to support legacy studio-wide services if needed, but we aim for strict assignment
   name: string;
   duration: number; // minutes
   price: number;

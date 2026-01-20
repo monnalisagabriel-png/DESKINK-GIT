@@ -31,8 +31,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
         // Listen for Auth Changes (e.g. Password Recovery link clicked)
         // Listen for Auth Changes (e.g. Password Recovery link clicked)
-        const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, _session) => {
-            console.log('[AuthContext] Auth State Change:', event);
+        const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+            console.log("AUTH EVENT", event, session ? "Session OK" : "No Session");
 
             if (event === 'PASSWORD_RECOVERY') {
                 console.log('[AuthContext] Password Recovery event detected. Refreshing session...');
