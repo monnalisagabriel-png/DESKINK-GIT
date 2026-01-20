@@ -110,7 +110,7 @@ serve(async (req) => {
                 .insert({
                     name: studio_name,
                     created_by: user.id,
-                    subscription_status: 'none', // Use allowed status (active/past_due/canceled/trialing/none)
+                    subscription_status: 'canceled', // Use 'canceled' as it is standard (none might be rejected by DB constraint)
                     subscription_tier: tier || 'basic',
                     max_artists: 1,
                     max_managers: 1,
