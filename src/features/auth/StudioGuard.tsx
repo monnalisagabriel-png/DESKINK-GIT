@@ -26,7 +26,17 @@ export const StudioGuard: React.FC = () => {
                 await refreshSubscription?.();
             }, 1000); // 1s aggressive polling
 
-            return () => clearInterval(interval);
+            // FAIL-SAFE: Force hard refresh after 6 seconds if still pending
+            // This fixes cases where the SPA state gets stuck despite DB update
+            const timeout = setTimeout(() => {
+                console.warn('Provisioning timeout reached. Forcing page reload...');
+                window.location.reload();
+            }, 6000);
+
+            return () => {
+                clearInterval(interval);
+                clearTimeout(timeout);
+            };
         }
     }, [effectiveStatus, refreshProfile, refreshSubscription]);
 
