@@ -103,8 +103,27 @@ export const StudioGuard: React.FC = () => {
 
     // STRICT BLOCK
     if (hasStudio === false) {
+        console.error("REDIRECT_START_PAYMENT", {
+            guard: "StudioGuard",
+            reason: "hasStudio === false",
+            path: window.location.pathname,
+            studioStatus: effectiveStatus,
+            verified: verifiedActive
+        });
         return <Navigate to="/start-payment" replace />;
     }
 
-    return <Navigate to="/start-payment" replace />;
+    // Safety fallback
+    if (effectiveStatus !== 'active' && !verifiedActive) {
+        console.error("REDIRECT_START_PAYMENT", {
+            guard: "StudioGuard",
+            reason: "Status not active & Not Verified",
+            path: window.location.pathname,
+            studioStatus: effectiveStatus,
+            verified: verifiedActive
+        });
+        return <Navigate to="/start-payment" replace />;
+    }
+
+    return <Outlet />;
 };

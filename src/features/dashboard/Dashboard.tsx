@@ -440,24 +440,7 @@ export const Dashboard: React.FC = () => {
         </div>
     );
 };
-import { useAuth } from '../auth/AuthContext';
-import { StatsCard } from './components/StatsCard';
-import { api } from '../../services/api';
-import type { Appointment, Studio, Course, CourseEnrollment } from '../../services/types';
-import { format, addWeeks, startOfDay, endOfWeek, parseISO, startOfMonth, endOfMonth } from 'date-fns';
-import { useRealtime } from '../../hooks/useRealtime';
-import { it } from 'date-fns/locale';
-import { useLayoutStore } from '../../stores/layoutStore';
-import { BookingRequests } from './components/BookingRequests';
-import clsx from 'clsx';
 
-interface DashboardStats {
-    revenue_today: number;
-    revenue_month: number;
-    waitlist_count: number;
-    staff_present: number;
-    staff_total: number;
-}
 
 export const Dashboard: React.FC = () => {
     const { user } = useAuth();

@@ -33,7 +33,7 @@ export const RoleGuard: React.FC<RoleGuardProps> = ({ allowedRoles }) => {
 
     // Ensure we don't block users who actually have a studio (even if status says pending)
     // This breaks the "Dashboard -> RoleGuard -> StartPayment -> Dashboard" loop.
-    const { hasStudio } = useAuth();
+    const { hasStudio, subscriptionStatus } = useAuth();
 
     // DEEP CHECK STATE: If context says NO, but we want to be sure.
     const [isDeepChecking, setIsDeepChecking] = React.useState(false);
@@ -86,28 +86,34 @@ export const RoleGuard: React.FC<RoleGuardProps> = ({ allowedRoles }) => {
     // 2. Not a payment success return
     // 3. DOES NOT have studio (Context)
     // 4. DEEP CHECK also failed (or haven't passed)
-    if (user?.account_status === 'pending' && !isPaymentSuccess && !hasStudio && !deepCheckPassed) {
+
+    // --- SUPREME RULE CHECK ---
+    const isActuallyActive = subscriptionStatus === 'active' || deepCheckPassed;
+
+    if (user?.account_status === 'pending' && !isPaymentSuccess && !hasStudio && !isActuallyActive) {
+
+        console.error("REDIRECT_START_PAYMENT", {
+            guard: "RoleGuard",
+            reason: "Account pending & No Studio & Not Active",
+            path: location.pathname,
+            userId: user.id,
+            studioId: user.studio_id,
+            status: user.account_status,
+            role: user.role,
+            membershipsCount: hasStudio ? 1 : 0,
+            subscriptionStatus: subscriptionStatus
+        });
+
         if (location.pathname !== '/start-payment') {
             return <Navigate to="/start-payment" replace />;
         }
         // If on /start-payment, allow thorough
+    } else if (isActuallyActive && location.pathname.includes('/start-payment')) {
+        // PREVENT active users from seeing start-payment (Supreme Rule Block)
+        console.log('RoleGuard: Active user tried start-payment. FORCE Redirecting to Dashboard.');
+        return <Navigate to="/dashboard" replace />;
     } else {
-        // If Active (or suspended?)
-        // If they stick to /start-payment, normally redirect to dashboard.
-        // BUT, if they don't have a studio yet, they MIGHT need to be here to create one (via payment).
-        // Check hasStudio from useAuth() - Note: RoleGuard needs to ensure useAuth provides this.
-        // Ideally we check: if (location.pathname === '/start-payment' && hasStudio) -> redirect to /
-
-        // However, RoleGuard doesn't strictly depend on 'hasStudio' being populated yet (might be loading).
-        // But 'isLoading' check at top handles the unset state mostly.
-
-        // For now, let's just ALLOW /start-payment always, or filter by studio existence if we can.
-        // Safer: If they are active and go to start-payment, let them! Maybe they want to buy another studio? (Future proof)
-        // OR better to fix the loop:
-
-        // if (location.pathname === '/start-payment' && hasStudio) {
-        //    return <Navigate to="/" replace />;
-        // }
+        // Allow through for verified users
     }
 
     if (allowedRoles && user) {

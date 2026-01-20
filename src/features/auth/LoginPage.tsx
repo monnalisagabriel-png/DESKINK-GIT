@@ -77,6 +77,13 @@ export const LoginPage: React.FC = () => {
                         }
                     } else {
                         console.log('LOGIN RESOLVED -> NO ACTIVE STUDIO -> START PAYMENT');
+                        console.error("REDIRECT_START_PAYMENT", {
+                            guard: "LoginPage",
+                            reason: "Login Resolved - Studio Not Active",
+                            path: '/start-payment',
+                            userId: currentUser.id,
+                            studioStatus: studio?.subscription_status
+                        });
                         navigate('/start-payment', { replace: true });
                     }
                 } else {
