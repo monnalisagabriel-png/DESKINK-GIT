@@ -2,6 +2,7 @@
 import React from 'react';
 import { Navigate, Outlet } from 'react-router-dom';
 import { useAuth } from './AuthContext';
+import { supabase } from '../../lib/supabase';
 
 export const StudioGuard: React.FC = () => {
     const { isAuthenticated, isLoading, hasStudio, subscriptionStatus, refreshProfile, refreshSubscription } = useAuth();
@@ -30,8 +31,31 @@ export const StudioGuard: React.FC = () => {
         if (effectiveStatus === 'pending_provisioning') {
             const interval = setInterval(async () => {
                 console.log('Polling for activation (Status: pending_provisioning)...');
+
+                // 1. STANDARD REFRESH (Keep existing logic)
                 await refreshProfile?.();
                 await refreshSubscription?.();
+
+                // 2. DIRECT DB CHECK (Bypass AuthContext/Membership issues)
+                try {
+                    const { data: { user } } = await supabase.auth.getUser();
+                    if (user) {
+                        const { data: directStudio } = await supabase
+                            .from('studios')
+                            .select('subscription_status')
+                            .eq('created_by', user.id)
+                            .maybeSingle();
+
+                        console.log('Direct DB Check Status:', directStudio?.subscription_status);
+
+                        if (directStudio?.subscription_status === 'active') {
+                            console.log('🚨 DIRECT DB HIT: ACTIVE! REDIRECTING NOW! 🚨');
+                            window.location.replace('/dashboard');
+                            return;
+                        }
+                    }
+                } catch (err) { (console.error('Direct poll error', err)); }
+
             }, 1000); // 1s aggressive polling
 
             // FAIL-SAFE: Force hard refresh after 6 seconds if still pending
