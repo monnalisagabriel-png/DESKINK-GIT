@@ -45,7 +45,7 @@ export const LoginPage: React.FC = () => {
                 }
             } else {
                 // 1. Perform Sign In
-                const session = await signIn(email, password); // Note: signIn signature in context returns void, but we might need to rely on direct check
+                await signIn(email, password); // session is returned but not used in this scope, we query user directly below
 
                 // 2. RESOLVE STUDIO STATUS MANUALLY (To ensure 100% correct routing)
                 // We cannot rely on 'from' because it might be '/start-payment' from a previous failed access.

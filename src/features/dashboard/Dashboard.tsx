@@ -182,7 +182,13 @@ export const Dashboard: React.FC = () => {
         const studioName = studio?.name || "InkFlow Studio";
         const location = studio ? `${studio.address}, ${studio.city}` : "Via Loreto Balatelle, 208, Acireale";
 
-        const message = `Ciao ${appt.client.full_name},\nti ricordiamo il tuo appuntamento per il ${dateStr} ${timeStr} presso ${studioName} (${location}).\nTi invitiamo a rispondere a questo messaggio per confermare, altrimenti il tuo appuntamento potrebbe subire variazioni o cancellazioni.\nA presto!`;
+        let message = '';
+        if (type === 'WEEK_NOTICE') {
+            message = `Ciao ${appt.client.full_name},\nti ricordiamo il tuo appuntamento per il ${dateStr} ${timeStr} presso ${studioName} (${location}).\nTi invitiamo a rispondere a questo messaggio per confermare, altrimenti il tuo appuntamento potrebbe subire variazioni o cancellazioni.\nA presto!`;
+        } else {
+            // Confirmation message (slightly different or generic)
+            message = `Ciao ${appt.client.full_name},\nconfermiamo il tuo appuntamento per il ${dateStr} ${timeStr} presso ${studioName} (${location}).\nA presto!`;
+        }
 
         const encodedMessage = encodeURIComponent(message);
         window.open(`https://wa.me/${appt.client.phone.replace(/[^0-9]/g, '')}?text=${encodedMessage}`, '_blank');
