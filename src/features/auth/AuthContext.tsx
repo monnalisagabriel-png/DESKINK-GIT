@@ -127,10 +127,24 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
                 setUser(currentUser);
 
                 // Check membership AND subscription status
-                const membership = await api.settings.checkMembership(currentUser.id);
-                setHasStudio(membership);
+                let hasStudioAccess = await api.settings.checkMembership(currentUser.id);
 
-                if (membership) {
+                // FALLBACK: Direct check on studios table if membership is missing
+                if (!hasStudioAccess) {
+                    const { data: ownedStudio } = await supabase
+                        .from('studios')
+                        .select('id')
+                        .eq('created_by', currentUser.id)
+                        .maybeSingle();
+                    if (ownedStudio) {
+                        console.log('AuthContext: Found studio ownership via direct DB check (fallback).');
+                        hasStudioAccess = true;
+                    }
+                }
+
+                setHasStudio(hasStudioAccess);
+
+                if (hasStudioAccess) {
                     try {
                         const sub = await api.subscription.getSubscription();
                         setSubscriptionStatus(sub?.subscription_status || 'none');
@@ -179,8 +193,19 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             if (session.user) {
                 session.user.role = normalizeRole(session.user.role);
                 setUser(session.user);
-                const membership = await api.settings.checkMembership(session.user.id);
-                setHasStudio(membership);
+                let hasStudioAccess = await api.settings.checkMembership(session.user.id);
+
+                // FALLBACK: Direct check
+                if (!hasStudioAccess) {
+                    const { data: ownedStudio } = await supabase
+                        .from('studios')
+                        .select('id')
+                        .eq('created_by', session.user.id)
+                        .maybeSingle();
+                    if (ownedStudio) hasStudioAccess = true;
+                }
+
+                setHasStudio(hasStudioAccess);
             } else {
                 setUser(null);
             }

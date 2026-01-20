@@ -44,8 +44,46 @@ export const LoginPage: React.FC = () => {
                     setMessage('Registrazione avvenuta con successo! Controlla la tua email per confermare l\'account.');
                 }
             } else {
-                await signIn(email, password);
-                navigate(from, { replace: true });
+                // 1. Perform Sign In
+                const session = await signIn(email, password); // Note: signIn signature in context returns void, but we might need to rely on direct check
+
+                // 2. RESOLVE STUDIO STATUS MANUALLY (To ensure 100% correct routing)
+                // We cannot rely on 'from' because it might be '/start-payment' from a previous failed access.
+                // We cannot rely on 'user' from useAuth because it's stale in this function scope.
+
+                const { data: { user: currentUser } } = await import('../../lib/supabase').then(m => m.supabase.auth.getUser());
+
+                if (currentUser) {
+                    console.log('Login successful. Resolving Post-Login Route for:', currentUser.id);
+
+                    // Check Ownership & Status directly
+                    const { supabase } = await import('../../lib/supabase');
+                    const { data: studio } = await supabase
+                        .from('studios')
+                        .select('subscription_status')
+                        .eq('created_by', currentUser.id)
+                        .maybeSingle();
+
+                    const isStudioActive = studio?.subscription_status === 'active';
+                    console.log('Login Resolution -> Studio Status:', studio?.subscription_status);
+
+                    if (isStudioActive) {
+                        console.log('LOGIN RESOLVED -> STUDIO ACTIVE -> DASHBOARD');
+                        // Force Dashboard if they were stuck on start-payment or generic login
+                        if (!from || from === '/' || from === '/login' || from.includes('/start-payment')) {
+                            navigate('/dashboard', { replace: true });
+                        } else {
+                            navigate(from, { replace: true });
+                        }
+                    } else {
+                        console.log('LOGIN RESOLVED -> NO ACTIVE STUDIO -> START PAYMENT');
+                        navigate('/start-payment', { replace: true });
+                    }
+                } else {
+                    // Fallback if something weird happens (should catch in error block)
+                    navigate(from, { replace: true });
+                }
+
             }
         } catch (err: any) {
             console.error('Auth failed:', err);

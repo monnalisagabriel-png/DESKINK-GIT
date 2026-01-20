@@ -1809,19 +1809,36 @@ Formatta la risposta ESCLUSIVAMENTE come un JSON array di stringhe, esempio: ["C
             if (!user) return null;
 
             // Get studio_id
+            let studioId: string | undefined;
+
             const { data: membership } = await supabase
                 .from('studio_memberships')
                 .select('studio_id')
                 .eq('user_id', user.id)
                 .maybeSingle();
 
-            if (!membership?.studio_id) return null;
+            if (membership) {
+                studioId = membership.studio_id;
+            } else {
+                // FALLBACK: Check ownership directly
+                const { data: ownedStudio } = await supabase
+                    .from('studios')
+                    .select('id')
+                    .eq('created_by', user.id)
+                    .maybeSingle();
+
+                if (ownedStudio) {
+                    studioId = ownedStudio.id;
+                }
+            }
+
+            if (!studioId) return null;
 
             // Fetch studio subscription info directly
             const { data: studio, error: studioError } = await supabase
                 .from('studios')
-                .select('subscription_tier, subscription_status, stripe_subscription_id, current_period_end')
-                .eq('id', membership.studio_id)
+                .select('id, subscription_tier, subscription_status, stripe_subscription_id, current_period_end')
+                .eq('id', studioId)
                 .single();
 
             if (studioError) {
@@ -1838,8 +1855,12 @@ Formatta la risposta ESCLUSIVAMENTE come un JSON array di stringhe, esempio: ["C
                 .eq('id', planId)
                 .maybeSingle();
 
+            // SINTESI DATI: Se lo studio è active, DEVE risultare active.
+            // Se manca lo stripe_subscription_id, usiamo studio.id come fallback per evitare che il frontend esploda.
+            const syntheticId = studio.stripe_subscription_id || `sub_synth_${studio.id}`;
+
             return {
-                id: studio.stripe_subscription_id,
+                id: syntheticId,
                 status: studio.subscription_status || 'none',
                 current_period_end: studio.current_period_end,
                 plan: plan
