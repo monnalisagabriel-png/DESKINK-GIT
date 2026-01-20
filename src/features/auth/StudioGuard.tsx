@@ -5,23 +5,22 @@ import { useAuth } from './AuthContext';
 import { supabase } from '../../lib/supabase';
 
 export const StudioGuard: React.FC = () => {
-    const { isAuthenticated, isLoading, hasStudio, subscriptionStatus, refreshProfile, refreshSubscription } = useAuth();
+    const { isAuthenticated, isLoading, hasStudio, subscriptionStatus } = useAuth();
     const [verifiedActive, setVerifiedActive] = React.useState(false);
 
-    // 1. DERIVE EFFECTIVE STATUS
     const queryParams = new URLSearchParams(window.location.search);
     const isPaymentSuccess = queryParams.get('payment') === 'success';
+
+
 
     let effectiveStatus = subscriptionStatus;
     if (isPaymentSuccess && subscriptionStatus !== 'active') {
         effectiveStatus = 'pending_provisioning';
     }
 
-    // 2. UNIVERSAL DIRECT DB CHECK (The Ultimate Fail-Safe)
-    // Checks DB directly. If active, sets local flag to BYPASS everything.
+    // 3. UNIVERSAL DIRECT DB CHECK (The Ultimate Fail-Safe)
     React.useEffect(() => {
         const verifyDirectly = async () => {
-            // If Context already says yes, we are good.
             if (hasStudio && subscriptionStatus === 'active') return;
 
             try {
@@ -34,7 +33,6 @@ export const StudioGuard: React.FC = () => {
                         .maybeSingle();
 
                     if (directStudio?.subscription_status === 'active') {
-                        console.log('🛡️ StudioGuard: Verified Active via Direct DB check. Allowing access.');
                         setVerifiedActive(true);
                     }
                 }
@@ -42,33 +40,6 @@ export const StudioGuard: React.FC = () => {
         };
         verifyDirectly();
     }, [hasStudio, subscriptionStatus]);
-
-    // 3. BRUTAL REDIRECT: If status becomes active (context or verified), ensure we keep user in
-    React.useEffect(() => {
-        if (subscriptionStatus === 'active' || verifiedActive) {
-            // Optional: Could force reload if needed, but setState should trigger re-render
-        }
-    }, [subscriptionStatus, verifiedActive]);
-
-    // 4. POLL IF PENDING/PROVISIONING
-    React.useEffect(() => {
-        if (effectiveStatus === 'pending_provisioning' && !verifiedActive) {
-            const interval = setInterval(async () => {
-                await refreshProfile?.();
-                await refreshSubscription?.();
-            }, 1000);
-
-            // FAIL-SAFE: Force hard refresh after 6 seconds
-            const timeout = setTimeout(() => {
-                window.location.reload();
-            }, 6000);
-
-            return () => {
-                clearInterval(interval);
-                clearTimeout(timeout);
-            };
-        }
-    }, [effectiveStatus, refreshProfile, refreshSubscription, verifiedActive]);
 
     if (isLoading && !verifiedActive) {
         return (
@@ -84,12 +55,13 @@ export const StudioGuard: React.FC = () => {
         return <Navigate to="/login" replace />;
     }
 
-    // 5. GRANT ACCESS
-    // If Context implies access OR if we verified it directly -> OPEN GATES
+    // SUPREME RULE: If active (via Context OR Direct Check) -> ALLOW ACCESS
     if ((hasStudio && subscriptionStatus === 'active') || verifiedActive) {
         return <Outlet />;
     }
 
+    // IF we are here, user is NOT active.
+    // Allow pending provisioning to show loading screen
     if (effectiveStatus === 'pending_provisioning') {
         return (
             <div className="flex flex-col items-center justify-center h-screen bg-bg-primary space-y-4">
@@ -101,29 +73,6 @@ export const StudioGuard: React.FC = () => {
         );
     }
 
-    // STRICT BLOCK
-    if (hasStudio === false) {
-        console.error("REDIRECT_START_PAYMENT", {
-            guard: "StudioGuard",
-            reason: "hasStudio === false",
-            path: window.location.pathname,
-            studioStatus: effectiveStatus,
-            verified: verifiedActive
-        });
-        return <Navigate to="/start-payment" replace />;
-    }
-
-    // Safety fallback
-    if (effectiveStatus !== 'active' && !verifiedActive) {
-        console.error("REDIRECT_START_PAYMENT", {
-            guard: "StudioGuard",
-            reason: "Status not active & Not Verified",
-            path: window.location.pathname,
-            studioStatus: effectiveStatus,
-            verified: verifiedActive
-        });
-        return <Navigate to="/start-payment" replace />;
-    }
-
-    return <Outlet />;
+    // STRICT BLOCK: Finally, if not active and not provisioning, redirect to payment
+    return <Navigate to="/start-payment" replace />;
 };

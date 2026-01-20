@@ -45,51 +45,8 @@ export const LoginPage: React.FC = () => {
                 }
             } else {
                 // 1. Perform Sign In
-                await signIn(email, password); // session is returned but not used in this scope, we query user directly below
-
-                // 2. RESOLVE STUDIO STATUS MANUALLY (To ensure 100% correct routing)
-                // We cannot rely on 'from' because it might be '/start-payment' from a previous failed access.
-                // We cannot rely on 'user' from useAuth because it's stale in this function scope.
-
-                const { data: { user: currentUser } } = await import('../../lib/supabase').then(m => m.supabase.auth.getUser());
-
-                if (currentUser) {
-                    console.log('Login successful. Resolving Post-Login Route for:', currentUser.id);
-
-                    // Check Ownership & Status directly
-                    const { supabase } = await import('../../lib/supabase');
-                    const { data: studio } = await supabase
-                        .from('studios')
-                        .select('subscription_status')
-                        .eq('created_by', currentUser.id)
-                        .maybeSingle();
-
-                    const isStudioActive = studio?.subscription_status === 'active';
-                    console.log('Login Resolution -> Studio Status:', studio?.subscription_status);
-
-                    if (isStudioActive) {
-                        console.log('LOGIN RESOLVED -> STUDIO ACTIVE -> DASHBOARD');
-                        // Force Dashboard if they were stuck on start-payment or generic login
-                        if (!from || from === '/' || from === '/login' || from.includes('/start-payment')) {
-                            navigate('/dashboard', { replace: true });
-                        } else {
-                            navigate(from, { replace: true });
-                        }
-                    } else {
-                        console.log('LOGIN RESOLVED -> NO ACTIVE STUDIO -> START PAYMENT');
-                        console.error("REDIRECT_START_PAYMENT", {
-                            guard: "LoginPage",
-                            reason: "Login Resolved - Studio Not Active",
-                            path: '/start-payment',
-                            userId: currentUser.id,
-                            studioStatus: studio?.subscription_status
-                        });
-                        navigate('/start-payment', { replace: true });
-                    }
-                } else {
-                    // Fallback if something weird happens (should catch in error block)
-                    navigate(from, { replace: true });
-                }
+                await signIn(email, password);
+                navigate('/dashboard', { replace: true });
 
             }
         } catch (err: any) {
