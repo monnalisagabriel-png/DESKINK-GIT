@@ -28,9 +28,14 @@ export const RoleGuard: React.FC<RoleGuardProps> = ({ allowedRoles }) => {
     // STRICT PAYMENT FLOW: Block access if account is pending
     // Allow access ONLY to /start-payment if pending
     // EXCEPTION: If returning from payment (payment=success), let them through to StudioGuard
+    // EXCEPTION: If they ALREADY have a studio (hasStudio=true), they are assumed provisioned.
     const isPaymentSuccess = new URLSearchParams(location.search).get('payment') === 'success';
 
-    if (user?.account_status === 'pending' && !isPaymentSuccess) {
+    // Ensure we don't block users who actually have a studio (even if status says pending)
+    // This breaks the "Dashboard -> RoleGuard -> StartPayment -> Dashboard" loop.
+    const { hasStudio } = useAuth();
+
+    if (user?.account_status === 'pending' && !isPaymentSuccess && !hasStudio) {
         if (location.pathname !== '/start-payment') {
             return <Navigate to="/start-payment" replace />;
         }
